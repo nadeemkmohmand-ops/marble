@@ -14,9 +14,9 @@ export default defineConfig({
       registerType: 'prompt',
       includeAssets: ['favicon.ico', 'icons/icon-192x192.png', 'icons/icon-512x512.png'],
       manifest: {
-        name: 'ماربل فیکٹری مینجمنٹ',
-        short_name: 'Marble App',
-        description: 'مہمند ماربل فیکٹری مینجمنٹ سسٹم — Mohmand marble factory management system',
+        name: 'المکہ ماربل فیکٹری مینجمنٹ',
+        short_name: 'المکہ ماربل',
+        description: 'المکہ ماربل فیکٹری مینجمنٹ سسٹم — Al-Makkah Marble Factory management system',
         lang: 'ur',
         dir: 'rtl',
         theme_color: '#1E3A8A',
