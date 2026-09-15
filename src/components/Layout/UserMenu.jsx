@@ -38,11 +38,12 @@ export default function UserMenu() {
         م
       </button>
 
+      {/* dropdown — no overflow-hidden: Urdu text must not clip */}
       {open && (
-        <div role="menu" className="surface fade-up absolute end-0 top-12 z-50 w-52 overflow-hidden p-1.5 shadow-xl">
+        <div role="menu" className="surface fade-up absolute end-0 top-12 z-50 w-52 p-1.5 shadow-xl">
           <div className="border-b border-border px-3 py-2.5 dark:border-gray-700">
-            <p className="truncate text-sm font-bold text-main">{t('set.userName')}</p>
-            <p className="truncate text-[11px] text-muted">{t('set.factoryManager')}</p>
+            <p className="text-sm font-bold text-main">{t('set.userName')}</p>
+            <p className="text-[11px] text-muted">{t('set.factoryManager')}</p>
           </div>
 
           {items.map(({ icon: Icon, label, to }) => (
