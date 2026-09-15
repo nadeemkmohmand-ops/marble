@@ -247,7 +247,10 @@ export default {
   pwa: {
     installTitle: 'Install the App',
     installDesc: 'Add it to your home screen — it works without internet',
+    addToHome: 'Add to Home Screen',
     install: 'Install',
+    installSuccess: 'App installed — check your home screen',
+    installManual: 'Automatic install is not available — open your browser menu and choose “Add to Home Screen”',
     later: 'Later',
     offline: 'Offline mode — no internet connection',
     updateReady: 'New version available — reload to update',
