@@ -26,10 +26,12 @@
     line-height: 1.6;
   }
 
-  /* Urdu (default): Nastaliq script needs a more generous line-height to avoid clipping */
+  /* Urdu (default): Nastaliq script needs a much more generous line-height to
+     avoid clipping / overlapping — its diagonal glyph stack is far taller than
+     Latin fonts. 2.2 is the safe minimum for headings AND body text. */
   html.lang-ur body {
     @apply font-urdu;
-    line-height: 1.9;
+    line-height: 2.2;
   }
 
   /* English mode: Inter first, Urdu glyphs still render through fallback */
@@ -63,6 +65,136 @@
 
   html.dark ::-webkit-scrollbar-thumb {
     background-color: theme('colors.gray.600');
+  }
+
+  /* ============================================================
+     URDU / RTL RENDERING FIXES (global, apply everywhere)
+     ------------------------------------------------------------
+     Noto Nastaliq Urdu glyphs are tall AND diagonally stacked, so
+     every container that clips (overflow: hidden / truncate /
+     fixed heights) cuts off the tops of letters (ا ل ک) and the
+     bottom tails (ے ٹ) and lines collide. The rules below make
+     Urdu text containers self-size and never clip.
+     ============================================================ */
+
+  /* --- 1) The reusable .urdu-text class (works in ANY language mode) --- */
+  .urdu-text,
+  [lang='ur'] {
+    font-family: var(--font-urdu), 'Noto Nastaliq Urdu', serif;
+    direction: rtl;
+    text-align: right;
+    /* generous vertical room for the Nastaliq diagonal stack */
+    line-height: 2.2 !important;
+    /* never clip tall glyphs or diacritics */
+    overflow: visible;
+    overflow-wrap: break-word;
+    word-break: normal;
+    /* let text wrap instead of being truncated/clipped */
+    white-space: normal;
+    /* breathing room so tops/tails are not cut by rounded/padded parents */
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
+  }
+
+  /* Inline usage (inside sentences/buttons) should not force block alignment */
+  span.urdu-text,
+  button .urdu-text,
+  a .urdu-text,
+  td.urdu-text,
+  th.urdu-text,
+  [lang='ur']:not(body):not(p):not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(div):not(li) {
+    text-align: start;
+  }
+
+  /* --- 2) Language-mode selectors: headings, paragraphs, buttons, cards,
+          table cells — applied CONSISTENTLY to every place Urdu appears --- */
+  html[lang='ur'] h1,
+  html[lang='ur'] h2,
+  html[lang='ur'] h3,
+  html[lang='ur'] h4,
+  html[lang='ur'] h5,
+  html[lang='ur'] h6,
+  html[lang='ur'] p,
+  html[lang='ur'] button,
+  html[lang='ur'] label,
+  html[lang='ur'] th,
+  html[lang='ur'] td {
+    line-height: 2.1;
+    overflow: visible;
+    overflow-wrap: break-word;
+  }
+
+  html[lang='ur'] h1,
+  html[lang='ur'] h2,
+  html[lang='ur'] h3,
+  html[lang='ur'] h4,
+  html[lang='ur'] h5,
+  html[lang='ur'] h6 {
+    line-height: 2;
+  }
+
+  /* --- 3) Neutralize vertical clipping on containers that wrap Urdu ---
+     .truncate  = overflow:hidden + nowrap  →  Nastaliq gets cut off.
+     In Urdu mode text must WRAP and overflow must stay VISIBLE. */
+  html[lang='ur'] .truncate {
+    overflow: visible !important;
+    white-space: normal !important;
+    text-overflow: clip !important;
+  }
+
+  /* Parents / flex containers holding Urdu headings & paragraphs must not clip */
+  html[lang='ur'] .surface,
+  html[lang='ur'] header,
+  html[lang='ur'] nav,
+  html[lang='ur'] section,
+  html[lang='ur'] aside,
+  html[lang='ur'] li {
+    overflow: visible;
+  }
+
+  /* Keep horizontal scroll behaviour for wide tables without clipping Urdu rows */
+  html[lang='ur'] .table-scroll,
+  html[lang='ur'] .overflow-x-auto {
+    overflow-x: auto;
+    overflow-y: visible;
+  }
+
+  /* Tight Latin leading utilities collapse Nastaliq lines onto each other —
+     force generous line-height whenever the UI is in Urdu */
+  html[lang='ur'] .leading-none,
+  html[lang='ur'] .leading-tight,
+  html[lang='ur'] .leading-snug {
+    line-height: 2 !important;
+  }
+
+  /* --- 4) Extra vertical padding where Urdu text sits in tight chrome
+     (sidebar/header brand blocks, card headers, nav rows, buttons):
+     Nastaliq needs 8–12px of head/foot room or the tops/tails are cut. */
+  html[lang='ur'] .urdu-clip-safe {
+    padding-top: 0.625rem; /* 10px */
+    padding-bottom: 0.625rem; /* 10px */
+    min-height: 0;
+    height: auto; /* never fixed-height Urdu containers */
+  }
+
+  html[lang='ur'] button:not([role='switch']) {
+    height: auto;
+    min-height: 2.75rem; /* replaces fixed heights */
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    white-space: normal; /* wrap long Urdu labels instead of clipping */
+  }
+
+  /* Fixed-height wrappers become self-sizing in Urdu mode */
+  html[lang='ur'] .h-16 {
+    height: auto;
+    min-height: 4rem;
+  }
+
+  /* Sidebar section labels are ALL-CAPS Latin styling — keep tiny Urdu labels readable */
+  html[lang='ur'] .uppercase {
+    text-transform: none;
+    letter-spacing: normal;
   }
 
   /* Respect users who prefer reduced motion */
@@ -111,6 +243,19 @@
   /* Skip-to-content link — visible only when focused (keyboard users) */
   .skip-link {
     @apply fixed start-4 top-2 z-[80] -translate-y-20 rounded-xl bg-primary px-4 py-2 text-sm font-bold text-white shadow-lg transition-transform focus:translate-y-0;
+  }
+
+  /* Urdu-safe heading: no clipping, generous Nastaliq line-height.
+     Add .urdu-text (or lang="ur") wherever Urdu renders — headings,
+     buttons, cards, table cells, nav labels — globally too (see base). */
+  .urdu-heading {
+    font-family: var(--font-urdu), 'Noto Nastaliq Urdu', serif;
+    line-height: 2;
+    overflow: visible;
+    overflow-wrap: break-word;
+    white-space: normal;
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
   }
 }
 
