@@ -4,11 +4,11 @@
  */
 export default {
   // App identity
-  appName: 'Marble Factory Management',
-  appShortName: 'Marble App',
-  factoryName: 'Mohmand Marble Factory',
+  appName: 'Al-Makkah Marble Factory Management',
+  appShortName: 'Al-Makkah Marble',
+  factoryName: 'Al-Makkah Marble Factory',
   tagline: 'Factory Management System',
-  location: 'Mohmand, KPK, Pakistan',
+  location: 'KPK, Pakistan',
   version: 'Version 1.1.0',
   demoNote: 'Note: This is a UI demo only — real data and calculations will arrive in a future version.',
 
@@ -202,16 +202,19 @@ export default {
     subtitle: 'Information about the app and the factory',
     appTitle: 'About the App',
     description1:
-      'Marble Factory Management is a mobile application built specifically for the needs of marble factories in Mohmand, Pakistan. It helps organize the entire factory workflow — slab calculations, inventory tracking, and daily and monthly reports — right on your phone.',
+      'Al-Makkah Marble Factory Management is a mobile application built specifically for the needs of marble factories in Pakistan. It helps organize the entire factory workflow — slab calculations, inventory tracking, and daily and monthly reports — right on your phone.',
     description2:
       'The app is designed entirely in Urdu and also works offline, so factory workers and owners can use it without any difficulty.',
     features: 'Key Features',
     factoryInfo: 'Factory Information',
-    developerInfo: 'Developer Information',
+    managementTitle: 'Management & Designations',
+    otherDesignations: 'Other Designations',
+    founder: 'Co-Founder',
     factory: 'Factory',
     address: 'Address',
     phone: 'Phone',
     email: 'Email',
+    developerInfo: 'Developer Information',
     developerName: '[Add developer name]',
     developerNote: 'This is a placeholder — add real details here.',
   },
