@@ -38,7 +38,7 @@ export default function BottomNav() {
             {({ isActive }) => (
               <>
                 <Icon size={22} strokeWidth={isActive ? 2.5 : 2} />
-                <span className={`text-[10px] leading-tight ${isActive ? 'font-bold' : 'font-medium'}`}>{label}</span>
+                <span className={isActive ? 'font-bold' : 'font-medium'}>{label}</span>
               </>
             )}
           </NavLink>
