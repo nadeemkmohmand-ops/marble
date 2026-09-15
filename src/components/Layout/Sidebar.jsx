@@ -79,14 +79,14 @@ export default function Sidebar() {
         }`}
         aria-label={t('common.menu')}
       >
-        {/* brand */}
-        <div className="flex items-center gap-3 border-b border-white/10 px-5 py-5">
+        {/* brand — no truncate / no leading-tight: Nastaliq Urdu must not clip */}
+        <div className="urdu-clip-safe flex items-center gap-3 border-b border-white/10 px-5">
           <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-white">
             <Gem size={24} className="text-primary" />
           </span>
-          <div className="min-w-0 flex-1 leading-tight">
-            <p className="truncate text-base font-bold">{t('appName')}</p>
-            <p className="truncate text-[11px] text-white/50">{t('location')}</p>
+          <div className="min-w-0 flex-1">
+            <p className="text-base font-bold">{t('appName')}</p>
+            <p className="text-[11px] text-white/50">{t('location')}</p>
           </div>
           <button
             type="button"
@@ -120,7 +120,7 @@ export default function Sidebar() {
                     }
                   >
                     <Icon size={20} className="shrink-0" />
-                    <span className="truncate">{label}</span>
+                    <span>{label}</span>
                   </NavLink>
                 ))}
               </div>
