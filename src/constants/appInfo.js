@@ -6,8 +6,8 @@ import { appConfig } from '../config/app.config.js'
 export const APP_INFO = {
   name: appConfig.name,
   version: appConfig.version,
-  factory: 'Mohmand Marble Factory',
-  location: 'Mohmand, KPK, Pakistan',
+  factory: 'Al-Makkah Marble Factory',
+  location: 'KPK, Pakistan',
 }
 
 export default APP_INFO
