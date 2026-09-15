@@ -1,0 +1,30 @@
+# dependencies
+node_modules
+
+# build output
+dist
+dist-ssr
+dev-dist
+
+# tests / coverage
+coverage
+
+# caches
+.vite
+.eslintcache
+*.local
+.env
+.env.*
+!.env.example
+
+# editor / OS
+.DS_Store
+.idea
+.vscode/*
+!.vscode/extensions.json
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*

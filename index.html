@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="ur" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
+    <link rel="apple-touch-icon" sizes="512x512" href="/icons/icon-512x512.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#1E3A8A" />
+    <meta name="description" content="مہمند ماربل فیکٹری مینجمنٹ سسٹم — Mohmand marble factory management system" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="ماربل ایپ" />
+    <title>ماربل فیکٹری مینجمنٹ — Marble Factory Management</title>
+
+    <!--
+      Fonts are now SELF-HOSTED via @fontsource packages (Noto Nastaliq Urdu +
+      Inter) and imported in src/main.jsx. They are precached by the PWA
+      service worker, so the first OFFLINE launch renders correctly — the
+      previous Google Fonts CDN only worked online (runtime CacheFirst).
+    -->
+
+    <!-- Restore saved language / direction / theme before first paint (no flash) -->
+    <script>
+      try {
+        var savedLang = localStorage.getItem('mfa-lang') || 'ur'
+        document.documentElement.lang = savedLang
+        document.documentElement.dir = savedLang === 'ur' ? 'rtl' : 'ltr'
+        if (localStorage.getItem('mfa-theme') === 'dark') {
+          document.documentElement.classList.add('dark')
+        }
+      } catch (e) {
+        /* private mode — keep Urdu RTL defaults */
+      }
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

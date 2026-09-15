@@ -1,0 +1,165 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ---------- Base ---------- */
+@layer base {
+  :root {
+    color-scheme: light;
+    /* Font stacks as CSS variables (referenced by tailwind.config.js) */
+    --font-urdu: 'Noto Nastaliq Urdu';
+    --font-english: 'Inter';
+  }
+
+  html.dark {
+    color-scheme: dark;
+  }
+
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Base font size 16px, line-height 1.6 (English) */
+  body {
+    @apply bg-secondary text-text-dark antialiased;
+    font-size: 16px;
+    line-height: 1.6;
+  }
+
+  /* Urdu (default): Nastaliq script needs a more generous line-height to avoid clipping */
+  html.lang-ur body {
+    @apply font-urdu;
+    line-height: 1.9;
+  }
+
+  /* English mode: Inter first, Urdu glyphs still render through fallback */
+  html.lang-en body {
+    @apply font-english;
+  }
+
+  /* Slim custom scrollbars (WebKit + Firefox) */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: theme('colors.gray.300') transparent;
+  }
+
+  html.dark * {
+    scrollbar-color: theme('colors.gray.600') transparent;
+  }
+
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    border-radius: 9999px;
+    background-color: theme('colors.gray.300');
+  }
+
+  html.dark ::-webkit-scrollbar-thumb {
+    background-color: theme('colors.gray.600');
+  }
+
+  /* Respect users who prefer reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    ::before,
+    ::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+/* ---------- Reusable component classes ---------- */
+@layer components {
+  /* White "marble" surface: cards, modals, banners */
+  .surface {
+    @apply rounded-2xl border border-border bg-white shadow-card dark:border-gray-700 dark:bg-gray-800;
+  }
+
+  .text-main {
+    @apply text-text-dark dark:text-gray-100;
+  }
+
+  .text-muted {
+    @apply text-text-light dark:text-gray-400;
+  }
+
+  /* Shared form field styling (input / select / textarea) */
+  .field-input {
+    @apply w-full rounded-xl border border-border bg-white px-4 py-3 text-sm text-text-dark transition-colors placeholder:text-text-light focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/40 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 dark:placeholder:text-gray-500;
+  }
+
+  /* Small square icon button (edit / delete / close ...) */
+  .icon-btn {
+    @apply grid h-9 w-9 place-items-center rounded-lg text-text-light transition-colors hover:bg-secondary hover:text-primary dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white;
+  }
+
+  /* iOS safe-area padding for the bottom navigation */
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* Skip-to-content link — visible only when focused (keyboard users) */
+  .skip-link {
+    @apply fixed start-4 top-2 z-[80] -translate-y-20 rounded-xl bg-primary px-4 py-2 text-sm font-bold text-white shadow-lg transition-transform focus:translate-y-0;
+  }
+}
+
+/* ---------- Utilities ---------- */
+@layer utilities {
+  /* Soft entrance animation (results, modals, banners) */
+  .fade-up {
+    animation: fade-up 0.35s ease both;
+  }
+
+  /* Toast entrance (top-end corner) */
+  .toast-in {
+    animation: toast-in 0.25s ease both;
+  }
+
+  /* Hide scrollbars while keeping scrollability (sidebars, chips) */
+  .no-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Consistent keyboard focus ring (add to any interactive element) */
+  .focus-ring {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50;
+  }
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
