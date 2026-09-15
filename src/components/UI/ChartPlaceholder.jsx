@@ -38,7 +38,7 @@ export default function ChartPlaceholder({
           <div className="absolute inset-[22%] grid place-items-center rounded-full bg-white dark:bg-gray-800">
             <div className="text-center">
               <p className="font-english text-xl font-bold text-main">{centerValue ?? total}</p>
-              <p className="text-[10px] leading-none text-muted">{centerLabel}</p>
+              <p className="urdu-text text-[10px] text-muted">{centerLabel}</p>
             </div>
           </div>
         </div>
@@ -47,7 +47,7 @@ export default function ChartPlaceholder({
           {data.map((d, index) => (
             <li key={index} className="flex items-center gap-2.5 text-sm">
               <span className="h-3 w-3 shrink-0 rounded-sm" style={{ backgroundColor: d.color }} aria-hidden="true" />
-              <span className="min-w-0 flex-1 truncate text-main">{d.label}</span>
+              <span className="min-w-0 flex-1 text-main">{d.label}</span>
               <span className="font-english font-semibold text-muted">{d.value}%</span>
             </li>
           ))}
@@ -89,7 +89,7 @@ export default function ChartPlaceholder({
         {data.map((d, index) => (
           <span
             key={index}
-            className="flex-1 truncate text-center text-[10px] leading-tight text-muted sm:text-xs"
+            className="flex-1 text-center text-[10px] text-muted sm:text-xs"
           >
             {d.label}
           </span>
