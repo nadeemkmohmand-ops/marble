@@ -125,7 +125,7 @@ export default function Settings() {
         <ul className="divide-y divide-border dark:divide-gray-700">
           <li className="flex items-center justify-between gap-3 py-3 first:pt-0">
             <span className="text-sm text-muted">{t('set.appRowName')}</span>
-            <span className="min-w-0 truncate text-sm font-semibold text-main">{t('appName')}</span>
+            <span className="min-w-0 text-sm font-semibold text-main">{t('appName')}</span>
           </li>
           <li className="flex items-center justify-between gap-3 py-3">
             <span className="text-sm text-muted">{t('set.appRowVersion')}</span>
