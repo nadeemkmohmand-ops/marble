@@ -1,66 +1,77 @@
 import { useEffect, useState } from 'react'
 import { Download, X } from 'lucide-react'
-import Button from '../UI/Button.jsx'
+import { useLocation } from 'react-router-dom'
 import { useAppUI } from '../../context/AppUIContext.jsx'
-import { STORAGE_KEYS } from '../../constants/storageKeys.js'
-import { storageGet, storageSet } from '../../utils/storage.js'
+import { PATHS } from '../../constants/routes.js'
+import { usePwaInstall, promptInstall } from '../../utils/pwaInstall.js'
+
+/** How long the small install dialog stays visible on the main page. */
+const AUTO_DISMISS_MS = 1500 // 1.5 seconds — then it disappears on its own
 
 /**
- * InstallPrompt — "Add to Home Screen" UI.
- * Captures the browser's beforeinstallprompt event and shows a dismissible
- * banner above the bottom navigation. UI only — no complex install logic.
- * (On iOS Safari the beforeinstallprompt event never fires, so the banner
- *  simply stays hidden; users install via the Safari share menu.)
+ * InstallPrompt — SMALL dialog on the MAIN page (Home) only.
+ * Appears when the browser reports the app is installable, auto-dismisses
+ * after 1.5 s, and installs immediately when "انسٹال کریں" is tapped.
+ * A permanent "Add to Home Screen" action also lives in the user menu
+ * (UserMenu) via the shared pwaInstall capture.
  */
 export default function InstallPrompt() {
   const { t } = useAppUI()
-  const [deferredPrompt, setDeferredPrompt] = useState(null)
-  const [dismissed, setDismissed] = useState(() => storageGet(STORAGE_KEYS.INSTALL_DISMISSED, '0', { json: false }) === '1')
+  const { canInstall } = usePwaInstall()
+  const { pathname } = useLocation()
+  const [visible, setVisible] = useState(true)
 
+  // Reset visibility whenever the browser reports a fresh install prompt
   useEffect(() => {
-    const onBeforeInstallPrompt = (event) => {
-      event.preventDefault()
-      setDeferredPrompt(event)
-    }
-    window.addEventListener('beforeinstallprompt', onBeforeInstallPrompt)
-    return () => window.removeEventListener('beforeinstallprompt', onBeforeInstallPrompt)
-  }, [])
+    if (canInstall) setVisible(true)
+  }, [canInstall])
+
+  // Auto-dismiss after 1.5 s (unless the user taps Install)
+  useEffect(() => {
+    if (!visible) return undefined
+    const timer = setTimeout(() => setVisible(false), AUTO_DISMISS_MS)
+    return () => clearTimeout(timer)
+  }, [visible])
+
+  // Main page only — the dialog should not follow the user around
+  if (pathname !== PATHS.HOME || !canInstall || !visible) return null
 
   const handleInstall = async () => {
-    if (!deferredPrompt) return
-    deferredPrompt.prompt()
-    setDeferredPrompt(null)
+    setVisible(false)
+    await promptInstall()
   }
-
-  const handleDismiss = () => {
-    setDismissed(true)
-    storageSet(STORAGE_KEYS.INSTALL_DISMISSED, '1', { json: false })
-  }
-
-  if (!deferredPrompt || dismissed) return null
 
   return (
     <div
-      className="fixed inset-x-4 bottom-24 z-40 md:bottom-6 md:mx-auto md:max-w-md"
+      className="fixed inset-x-4 bottom-24 z-40 md:bottom-6 md:mx-auto md:max-w-xs"
       role="dialog"
       aria-label={t('pwa.installTitle')}
     >
-      <div className="surface fade-up flex items-center gap-3 p-3.5 shadow-lg">
-        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-primary text-white">
-          <Download size={20} />
+      <div className="surface fade-up flex items-center gap-3 p-3 shadow-lg">
+        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-primary text-white">
+          <Download size={18} />
         </span>
 
         <div className="min-w-0 flex-1">
           <p className="text-sm font-bold text-main">{t('pwa.installTitle')}</p>
-          <p className="text-xs text-muted">{t('pwa.installDesc')}</p>
+          <p className="text-[11px] text-muted">{t('pwa.addToHome')}</p>
         </div>
 
-        <Button size="sm" variant="accent" onClick={handleInstall}>
+        <button
+          type="button"
+          onClick={handleInstall}
+          className="shrink-0 rounded-lg bg-accent px-3 py-1.5 text-xs font-bold text-white transition-colors hover:bg-accent-light"
+        >
           {t('pwa.install')}
-        </Button>
+        </button>
 
-        <button type="button" onClick={handleDismiss} className="icon-btn" aria-label={t('common.close')}>
-          <X size={16} />
+        <button
+          type="button"
+          onClick={() => setVisible(false)}
+          className="icon-btn h-6 w-6 shrink-0"
+          aria-label={t('common.close')}
+        >
+          <X size={14} />
         </button>
       </div>
     </div>
