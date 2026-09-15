@@ -1,10 +1,11 @@
-import { User } from 'lucide-react'
+import { Smartphone, User } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAppUI } from '../../context/AppUIContext.jsx'
 import { useToast } from '../../context/ToastContext.jsx'
 import { useClickOutside } from '../../hooks/useClickOutside.js'
 import { useKeyboard } from '../../hooks/useKeyboard.js'
+import { promptInstall, usePwaInstall } from '../../utils/pwaInstall.js'
 
 /**
  * UserMenu — avatar + dropdown placeholder in the Header (user identity spot).
@@ -13,6 +14,7 @@ import { useKeyboard } from '../../hooks/useKeyboard.js'
 export default function UserMenu() {
   const { t } = useAppUI()
   const { toast } = useToast()
+  const { canInstall } = usePwaInstall()
   const [open, setOpen] = useState(false)
   const menuRef = useRef(null)
 
@@ -24,6 +26,17 @@ export default function UserMenu() {
     { icon: null, label: t('nav.settings'), to: '/settings' },
     { icon: null, label: t('nav.about'), to: '/about' },
   ]
+
+  const handleAddToHome = async () => {
+    setOpen(false)
+    const outcome = await promptInstall()
+    if (outcome === 'accepted') {
+      toast({ type: 'success', message: t('pwa.installSuccess') })
+    } else if (outcome === 'unavailable') {
+      // iOS Safari etc. — guide the user to the browser menu
+      toast({ type: 'info', message: t('pwa.installManual') })
+    }
+  }
 
   return (
     <div ref={menuRef} className="relative">
@@ -58,6 +71,20 @@ export default function UserMenu() {
               {label}
             </Link>
           ))}
+
+          {/* Add to Home Screen — triggers the native install prompt
+              (captured globally in utils/pwaInstall.js) */}
+          {canInstall && (
+            <button
+              type="button"
+              role="menuitem"
+              onClick={handleAddToHome}
+              className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-semibold text-primary transition-colors hover:bg-secondary dark:text-primary-light dark:hover:bg-gray-700"
+            >
+              <Smartphone size={16} aria-hidden="true" />
+              {t('pwa.addToHome')}
+            </button>
+          )}
 
           <button
             type="button"
