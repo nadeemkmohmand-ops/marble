@@ -86,7 +86,7 @@ export default function Reports() {
               <Icon size={24} className={`shrink-0 ${item.cls}`} aria-hidden="true" />
               <div className="min-w-0">
                 <p className="font-english text-lg font-bold leading-tight text-main sm:text-xl">{item.value}</p>
-                <p className="truncate text-[11px] text-muted">
+                <p className="text-[11px] text-muted">
                   {t(item.labelKey)} {pick(item.unit) ? `(${pick(item.unit)})` : ''}
                 </p>
               </div>
