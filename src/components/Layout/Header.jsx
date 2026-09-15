@@ -18,7 +18,8 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-30 bg-primary text-white shadow-md">
-      <div className="mx-auto flex h-16 max-w-[1280px] items-center gap-2 px-4 sm:px-6">
+      {/* min-height instead of fixed height — Urdu brand text needs vertical room */}
+      <div className="mx-auto flex min-h-16 items-center gap-2 px-4 py-2 sm:px-6">
         {/* hamburger — hidden on desktop (sidebar is fixed there) */}
         <button
           type="button"
@@ -29,14 +30,14 @@ export default function Header() {
           <Menu size={22} />
         </button>
 
-        {/* brand */}
+        {/* brand — no truncate / no leading-tight: Nastaliq Urdu must not clip */}
         <div className="flex min-w-0 items-center gap-2.5">
           <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white/10 ring-1 ring-white/20">
             <Gem size={22} className="text-accent-light" />
           </span>
-          <div className="min-w-0 leading-tight">
-            <p className="truncate text-base font-bold">{t('factoryName')}</p>
-            <p className="truncate text-[11px] text-white/60">{t('tagline')}</p>
+          <div className="min-w-0">
+            <p className="text-base font-bold">{t('factoryName')}</p>
+            <p className="text-[11px] text-white/60">{t('tagline')}</p>
           </div>
         </div>
 
@@ -51,7 +52,7 @@ export default function Header() {
               aria-label={t('common.search')}
             >
               <Search size={16} aria-hidden="true" />
-              <span className="truncate">{t('header.search')}</span>
+              <span>{t('header.search')}</span>
             </button>
           </Tooltip>
 
