@@ -79,8 +79,9 @@ export default function Sidebar() {
         }`}
         aria-label={t('common.menu')}
       >
-        {/* brand — no truncate / no leading-tight: Nastaliq Urdu must not clip */}
-        <div className="urdu-clip-safe flex items-center gap-3 border-b border-white/10 px-5">
+        {/* brand — no truncate / no leading-tight: Nastaliq Urdu must not clip.
+            shrink-0 keeps the brand intact while the nav below scrolls. */}
+        <div className="urdu-clip-safe flex shrink-0 items-center gap-3 border-b border-white/10 px-5">
           <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-white">
             <Gem size={24} className="text-primary" />
           </span>
@@ -98,8 +99,10 @@ export default function Sidebar() {
           </button>
         </div>
 
-        {/* navigation — grouped sections */}
-        <nav className="flex-1 space-y-4 overflow-y-auto px-3 py-4">
+        {/* navigation — grouped sections. min-h-0 + overflow-y-auto:
+            the ONLY scrollable part of the sidebar, so every item and the
+            footer stay reachable on short screens. */}
+        <nav className="no-scrollbar min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain px-3 py-4">
           {sections.map((section) => (
             <div key={section.label}>
               <p className="px-3.5 pb-1.5 text-[10px] font-bold uppercase tracking-wider text-white/40">
@@ -129,8 +132,8 @@ export default function Sidebar() {
         </nav>
 
         {/* footer */}
-        <div className="border-t border-white/10 px-5 py-4">
-          <p className="text-[11px] leading-relaxed text-white/50">
+        <div className="urdu-clip-safe shrink-0 border-t border-white/10 px-5">
+          <p className="text-[11px] text-white/50">
             {t('version')} — {t('appShortName')}
           </p>
         </div>
