@@ -2,10 +2,13 @@ import { Smartphone, User } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAppUI } from '../../context/AppUIContext.jsx'
+import { useAuth } from '../../context/index.jsx'
 import { useToast } from '../../context/ToastContext.jsx'
 import { useClickOutside } from '../../hooks/useClickOutside.js'
 import { useKeyboard } from '../../hooks/useKeyboard.js'
-import { promptInstall, usePwaInstall } from '../../utils/pwaInstall.js'
+// promptInstall + usePwaInstall live INSIDE InstallPrompt.jsx now
+// (utils/pwaInstall.js was merged there — one less file to deploy)
+import { promptInstall, usePwaInstall } from '../PWA/InstallPrompt.jsx'
 
 /**
  * UserMenu — avatar + dropdown placeholder in the Header (user identity spot).
@@ -15,6 +18,7 @@ export default function UserMenu() {
   const { t } = useAppUI()
   const { toast } = useToast()
   const { canInstall } = usePwaInstall()
+  const { signOut } = useAuth()
   const [open, setOpen] = useState(false)
   const menuRef = useRef(null)
 
@@ -73,7 +77,7 @@ export default function UserMenu() {
           ))}
 
           {/* Add to Home Screen — triggers the native install prompt
-              (captured globally in utils/pwaInstall.js) */}
+              (captured globally inside PWA/InstallPrompt.jsx) */}
           {canInstall && (
             <button
               type="button"
@@ -89,9 +93,10 @@ export default function UserMenu() {
           <button
             type="button"
             role="menuitem"
-            onClick={() => {
+            onClick={async () => {
               setOpen(false)
-              toast({ type: 'info', message: t('toast.demoLogout') })
+              await signOut()
+              toast({ type: 'info', message: t('auth.signedOut') })
             }}
             className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-semibold text-error transition-colors hover:bg-error/10"
           >
