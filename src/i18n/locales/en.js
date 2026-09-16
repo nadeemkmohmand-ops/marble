@@ -72,6 +72,7 @@ export default {
     shift: 'Shift',
     attendance: 'Attendance',
     note: 'Note',
+    optional: 'optional',
   },
 
   // Home / Dashboard
@@ -97,15 +98,29 @@ export default {
     newCalculation: 'New Calculation',
     slabLength: 'Slab Length',
     slabWidth: 'Slab Width',
+    pieceLength: 'Piece Length',
+    pieceWidth: 'Piece Width',
     pieceSize: 'Desired Piece Size',
     quantity: 'Quantity',
     calculate: 'Calculate',
     result: 'Result',
     waste: 'Waste',
+    wastePercent: 'Cutting Waste Allowance',
+    wasteHint: 'loss while cutting — try 10%',
+    requested: 'Pieces Needed',
+    perSlab: 'Per Slab',
+    slabsNeeded: 'Slabs Needed',
+    actualWaste: 'Actual Waste',
     totalArea: 'Total Area',
     piecesCount: 'Number of Pieces',
     history: 'History',
-    unitFeet: 'feet',
+    unitFeet: 'ft',
+    unitInch: 'in',
+    unitMm: 'mm',
+    saveHistory: 'Save to History',
+    savedToHistory: 'Calculation saved',
+    historyEmpty: 'No saved calculations yet',
+    invalidInput: 'Please check the entered sizes',
   },
 
   // Inventory
@@ -114,15 +129,22 @@ export default {
     id: 'ID',
     location: 'Location',
     addNewSlab: 'Add New Slab',
-    searchPlaceholder: 'Search by ID or size…',
-    filterSize: 'Filter by size',
+    searchPlaceholder: 'Search by size, material, location…',
+    filterSize: 'Filter by material',
     filterThickness: 'Filter by thickness',
     low: 'Low',
     modalTitle: 'Add New Slab',
-    modalNote: 'This is a demo form — the Save button does not store any data.',
+    editTitle: 'Edit Slab',
+    material: 'Material',
+    material_white: 'White Marble',
+    material_grey: 'Grey Marble',
+    material_yellow: 'Yellow Marble',
+    material_black: 'Black Marble',
+    material_other: 'Other',
+    threshold: 'Low-stock threshold',
   },
 
-  // Orders (placeholder page)
+  // Orders
   orders: {
     subtitle: 'Order list and their status',
     newOrder: 'New Order',
@@ -130,31 +152,73 @@ export default {
     statusCutting: 'Cutting',
     statusReady: 'Ready',
     statusDelivered: 'Delivered',
+    status_pending: 'Pending',
+    status_cutting: 'Cutting',
+    status_ready: 'Ready',
+    status_delivered: 'Delivered',
+    advanceHint: 'Move to the next stage',
+    dueDate: 'Due Date',
+    addItem: 'Add Another Item',
+    itemDescription: 'Item Description',
+    fromInventory: 'From Inventory',
+    unitPrice: 'Unit Price',
+    orderTotal: 'Order Total',
+    noItems: 'Add at least one item with a quantity',
+    noCustomer: 'Create a customer first — orders belong to a customer',
   },
 
-  // Customers (placeholder page)
+  // Customers
   customers: {
     subtitle: 'Customer list and ledger summary',
     newCustomer: 'New Customer',
+    editTitle: 'Edit Customer',
     searchPlaceholder: 'Search by name or phone…',
+    paymentBtn: 'Record Payment',
+    method: 'Payment Method',
+    method_cash: 'Cash',
+    method_bank: 'Bank Transfer',
+    method_easypaisa: 'Easypaisa',
+    method_jazzcash: 'JazzCash',
+    method_other: 'Other',
+    orderTotal: 'Orders Total',
+    paidTotal: 'Paid',
+    currentBalance: 'Current balance',
+    balanceHint: 'Balance = orders − payments (always calculated, never stored)',
   },
 
-  // Workers (placeholder page)
+  // Workers
   workers: {
     subtitle: 'Staff list, shifts and attendance',
     present: 'Present',
     absent: 'Absent',
-    attendanceToday: "Today's Attendance",
+    attendanceToday: 'Attendance',
+    attendanceDate: 'Attendance Date',
+    addWorker: 'New Worker',
+    editTitle: 'Edit Worker',
+    wage: 'Daily Wage',
+    active: 'Currently working',
+    inactive: 'Inactive',
+    shift_morning: 'Morning',
+    shift_evening: 'Evening',
+    shift_night: 'Night',
   },
 
-  // Expenses (placeholder page)
+  // Expenses
   expenses: {
     subtitle: 'Monthly factory expense record',
     addExpense: 'Add Expense',
+    editTitle: 'Edit Expense',
     electricity: 'Electricity',
     labor: 'Labor',
     transport: 'Transport',
     other: 'Other',
+    cat_electricity: 'Electricity',
+    cat_labor: 'Labor',
+    cat_transport: 'Transport',
+    cat_material: 'Material',
+    cat_maintenance: 'Maintenance',
+    cat_rent: 'Rent',
+    cat_other: 'Other',
     monthTotal: 'Total Expenses This Month',
   },
 
@@ -190,10 +254,16 @@ export default {
     exportExcel: 'Export Excel',
     productionChart: 'Weekly Production Chart',
     productionChartMonthly: 'Monthly Production Chart',
+    productionByDay: 'Pieces per Day (from orders)',
+    inventoryByMaterial: 'Stock by Material (live)',
     slabTypes: 'Slab Types',
     totalProduction: 'Total Production',
     slabsUsed: 'Slabs Used',
-    revenue: 'Revenue',
+    revenue: 'Revenue (payments received)',
+    ordersCount: 'Orders',
+    piecesTile: 'Pieces Ordered',
+    avgWaste: 'Avg. Cutting Waste',
+    noData: 'No data for this period yet',
     wasteRate: 'Waste Rate',
   },
 
@@ -257,6 +327,26 @@ export default {
     reload: 'Reload',
   },
 
+  // Database (Supabase) feedback
+  db: {
+    error: 'Could not load data',
+    saveFailed: 'Could not save',
+    deleteFailed: 'Could not delete',
+    saved: 'Saved successfully',
+    deleted: 'Deleted successfully',
+    saving: 'Saving…',
+    retry: 'Try again',
+    notConfigured: 'Database is not connected — copy .env.example to .env and add VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY',
+  },
+
+  // Auth feedback
+  auth: {
+    signedIn: 'Welcome back!',
+    signedOut: 'You have been signed out',
+    invalid: 'Wrong email or password',
+    signingIn: 'Signing in…',
+  },
+
   // Async states (Skeleton / EmptyState / ErrorState / PageLoader)
   states: {
     loading: 'Loading…',
@@ -291,15 +381,15 @@ export default {
     backHome: 'Back to Home',
   },
 
-  // Login (placeholder screen)
+  // Login
   login: {
     title: 'Login',
     subtitle: 'Sign in to continue',
-    username: 'Username or email',
+    username: 'Email',
     password: 'Password',
     remember: 'Remember me',
     submit: 'Login',
-    note: 'Demo screen — real authentication will be added in a later version.',
+    note: 'The admin account is created by the owner in the Supabase Dashboard.',
   },
 
   // Header / user menu
