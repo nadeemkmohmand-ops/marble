@@ -77,6 +77,7 @@ export default {
     shift: 'شفٹ',
     attendance: 'حاضری',
     note: 'نوٹ',
+    optional: 'اختیاری',
   },
 
   // Home / Dashboard
@@ -102,15 +103,29 @@ export default {
     newCalculation: 'نیا حساب',
     slabLength: 'سلیب کی لمبائی',
     slabWidth: 'سلیب کی چوڑائی',
+    pieceLength: 'ٹکڑے کی لمبائی',
+    pieceWidth: 'ٹکڑے کی چوڑائی',
     pieceSize: 'مطلوبہ ٹکڑے کا سائز',
     quantity: 'تعداد',
     calculate: 'حساب لگائیں',
     result: 'نتیجہ',
     waste: 'ضائع',
+    wastePercent: 'کٹنگ ضائع ہونے کا فیصد',
+    wasteHint: 'کٹنگ کے دوران نقصان — ۱۰٪ آزمائیں',
+    requested: 'درکار ٹکڑے',
+    perSlab: 'فی سلیب',
+    slabsNeeded: 'درکار سلیبز',
+    actualWaste: 'اصل ضائع',
     totalArea: 'کل رقبہ',
     piecesCount: 'ٹکڑوں کی تعداد',
     history: 'سابقہ حسابات',
     unitFeet: 'فٹ',
+    unitInch: 'انچ',
+    unitMm: 'ملی میٹر',
+    saveHistory: 'سابقہ میں محفوظ کریں',
+    savedToHistory: 'حساب محفوظ ہو گیا',
+    historyEmpty: 'ابھی کوئی حساب محفوظ نہیں ہوا',
+    invalidInput: 'براہ کرم درج سائز چیک کریں',
   },
 
   // Inventory
@@ -119,16 +134,22 @@ export default {
     id: 'آئی ڈی',
     location: 'مقام',
     addNewSlab: 'نیا سلیب شامل کریں',
-    searchPlaceholder: 'آئی ڈی یا سائز سے تلاش کریں…',
-    filterSize: 'سائز کے مطابق',
+    searchPlaceholder: 'سائز، قسم یا مقام سے تلاش کریں…',
+    filterSize: 'قسم کے مطابق',
     filterThickness: 'موٹائی کے مطابق',
     low: 'کم',
     modalTitle: 'نیا سلیب شامل کریں',
-    modalNote:
-      'یہ صرف ڈیمو فارم ہے — محفوظ کریں کا بٹن کوئی ڈیٹا محفوظ نہیں کرتا۔',
+    editTitle: 'سلیب میں ترمیم',
+    material: 'قسم',
+    material_white: 'سفید ماربل',
+    material_grey: 'سرمئی ماربل',
+    material_yellow: 'زرد ماربل',
+    material_black: 'کالا ماربل',
+    material_other: 'دیگر',
+    threshold: 'کم اسٹاک کی حد',
   },
 
-  // Orders (placeholder page)
+  // Orders
   orders: {
     subtitle: 'آرڈرز کی فہرست اور ان کی سٹیٹس',
     newOrder: 'نیا آرڈر',
@@ -136,31 +157,73 @@ export default {
     statusCutting: 'کٹنگ میں',
     statusReady: 'تیار',
     statusDelivered: 'ڈیلیور ہو گیا',
+    status_pending: 'زیر التوا',
+    status_cutting: 'کٹنگ میں',
+    status_ready: 'تیار',
+    status_delivered: 'ڈیلیور ہو گیا',
+    advanceHint: 'اگلے مرحلے پر بھیجیں',
+    dueDate: 'مقررہ تاریخ',
+    addItem: 'مزید آئٹم شامل کریں',
+    itemDescription: 'آئٹم کی تفصیل',
+    fromInventory: 'ذخیرے سے',
+    unitPrice: 'فی یونٹ قیمت',
+    orderTotal: 'آرڈر کی کل',
+    noItems: 'کم از کم ایک آئٹم تعداد کے ساتھ شامل کریں',
+    noCustomer: 'پہلے گاہک بنائیں — ہر آرڈر کسی گاہک سے جڑا ہوتا ہے',
   },
 
-  // Customers (placeholder page)
+  // Customers
   customers: {
     subtitle: 'گاہکوں کی فہرست اور لیجر کا خلاصہ',
     newCustomer: 'نیا گاہک',
+    editTitle: 'گاہک میں ترمیم',
     searchPlaceholder: 'نام یا فون نمبر سے تلاش کریں…',
+    paymentBtn: 'ادائیگی درج کریں',
+    method: 'ادائیگی کا طریقہ',
+    method_cash: 'نقد',
+    method_bank: 'بینک ٹرانسفر',
+    method_easypaisa: 'ایزی پیسہ',
+    method_jazzcash: 'جاز کیش',
+    method_other: 'دیگر',
+    orderTotal: 'آرڈرز کی کل',
+    paidTotal: 'ادا شدہ',
+    currentBalance: 'موجودہ توازن',
+    balanceHint: 'توازن = آرڈرز منفی ادائیگیاں (ہمیشہ حساب سے، کبھی محفوظ نہیں)',
   },
 
-  // Workers (placeholder page)
+  // Workers
   workers: {
     subtitle: 'عملے کی فہرست، شفٹ اور حاضری',
     present: 'حاضر',
     absent: 'غیر حاضر',
-    attendanceToday: 'آج کی حاضری',
+    attendanceToday: 'حاضری',
+    attendanceDate: 'حاضری کی تاریخ',
+    addWorker: 'نیا ورکر',
+    editTitle: 'ورکر میں ترمیم',
+    wage: 'روزانہ اجرت',
+    active: 'اس وقت کام کر رہا ہے',
+    inactive: 'غیر فعال',
+    shift_morning: 'صبح',
+    shift_evening: 'شام',
+    shift_night: 'رات',
   },
 
-  // Expenses (placeholder page)
+  // Expenses
   expenses: {
     subtitle: 'فیکٹری کے ماہانہ اخراجات کا ریکارڈ',
     addExpense: 'نیا خرچ شامل کریں',
+    editTitle: 'خرچ میں ترمیم',
     electricity: 'بجلی',
     labor: 'مزدوری',
     transport: 'ٹرانسپورٹ',
     other: 'دیگر',
+    cat_electricity: 'بجلی',
+    cat_labor: 'مزدوری',
+    cat_transport: 'ٹرانسپورٹ',
+    cat_material: 'مال',
+    cat_maintenance: 'مرمت',
+    cat_rent: 'کرایہ',
+    cat_other: 'دیگر',
     monthTotal: 'اس ماہ کے کل اخراجات',
   },
 
@@ -196,10 +259,16 @@ export default {
     exportExcel: 'ایکسل ایکسپورٹ',
     productionChart: 'ہفتہ وار پیداواری کا گراف',
     productionChartMonthly: 'ماہانہ پیداواری کا گراف',
+    productionByDay: 'روزانہ ٹکڑے (آرڈرز سے)',
+    inventoryByMaterial: 'قسم کے لحاظ سے اسٹاک (براہ راست)',
     slabTypes: 'سلیب کی اقسام',
     totalProduction: 'کل پیداواری',
     slabsUsed: 'استعمال شدہ سلیبز',
-    revenue: 'کل آمدنی',
+    revenue: 'آمدنی (وصول شدہ ادائیگیاں)',
+    ordersCount: 'آرڈرز',
+    piecesTile: 'آرڈر شدہ ٹکڑے',
+    avgWaste: 'اوسط کٹنگ ضائع',
+    noData: 'اس عرصے کا کوئی ڈیٹا موجود نہیں',
     wasteRate: 'ضائع کی شرح',
   },
 
@@ -263,6 +332,26 @@ export default {
     reload: 'ری لوڈ کریں',
   },
 
+  // Database (Supabase) feedback
+  db: {
+    error: 'ڈیٹا لوڈ نہیں ہو سکا',
+    saveFailed: 'محفوظ نہیں ہو سکا',
+    deleteFailed: 'حذف نہیں ہو سکا',
+    saved: 'کامیابی سے محفوظ ہو گیا',
+    deleted: 'کامیابی سے حذف ہو گیا',
+    saving: 'محفوظ ہو رہا ہے…',
+    retry: 'دوبارہ کوشش کریں',
+    notConfigured: 'ڈیٹابیس جڑا نہیں ہے — .env.example کو .env بنا کر VITE_SUPABASE_URL اور VITE_SUPABASE_ANON_KEY شامل کریں',
+  },
+
+  // Auth feedback
+  auth: {
+    signedIn: 'خوش آمدید!',
+    signedOut: 'آپ لاگ آؤٹ ہو گئے',
+    invalid: 'ای میل یا پاس ورڈ غلط ہے',
+    signingIn: 'لاگ ان ہو رہا ہے…',
+  },
+
   // Async states (Skeleton / EmptyState / ErrorState / PageLoader)
   states: {
     loading: 'لوڈ ہو رہا ہے…',
@@ -297,15 +386,15 @@ export default {
     backHome: 'ہوم پر واپس جائیں',
   },
 
-  // Login (placeholder screen)
+  // Login
   login: {
     title: 'لاگ ان',
     subtitle: 'جاری رکھنے کے لیے سائن ان کریں',
-    username: 'یوزر نیم یا ای میل',
+    username: 'ای میل',
     password: 'پاس ورڈ',
     remember: 'مجھے یاد رکھیں',
     submit: 'لاگ ان',
-    note: 'ڈیمو اسکرین — اصل آتھینٹیکیشن ایک بعد کے ورژن میں شامل ہوگی۔',
+    note: 'ایڈمن اکاؤنٹ مالک خود Supabase ڈیش بورڈ میں بناتا ہے۔',
   },
 
   // Header / user menu
