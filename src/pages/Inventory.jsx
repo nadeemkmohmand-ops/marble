@@ -1,48 +1,193 @@
-import { useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Pencil, Plus, Search, Trash2 } from 'lucide-react'
 import Button from '../components/UI/Button.jsx'
 import Card from '../components/UI/Card.jsx'
 import ConfirmDialog from '../components/Feedback/ConfirmDialog.jsx'
+import ErrorState from '../components/States/ErrorState.jsx'
 import Modal from '../components/UI/Modal.jsx'
 import PageHeader from '../components/UI/PageHeader.jsx'
 import { Field, Input, Select } from '../components/UI/Input.jsx'
 import Table from '../components/UI/Table.jsx'
 import { useAppUI } from '../context/AppUIContext.jsx'
 import { useToast } from '../context/ToastContext.jsx'
-import {
-  inventoryItems,
-  locationOptions,
-  sizeOptions,
-  thicknessOptions,
-} from '../data/placeholderData.js'
+import { inventoryApi } from '../services/apiClient.js'
+
+/** Bilingual labels for the material enum (schema.sql check constraint). */
+const MATERIALS = ['white', 'grey', 'yellow', 'black', 'other']
+
+const BLANK_FORM = {
+  material: 'white',
+  length_ft: '8',
+  width_ft: '4',
+  thickness_mm: '18',
+  quantity: '0',
+  low_stock_threshold: '5',
+  location: '',
+}
 
 /**
- * Inventory (ذخیرہ) — stock management UI with search, filters,
- * a static table and an "Add New Slab" modal (no save logic).
+ * Inventory (ذخیرہ) — live slab stock from Supabase with search, filters,
+ * add/edit modal and delete. low-stock flag = quantity <= threshold
+ * (computed by the database itself).
  */
 export default function Inventory() {
-  const { t, pick } = useAppUI()
+  const { t } = useAppUI()
   const { toast } = useToast()
-  const [modalOpen, setModalOpen] = useState(false)
+
+  const [rows, setRows] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+
+  const [search, setSearch] = useState('')
+  const [materialFilter, setMaterialFilter] = useState('all')
+  const [thicknessFilter, setThicknessFilter] = useState('all')
+
+  const [formOpen, setFormOpen] = useState(false)
+  const [editing, setEditing] = useState(null) // row being edited, or null = create
+  const [form, setForm] = useState(BLANK_FORM)
+  const [saving, setSaving] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState(null)
+
+  const load = useCallback(async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      setRows(await inventoryApi.list())
+    } catch (loadError) {
+      setError(loadError)
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    load()
+  }, [load])
+
+  const thicknessValues = useMemo(
+    () => [...new Set(rows.map((row) => row.thickness_mm))].sort((a, b) => a - b),
+    [rows]
+  )
+
+  const visible = useMemo(() => {
+    const q = search.trim().toLowerCase()
+    return rows.filter((row) => {
+      if (materialFilter !== 'all' && row.material !== materialFilter) return false
+      if (thicknessFilter !== 'all' && String(row.thickness_mm) !== thicknessFilter) return false
+      if (!q) return true
+      const haystack = [
+        row.id,
+        row.material,
+        row.location || '',
+        `${row.length_ft} × ${row.width_ft}`,
+      ]
+        .join(' ')
+        .toLowerCase()
+      return haystack.includes(q)
+    })
+  }, [rows, search, materialFilter, thicknessFilter])
+
+  const openCreate = () => {
+    setEditing(null)
+    setForm(BLANK_FORM)
+    setFormOpen(true)
+  }
+
+  const openEdit = (row) => {
+    setEditing(row)
+    setForm({
+      material: row.material,
+      length_ft: String(row.length_ft),
+      width_ft: String(row.width_ft),
+      thickness_mm: String(row.thickness_mm),
+      quantity: String(row.quantity),
+      low_stock_threshold: String(row.low_stock_threshold),
+      location: row.location || '',
+    })
+    setFormOpen(true)
+  }
+
+  const handleSubmit = async (event) => {
+    event.preventDefault()
+    setSaving(true)
+    const values = {
+      material: form.material,
+      length_ft: Number(form.length_ft),
+      width_ft: Number(form.width_ft),
+      thickness_mm: Number(form.thickness_mm),
+      quantity: Number(form.quantity),
+      low_stock_threshold: Number(form.low_stock_threshold),
+      location: form.location.trim() || null,
+    }
+    try {
+      if (editing) {
+        await inventoryApi.update(editing.id, values)
+      } else {
+        await inventoryApi.create(values)
+      }
+      toast({ type: 'success', message: t('db.saved') })
+      setFormOpen(false)
+      await load()
+    } catch (saveError) {
+      toast({ type: 'error', message: `${t('db.saveFailed')}: ${saveError.message}` })
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return
+    try {
+      await inventoryApi.remove(deleteTarget.id)
+      toast({ type: 'success', message: t('db.deleted') })
+      await load()
+    } catch (deleteError) {
+      toast({ type: 'error', message: `${t('db.deleteFailed')}: ${deleteError.message}` })
+    } finally {
+      setDeleteTarget(null)
+    }
+  }
 
   const columns = [
     {
       key: 'id',
       header: t('inv.id'),
       render: (row) => (
-        <span className="font-english font-semibold text-primary dark:text-primary-light">{row.id}</span>
+        <span className="font-english font-semibold text-primary dark:text-primary-light">
+          #{row.id}
+        </span>
       ),
     },
-    { key: 'size', header: t('common.size'), render: (row) => pick(row.size) },
-    { key: 'thickness', header: t('common.thickness'), render: (row) => pick(row.thickness) },
+    {
+      key: 'material',
+      header: t('inv.material'),
+      render: (row) => t(`inv.material_${row.material}`) || row.material,
+    },
+    {
+      key: 'size',
+      header: t('common.size'),
+      render: (row) => (
+        <span className="font-english" dir="ltr">
+          {row.length_ft} × {row.width_ft} {t('calc.unitFeet')}
+        </span>
+      ),
+    },
+    {
+      key: 'thickness',
+      header: t('common.thickness'),
+      render: (row) => (
+        <span className="font-english" dir="ltr">
+          {row.thickness_mm} {t('calc.unitMm')}
+        </span>
+      ),
+    },
     {
       key: 'quantity',
       header: t('common.quantity'),
       render: (row) => (
         <span className="inline-flex items-center gap-2">
           <span className="font-english font-semibold">{row.quantity}</span>
-          {row.low && (
+          {row.is_low_stock && (
             <span className="rounded-full bg-warning/15 px-2 py-0.5 text-[10px] font-bold text-warning-dark dark:text-warning">
               {t('inv.low')}
             </span>
@@ -50,14 +195,18 @@ export default function Inventory() {
         </span>
       ),
     },
-    { key: 'location', header: t('inv.location'), render: (row) => pick(row.location) },
+    {
+      key: 'location',
+      header: t('inv.location'),
+      render: (row) => row.location || '—',
+    },
     {
       key: 'actions',
       header: t('common.actions'),
       className: 'text-end',
       render: (row) => (
         <span className="inline-flex items-center gap-1">
-          <button type="button" className="icon-btn" aria-label={t('common.edit')}>
+          <button type="button" className="icon-btn" aria-label={t('common.edit')} onClick={() => openEdit(row)}>
             <Pencil size={16} />
           </button>
           <button
@@ -80,14 +229,14 @@ export default function Inventory() {
         en="Inventory"
         subtitle={t('inv.subtitle')}
         action={
-          <Button variant="accent" onClick={() => setModalOpen(true)}>
+          <Button variant="accent" onClick={openCreate}>
             <Plus size={18} />
             {t('inv.addNewSlab')}
           </Button>
         }
       />
 
-      {/* search + filters (UI only) */}
+      {/* search + filters */}
       <Card>
         <div className="grid gap-3 md:grid-cols-3">
           <div className="relative">
@@ -96,106 +245,166 @@ export default function Inventory() {
               className="absolute start-3.5 top-1/2 -translate-y-1/2 text-text-light"
               aria-hidden="true"
             />
-            <Input type="search" placeholder={t('inv.searchPlaceholder')} className="ps-10" />
+            <Input
+              type="search"
+              placeholder={t('inv.searchPlaceholder')}
+              className="ps-10"
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+            />
           </div>
 
-          <Select defaultValue="all" aria-label={t('inv.filterSize')}>
-            <option value="all">{t('common.size')}: {t('common.all')}</option>
-            {sizeOptions.map((option, index) => (
-              <option key={index} value={pick(option)}>
-                {pick(option)}
+          <Select
+            value={materialFilter}
+            onChange={(event) => setMaterialFilter(event.target.value)}
+            aria-label={t('inv.filterSize')}
+          >
+            <option value="all">{t('inv.material')}: {t('common.all')}</option>
+            {MATERIALS.map((material) => (
+              <option key={material} value={material}>
+                {t(`inv.material_${material}`)}
               </option>
             ))}
           </Select>
 
-          <Select defaultValue="all" aria-label={t('inv.filterThickness')}>
+          <Select
+            value={thicknessFilter}
+            onChange={(event) => setThicknessFilter(event.target.value)}
+            aria-label={t('inv.filterThickness')}
+          >
             <option value="all">{t('common.thickness')}: {t('common.all')}</option>
-            {thicknessOptions.map((option, index) => (
-              <option key={index} value={pick(option)}>
-                {pick(option)}
+            {thicknessValues.map((value) => (
+              <option key={value} value={String(value)}>
+                {value} {t('calc.unitMm')}
               </option>
             ))}
           </Select>
         </div>
       </Card>
 
-      {/* table */}
-      <Table columns={columns} rows={inventoryItems} />
+      {/* table / loading / error */}
+      {loading ? (
+        <Card>
+          <p className="py-10 text-center text-sm text-muted">{t('states.loading')}</p>
+        </Card>
+      ) : error ? (
+        <ErrorState title={t('db.error')} description={error.message} retryLabel={t('db.retry')} onRetry={load} />
+      ) : visible.length > 0 ? (
+        <Table columns={columns} rows={visible} />
+      ) : (
+        <Card>
+          <p className="py-10 text-center text-sm text-muted">{t('states.empty')}</p>
+        </Card>
+      )}
 
-      {/* add new slab modal (no save logic) */}
+      {/* add / edit slab modal */}
       <Modal
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        title={t('inv.modalTitle')}
+        open={formOpen}
+        onClose={() => setFormOpen(false)}
+        title={editing ? t('inv.editTitle') : t('inv.modalTitle')}
         footer={
           <>
-            <Button variant="secondary" onClick={() => setModalOpen(false)}>
+            <Button variant="secondary" onClick={() => setFormOpen(false)}>
               {t('common.cancel')}
             </Button>
-            <Button type="submit" form="add-slab-form">
-              {t('common.save')}
+            <Button type="submit" form="slab-form" disabled={saving}>
+              {saving ? t('db.saving') : t('common.save')}
             </Button>
           </>
         }
       >
-        <form
-          id="add-slab-form"
-          className="grid gap-4"
-          onSubmit={(event) => {
-            event.preventDefault()
-            setModalOpen(false)
-          }}
-        >
-          <Field label={t('common.size')} required>
-            <Select defaultValue={pick(sizeOptions[0])}>
-              {sizeOptions.map((option, index) => (
-                <option key={index} value={pick(option)}>
-                  {pick(option)}
+        <form id="slab-form" className="grid gap-4" onSubmit={handleSubmit}>
+          <Field label={t('inv.material')} required>
+            <Select
+              value={form.material}
+              onChange={(event) => setForm({ ...form, material: event.target.value })}
+            >
+              {MATERIALS.map((material) => (
+                <option key={material} value={material}>
+                  {t(`inv.material_${material}`)}
                 </option>
               ))}
             </Select>
           </Field>
 
-          <Field label={t('common.thickness')} required>
-            <Select defaultValue={pick(thicknessOptions[0])}>
-              {thicknessOptions.map((option, index) => (
-                <option key={index} value={pick(option)}>
-                  {pick(option)}
-                </option>
-              ))}
-            </Select>
+          <div className="grid grid-cols-2 gap-4">
+            <Field label={t('calc.slabLength')} hint={t('calc.unitFeet')} required>
+              <Input
+                type="number"
+                inputMode="decimal"
+                min="0.5"
+                step="0.25"
+                value={form.length_ft}
+                onChange={(event) => setForm({ ...form, length_ft: event.target.value })}
+                required
+              />
+            </Field>
+            <Field label={t('calc.slabWidth')} hint={t('calc.unitFeet')} required>
+              <Input
+                type="number"
+                inputMode="decimal"
+                min="0.5"
+                step="0.25"
+                value={form.width_ft}
+                onChange={(event) => setForm({ ...form, width_ft: event.target.value })}
+                required
+              />
+            </Field>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <Field label={t('common.thickness')} hint={t('calc.unitMm')} required>
+              <Input
+                type="number"
+                inputMode="numeric"
+                min="1"
+                step="1"
+                value={form.thickness_mm}
+                onChange={(event) => setForm({ ...form, thickness_mm: event.target.value })}
+                required
+              />
+            </Field>
+            <Field label={t('common.quantity')} required>
+              <Input
+                type="number"
+                inputMode="numeric"
+                min="0"
+                step="1"
+                value={form.quantity}
+                onChange={(event) => setForm({ ...form, quantity: event.target.value })}
+                required
+              />
+            </Field>
+          </div>
+
+          <Field label={t('inv.threshold')} hint={t('common.optional')}>
+            <Input
+              type="number"
+              inputMode="numeric"
+              min="0"
+              step="1"
+              value={form.low_stock_threshold}
+              onChange={(event) => setForm({ ...form, low_stock_threshold: event.target.value })}
+            />
           </Field>
 
-          <Field label={t('common.quantity')} required>
-            <Input type="number" inputMode="numeric" placeholder="10" min="1" step="1" />
-          </Field>
-
-          <Field label={t('inv.location')}>
-            <Select defaultValue={pick(locationOptions[0])}>
-              {locationOptions.map((option, index) => (
-                <option key={index} value={pick(option)}>
-                  {pick(option)}
-                </option>
-              ))}
-            </Select>
+          <Field label={t('inv.location')} hint={t('common.optional')}>
+            <Input
+              type="text"
+              value={form.location}
+              onChange={(event) => setForm({ ...form, location: event.target.value })}
+            />
           </Field>
         </form>
-
-        <p className="mt-4 rounded-xl bg-secondary p-3 text-xs leading-relaxed text-muted dark:bg-gray-700/40">
-          {t('inv.modalNote')}
-        </p>
       </Modal>
 
-      {/* delete confirmation — demo only, nothing is actually removed */}
+      {/* delete confirmation — really deletes from Supabase */}
       <ConfirmDialog
         open={Boolean(deleteTarget)}
         onClose={() => setDeleteTarget(null)}
-        onConfirm={() => {
-          setDeleteTarget(null)
-          toast({ type: 'success', message: t('toast.demoDeleted') })
-        }}
+        onConfirm={handleDelete}
         title={t('confirm.deleteTitle')}
-        message={`${t('confirm.deleteMessage')}${deleteTarget ? ` (${deleteTarget.id})` : ''}`}
+        message={`${t('confirm.deleteMessage')} ${deleteTarget ? `#${deleteTarget.id}` : ''}`}
         confirmLabel={t('confirm.confirmDelete')}
       />
     </div>
