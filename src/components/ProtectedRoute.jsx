@@ -1,18 +1,25 @@
-import { Outlet } from 'react-router-dom'
+import { Navigate, Outlet, useLocation } from 'react-router-dom'
+import PageLoader from './States/PageLoader.jsx'
+import { PATHS } from '../constants/routes.js'
+import { useAuth } from '../context/index.jsx'
 
 /**
- * ProtectedRoute — framework PLACEHOLDER for future authentication.
- * It currently renders its children unchanged; when real auth lands, swap
- * the body for something like:
+ * ProtectedRoute — real Supabase session check.
  *
- *   const { user } = useAuth()
- *   const location = useLocation()
- *   if (!user) return <Navigate to="/login" replace state={{ from: location }} />
- *   return children ?? <Outlet />
- *
- * It wraps the Layout route in App.jsx so the seam already exists.
+ *  - while the session is being restored → full-area loader
+ *  - no session → redirect to /login (remembering where the user wanted to
+ *    go, so Login can send them back after signing in)
+ *  - session present → render the app shell
  */
 export default function ProtectedRoute({ children }) {
-  // TODO(auth): enforce session checks here — no auth logic in this skeleton.
+  const { status } = useAuth()
+  const location = useLocation()
+
+  if (status === 'loading') return <PageLoader />
+
+  if (status !== 'authenticated') {
+    return <Navigate to={PATHS.LOGIN} replace state={{ from: location.pathname }} />
+  }
+
   return children ?? <Outlet />
 }
