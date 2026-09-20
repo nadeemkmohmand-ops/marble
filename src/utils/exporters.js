@@ -104,6 +104,44 @@ export function printDocument(html, { title = 'Document' } = {}) {
   setTimeout(() => frame.remove(), 60000)
 }
 
+/**
+ * downloadPDF — a REAL one-click PDF file, no print dialog, no manual
+ * "Save as PDF" step. Renders the document off-screen in the current
+ * page (so the app's own self-hosted Urdu/Inter fonts are already
+ * loaded — works fully offline) and rasterizes it with html2canvas,
+ * then embeds that image into a PDF page-by-page with jsPDF. Because
+ * it's a picture of real, already-correct HTML, Urdu/Nastaliq shaping
+ * comes out exactly as it looks on screen.
+ */
+export async function downloadPDF(html, { title = 'Document', lang = 'en' } = {}) {
+  const { default: html2pdf } = await import('html2pdf.js')
+  const rtl = lang === 'ur'
+
+  const holder = document.createElement('div')
+  holder.style.cssText = 'position:fixed;left:-99999px;top:0;width:794px;background:#fff;'
+  holder.dir = rtl ? 'rtl' : 'ltr'
+  holder.lang = lang
+  holder.className = rtl ? 'urdu-text' : ''
+  holder.innerHTML = html
+  document.body.appendChild(holder)
+
+  try {
+    await html2pdf()
+      .set({
+        filename: `${safeName(title)}.pdf`,
+        margin: 10,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak: { mode: ['css', 'legacy'] },
+      })
+      .from(holder)
+      .save()
+  } finally {
+    holder.remove()
+  }
+}
+
 /** Single record → readable WhatsApp message with ALL info. */
 export function recordToText({ title, fields, record, lang = 'en' }) {
   const L = lang === 'ur'
@@ -170,5 +208,5 @@ function escapeHtml(s) {
     .replace(/"/g, '&quot;')
 }
 
-export const exporters = { exportCSV, exportXLSX, exportDOC, printDocument, whatsappText, shareFile, recordToText, tableToText }
+export const exporters = { exportCSV, exportXLSX, exportDOC, printDocument, downloadPDF, whatsappText, shareFile, recordToText, tableToText }
 export default exporters

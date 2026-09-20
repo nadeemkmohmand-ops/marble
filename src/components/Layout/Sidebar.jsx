@@ -38,7 +38,7 @@ function NavItems({ onNavigate }) {
                     )}
                   >
                     <item.icon size={17} className="shrink-0" />
-                    <span className="truncate leading-urdu no-clip">{t(item.key)}</span>
+                    <span className="truncate leading-urdu no-clip min-w-0">{t(item.key)}</span>
                   </NavLink>
                 )
               })}

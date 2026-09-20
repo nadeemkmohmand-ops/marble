@@ -30,7 +30,7 @@ export default function Expenses() {
           { key: 'category', type: 'select', options: opts(EXPENSE_CATEGORIES), enumPrefix: 'expenseCategory', required: true },
           { key: 'amount', type: 'number', min: 0, required: true },
           { key: 'recurring', type: 'checkbox' },
-          { key: 'allocateTo', hint: 'Lot / order / machine ID' },
+          { key: 'allocateTo', hint: t('hints.allocateTo') },
           { key: 'machineHours', type: 'number', min: 0 },
           { key: 'vendor' },
           { key: 'notes', type: 'textarea', span: 'full' },

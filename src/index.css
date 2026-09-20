@@ -63,16 +63,27 @@
     padding-block: 0.35em;
   }
 
-  /* Never clip Urdu anywhere — labels, badges, table cells, nav items */
+  /* Never clip Urdu anywhere — labels, badges, table cells, nav items,
+     and the custom Select's own popup rows */
   html[lang='ur'] .no-clip,
   html[lang='ur'] label,
   html[lang='ur'] th,
   html[lang='ur'] td,
   html[lang='ur'] .badge,
   html[lang='ur'] nav a,
-  html[lang='ur'] .toast {
+  html[lang='ur'] .toast,
+  html[lang='ur'] li[role='option'] {
     overflow: visible !important;
     min-height: 2.6rem;
+  }
+
+  /* .no-clip beats a co-applied .truncate in Urdu: nav/sidebar labels
+     wrap onto a second line instead of ellipsis-cutting mid-ligature
+     (a cut Nastaliq glyph chain can render as a different letter). */
+  html[lang='ur'] .no-clip.truncate {
+    white-space: normal !important;
+    text-overflow: clip !important;
+    word-break: keep-all;
   }
 
   html[lang='ur'] .badge {
@@ -88,10 +99,12 @@
     padding-bottom: 0.75rem !important;
   }
 
-  /* Form controls grow with Nastaliq */
+  /* Form controls grow with Nastaliq (native inputs, and the custom
+     Select's trigger button, which is a <button> not a <select>) */
   html[lang='ur'] input,
   html[lang='ur'] select,
-  html[lang='ur'] textarea {
+  html[lang='ur'] textarea,
+  html[lang='ur'] button[role='combobox'] {
     height: auto !important;
     min-height: 3rem;
     padding-top: 0.6rem !important;

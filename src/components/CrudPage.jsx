@@ -14,6 +14,7 @@ import SearchInput from './UI/SearchInput'
 import PhotoInput from './UI/PhotoInput'
 import QRBadge from './UI/QRBadge'
 import ExportMenu from './UI/ExportMenu'
+import ImportButton from './UI/ImportButton'
 import EmptyState from './States/EmptyState'
 import Drawer from './UI/Drawer'
 
@@ -94,20 +95,20 @@ export default function CrudPage({ config }) {
       key: '_actions',
       label: t('common.actions'),
       render: (row) => (
-        <div className="flex items-center gap-1 justify-end no-print">
+        <div className="flex items-center gap-0.5 sm:gap-1 justify-end no-print">
           {config.qrField && (
-            <button className="btn btn-ghost h-8 w-8 justify-center" title="QR" onClick={(e) => { e.stopPropagation(); setDetail(row) }}>
+            <button className="btn btn-ghost h-10 w-10 sm:h-8 sm:w-8 justify-center" title="QR" onClick={(e) => { e.stopPropagation(); setDetail(row) }}>
               <QrCode size={15} />
             </button>
           )}
-          <button className="btn btn-ghost h-8 w-8 justify-center" title={t('common.view')} onClick={(e) => { e.stopPropagation(); setDetail(row) }}>
+          <button className="btn btn-ghost h-10 w-10 sm:h-8 sm:w-8 justify-center" title={t('common.view')} onClick={(e) => { e.stopPropagation(); setDetail(row) }}>
             <Eye size={15} />
           </button>
-          <button className="btn btn-ghost h-8 w-8 justify-center" title={t('common.edit')} onClick={(e) => { e.stopPropagation(); crud.openEdit(row) }}>
+          <button className="btn btn-ghost h-10 w-10 sm:h-8 sm:w-8 justify-center" title={t('common.edit')} onClick={(e) => { e.stopPropagation(); crud.openEdit(row) }}>
             <Pencil size={15} />
           </button>
           <button
-            className="btn btn-ghost h-8 w-8 justify-center text-red-500"
+            className="btn btn-ghost h-10 w-10 sm:h-8 sm:w-8 justify-center text-red-500"
             title={t('common.delete')}
             onClick={async (e) => {
               e.stopPropagation()
@@ -186,6 +187,7 @@ export default function CrudPage({ config }) {
               rows={filtered}
               meta={{ phone: null, company: null }}
             />
+            <ImportButton config={config} />
             <Button icon={Plus} onClick={() => crud.openAdd(config.defaults?.())}>
               <span className="hidden sm:inline">{t('common.add')}</span>
             </Button>
@@ -194,21 +196,27 @@ export default function CrudPage({ config }) {
         filters={
           <>
             <SearchInput value={query} onChange={setQuery} placeholder={t('common.search')} />
-            {(config.filters || []).map((f) => (
-              <select
-                key={f.key}
-                className="input min-h-10 !w-auto text-sm cursor-pointer"
-                value={filters[f.key] || ''}
-                onChange={(e) => setFilters((prev) => ({ ...prev, [f.key]: e.target.value }))}
-              >
-                <option value="">{f.label || label(config.i18nPrefix, f.key)}: {t('common.all')}</option>
-                {(f.options || []).map((opt) => (
-                  <option key={opt.value ?? opt} value={opt.value ?? opt}>
-                    {opt.label ?? t(`enums.${f.enumPrefix || f.key}.${opt.value ?? opt}`)}
-                  </option>
-                ))}
-              </select>
-            ))}
+            {(config.filters || []).map((f) => {
+              const allLabel = `${f.label || label(config.i18nPrefix, f.key)}: ${t('common.all')}`
+              const opts = (f.options || []).map((opt) => {
+                const v = opt.value ?? opt
+                if (opt.label) return { value: v, label: opt.label }
+                const prefix = f.enumPrefix && f.enumPrefix !== 'none' ? f.enumPrefix : f.key
+                const key = `enums.${prefix}.${v}`
+                const translated = t(key)
+                return { value: v, label: translated === key ? String(v) : translated }
+              })
+              return (
+                <Select
+                  key={f.key}
+                  className="!w-auto min-w-[9rem]"
+                  value={filters[f.key] || ''}
+                  onChange={(e) => setFilters((prev) => ({ ...prev, [f.key]: e.target.value }))}
+                  placeholder={allLabel}
+                  options={opts}
+                />
+              )
+            })}
             {config.extraToolbar?.(items, filtered)}
           </>
         }
@@ -282,7 +290,17 @@ export default function CrudPage({ config }) {
                 .filter((f) => f.type !== 'photo')
                 .map((f) => {
                   let v = detail[f.key]
-                  if (f.type === 'select' && f.options) v = f.options.find((o) => (o.value ?? o) === v)?.label ?? t(`enums.${f.enumPrefix ? f.enumPrefix + '.' : ''}${f.key}.${v}`)
+                  if (f.type === 'select' && f.options) {
+                    const found = f.options.find((o) => (o.value ?? o) === v)
+                    if (found?.label) {
+                      v = found.label
+                    } else if (v !== '' && v !== null && v !== undefined) {
+                      const prefix = f.enumPrefix && f.enumPrefix !== 'none' ? f.enumPrefix : f.key
+                      const key = `enums.${prefix}.${v}`
+                      const translated = t(key)
+                      v = translated === key ? String(v) : translated
+                    }
+                  }
                   else if (f.format) v = f.format(v, detail)
                   return (
                     <div key={f.key} className="border-b border-dashed border-[var(--border)] pb-1.5">
@@ -307,6 +325,20 @@ export default function CrudPage({ config }) {
               <Button variant="secondary" icon={Pencil} onClick={() => { setDetail(null); crud.openEdit(detail) }} size="sm">
                 {t('common.edit')}
               </Button>
+              <Button
+                variant="danger"
+                icon={Trash2}
+                size="sm"
+                onClick={async () => {
+                  const ok = await confirm({ message: t('common.confirmDelete') })
+                  if (ok) {
+                    await crud.destroy(detail)
+                    setDetail(null)
+                  }
+                }}
+              >
+                {t('common.delete')}
+              </Button>
               {config.rowActions?.(detail, { setDetail })}
             </div>
           </div>
@@ -330,10 +362,14 @@ function FieldControl({ field: f, value, form, label, onChange, setForm, t, lang
         {...common}
         value={value ?? ''}
         onChange={(e) => onChange(e.target.value)}
-        options={options.map((o) => ({
-          value: o.value ?? o,
-          label: o.label ?? t(`enums.${f.enumPrefix ? f.enumPrefix + '.' : ''}${f.key}.${o.value ?? o}`),
-        }))}
+        options={options.map((o) => {
+          const v = o.value ?? o
+          if (o.label) return { value: v, label: o.label }
+          const prefix = f.enumPrefix && f.enumPrefix !== 'none' ? f.enumPrefix : f.key
+          const key = `enums.${prefix}.${v}`
+          const translated = t(key)
+          return { value: v, label: translated === key ? String(v) : translated }
+        })}
         placeholder={f.placeholder ?? ''}
       />
     )

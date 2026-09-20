@@ -27,7 +27,7 @@ export default function ExportMenu({ title, columns, rows, meta, size = 'md', la
 
   const items = [
     { icon: FileSpreadsheet, label: 'Excel (.xlsx)', run: ex.xlsx },
-    { icon: FileText, label: 'PDF (Print)', run: ex.pdf },
+    { icon: FileText, label: t('common.pdf'), run: ex.pdf },
     { icon: FileIcon, label: 'Word (.doc)', run: ex.doc },
     { icon: Download, label: 'CSV', run: ex.csv },
     { icon: MessageCircle, label: 'WhatsApp', run: () => ex.whatsapp(meta?.phone), tone: 'text-[#25D366]' },

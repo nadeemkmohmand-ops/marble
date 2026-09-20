@@ -1,10 +1,11 @@
 import { useMemo } from 'react'
 import { useLang } from '../context/LanguageContext'
 import {
-  exportCSV, exportXLSX, exportDOC, printDocument, whatsappText, shareFile, tableToText, recordToText,
+  exportCSV, exportXLSX, exportDOC, downloadPDF, whatsappText, shareFile, tableToText, recordToText,
 } from '../utils/exporters'
 import { wrapStyled } from '../utils/printTemplates'
 import { useAppUI } from '../context/AppUIContext'
+import { useToast } from '../context/ToastContext'
 
 /**
  * useExport({ title, columns, rows }) — every page gets the full
@@ -13,6 +14,7 @@ import { useAppUI } from '../context/AppUIContext'
 export function useExport({ title, columns, rows, meta } = {}) {
   const { lang, t } = useLang()
   const { requestPrint } = useAppUI()
+  const toast = useToast()
 
   return useMemo(() => {
     const ctx = { title: typeof title === 'function' ? title() : title, columns, rows, lang }
@@ -21,14 +23,17 @@ export function useExport({ title, columns, rows, meta } = {}) {
       csv: run(exportCSV),
       xlsx: run(exportXLSX),
       doc: run(exportDOC),
-      pdf: () =>
-        printDocument(
-          wrapStyled(
-            stockTableHTML(ctx),
+      // Real one-click file download — no print dialog, no manual "Save as PDF".
+      pdf: async () => {
+        try {
+          await downloadPDF(
+            wrapStyled(stockTableHTML(ctx), { title: ctx.title, lang }),
             { title: ctx.title, lang },
-          ),
-          { title: ctx.title },
-        ),
+          )
+        } catch (e) {
+          toast.error(t('common.error'))
+        }
+      },
       whatsapp: (phone) => whatsappText(tableToText({ ...ctx, lang }), phone),
       share: async () => {
         const csv = toCsvText(ctx)
@@ -40,11 +45,12 @@ export function useExport({ title, columns, rows, meta } = {}) {
           blob,
         })
       },
+      // Opens the on-screen print preview page — for actually printing on paper.
       printTable: () => requestPrint({ template: 'stockReport', data: { rows, columns, title: ctx.title }, title: ctx.title }),
       _ctx: ctx,
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [title, columns, rows, lang, t, requestPrint])
+  }, [title, columns, rows, lang, t, requestPrint, toast])
 }
 
 function toCsvText({ columns, rows }) {

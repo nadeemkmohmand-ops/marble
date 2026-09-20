@@ -37,7 +37,7 @@ export default function Offcuts() {
           { key: 'lengthFt', type: 'number', required: true, min: 0, step: 0.1 },
           { key: 'widthFt', type: 'number', required: true, min: 0, step: 0.1 },
           { key: 'qty', type: 'number', min: 1 },
-          { key: 'areaSqft', type: 'readonly', format: (v) => fmtNumber(v, 1), hint: 'auto: L×W×qty' },
+          { key: 'areaSqft', type: 'readonly', format: (v) => fmtNumber(v, 1), hint: t('hints.areaFromQty') },
           { key: 'thicknessMm', type: 'number', min: 0 },
           { key: 'bundleId' },
           { key: 'mixedLot', type: 'checkbox' },

@@ -8,7 +8,7 @@ export const ur = {
     requiredFields: 'ضروری خانے پُر کریں', saved: 'کامیابی سے محفوظ ہو گیا',
     deleted: 'حذف ہو گیا', error: 'کچھ غلط ہو گیا', retry: 'دوبارہ کوشش کریں',
     noData: 'ابھی کوئی ریکارڈ نہیں', addFirst: 'پہلا ریکارڈ شامل کرنے کے لیے + دبائیں',
-    export: 'ایکسپورٹ', print: 'پرنٹ', share: 'شیئر کریں', scan: 'اسکین',
+    export: 'ایکسپورٹ', print: 'پرنٹ', share: 'شیئر کریں', scan: 'اسکین', pdf: 'پی ڈی ایف',
     total: 'کل', subtotal: 'ذیلی کل', balance: 'بقایا', paid: 'ادا شدہ',
     date: 'تاریخ', from: 'سے', to: 'تک', status: 'صورتحال', notes: 'نوٹس',
     phone: 'فون', whatsapp: 'واٹس ایپ', address: 'پتہ', name: 'نام',
@@ -236,6 +236,16 @@ export const ur = {
     salesByGrade: 'گریڈ کے مطابق فروخت', salesByCustomer: 'گاہک کے مطابق فروخت',
     salesByFinish: 'فنش کے مطابق فروخت', noData: 'ابھی کافی ڈیٹا نہیں',
   },
+  import: {
+    downloadTemplate: 'نمونہ ڈاؤن لوڈ کریں', upload: 'اپ لوڈ', uploadFile: 'بھری ہوئی فائل اپ لوڈ کریں',
+    title: 'ایکسل سے درآمد', dropHint: 'ڈاؤن لوڈ کردہ نمونے سے بھری ہوئی ایکسل (.xlsx) فائل منتخب کریں',
+    emptyFile: 'فائل میں کوئی قطار نہیں', success: '{{count}} ریکارڈ درآمد ہو گئے',
+    partialSuccess: '{{count}} ریکارڈ درآمد ہوئے، {{errorCount}} قطاریں نظر انداز ہوئیں',
+    noneImported: 'کوئی قطار درآمد نہیں ہو سکی', rowMissing: 'قطار {{row}}: {{fields}} خالی ہے',
+    unknownColumns: 'نامعلوم کالم نظر انداز ہوئے: {{columns}}',
+    confirm: '{{title}} میں {{count}} ریکارڈ درآمد کریں؟', cancel: 'منسوخ کریں', confirmImport: 'درآمد کریں',
+    parseError: 'فائل نہیں پڑھی جا سکی — براہ کرم ڈاؤن لوڈ کردہ نمونہ استعمال کریں',
+  },
   notifications: {
     title: 'اطلاعات', subtitle: 'کم اسٹاک، تاخیری بل، آئی دیکھ بھال',
     lowStock: 'کم اسٹاک', overdueInvoice: 'تاخیری بل', maintenanceDue: 'دیکھ بھال واجب',
@@ -243,7 +253,7 @@ export const ur = {
   },
   print: {
     title: 'پرنٹ پیش نظارہ', subtitle: 'پی ڈی ایف محفوظ کریں یا پرنٹ کریں — اردو بہترین نظر آئے گی',
-    print: 'پرنٹ / پی ڈی ایف', back: 'واپس', company: 'کمپنی', invoice: 'بل',
+    print: 'پرنٹ', downloadPdf: 'پی ڈی ایف ڈاؤن لوڈ', back: 'واپس', company: 'کمپنی', invoice: 'بل',
     challan: 'چالان', quotation: 'تخمینہ', payslip: 'تنخواہ پرچی',
     purchaseOrder: 'خریداری آرڈر', label: 'کیو آر لیبل', stockReport: 'اسٹاک رپورٹ',
     noDoc: 'کسی صفحے سے دستاویز کھولیں (بل، چالان، پرچی، لیبل…)',
@@ -300,5 +310,13 @@ export const ur = {
     entries: 'اندراجات', quotations: 'تخمینے', accepted: 'منظور شدہ', acceptedValue: 'منظور شدہ مالیت',
     pipeline: 'زیرِ التوا قیمت', orders: 'آرڈرز', inProduction: 'پیداوار میں', revenue: 'آمدنی',
     receivable: 'وصول کرنا ہے',
+  },
+  hints: {
+    cftAuto: 'خودکار: لمبائی×چوڑائی×اونچائی÷1728', weightAuto: 'خودکار: کیوبک فٹ × کثافت', densityDefault: 'ڈیفالٹ 76 کلو/کیوبک فٹ',
+    landedTotalAuto: 'خودکار: خرید + مصارف + کسٹم + کلئیرنگ + ٹرانسپورٹ + لوڈنگ',
+    allocateTo: 'لاٹ / آرڈر / مشین آئی ڈی', areaSqftAuto: 'خودکار: لمبائی × چوڑائی', areaSqmAuto: 'خودکار: سکوئر فٹ × 0.092903',
+    areaFromQty: 'خودکار: لمبائی × چوڑائی × تعداد', blockRef: 'بلاک آئی ڈی اگر موصول ہوا', refId: 'بلاک / سلیب / ٹکڑا آئی ڈی',
+    qtyMoved: 'تعداد، سکوئر فٹ یا کیوبک فٹ', party: 'سپلائر / گاہک کا نام', ratePerSqft: 'ریٹ فی سکوئر فٹ',
+    ratePerSlab: 'ریٹ فی سلیب', ratePerOrder: 'ریٹ فی آرڈر / سکوئر فٹ', monthlyRecovery: 'ماہانہ کٹوتی',
   },
 }

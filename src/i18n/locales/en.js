@@ -7,7 +7,7 @@ export const en = {
     requiredFields: 'Please fill all required fields', saved: 'Saved successfully',
     deleted: 'Deleted', error: 'Something went wrong', retry: 'Retry',
     noData: 'Nothing here yet', addFirst: 'Use the + button to add your first record',
-    export: 'Export', print: 'Print', share: 'Share', scan: 'Scan',
+    export: 'Export', print: 'Print', share: 'Share', scan: 'Scan', pdf: 'PDF',
     total: 'Total', subtotal: 'Subtotal', balance: 'Balance', paid: 'Paid',
     date: 'Date', from: 'From', to: 'To', status: 'Status', notes: 'Notes',
     phone: 'Phone', whatsapp: 'WhatsApp', address: 'Address', name: 'Name',
@@ -235,6 +235,16 @@ export const en = {
     salesByGrade: 'Sales by grade', salesByCustomer: 'Sales by customer',
     salesByFinish: 'Sales by finish', noData: 'Not enough data yet',
   },
+  import: {
+    downloadTemplate: 'Download template', upload: 'Upload', uploadFile: 'Upload filled file',
+    title: 'Import from Excel', dropHint: 'Choose an .xlsx file filled in using the downloaded template',
+    emptyFile: 'The file has no rows', success: 'Imported {{count}} record(s)',
+    partialSuccess: 'Imported {{count}} record(s), {{errorCount}} row(s) skipped',
+    noneImported: 'No rows could be imported', rowMissing: 'Row {{row}}: missing {{fields}}',
+    unknownColumns: 'Columns not recognised and skipped: {{columns}}',
+    confirm: 'Import {{count}} record(s) into {{title}}?', cancel: 'Cancel', confirmImport: 'Import',
+    parseError: 'Could not read this file — please use the downloaded template',
+  },
   notifications: {
     title: 'Notifications', subtitle: 'Low stock, overdue invoices, maintenance due',
     lowStock: 'Low stock', overdueInvoice: 'Overdue invoice', maintenanceDue: 'Maintenance due',
@@ -242,7 +252,7 @@ export const en = {
   },
   print: {
     title: 'Print Preview', subtitle: 'Save as PDF or print — Urdu renders perfectly',
-    print: 'Print / Save PDF', back: 'Back', company: 'Company', invoice: 'Invoice',
+    print: 'Print', downloadPdf: 'Download PDF', back: 'Back', company: 'Company', invoice: 'Invoice',
     challan: 'Challan', quotation: 'Quotation', payslip: 'Payslip',
     purchaseOrder: 'Purchase order', label: 'QR label', stockReport: 'Stock report',
     noDoc: 'Open a document from any page (invoice, challan, payslip, label…)',
@@ -299,5 +309,13 @@ export const en = {
     entries: 'Entries', quotations: 'Quotations', accepted: 'Accepted', acceptedValue: 'Accepted value',
     pipeline: 'Pipeline', orders: 'Orders', inProduction: 'In production', revenue: 'Revenue',
     receivable: 'Receivable',
+  },
+  hints: {
+    cftAuto: 'Auto: L×W×H÷1728', weightAuto: 'Auto: CFT × density', densityDefault: 'Default 76 kg/cft',
+    landedTotalAuto: 'Auto: purchase + freight + customs + clearing + transport + loading',
+    allocateTo: 'Lot / order / machine ID', areaSqftAuto: 'Auto: L × W', areaSqmAuto: 'Auto: sq ft × 0.092903',
+    areaFromQty: 'Auto: L × W × qty', blockRef: 'Block ID if received', refId: 'Block / slab / offcut ID',
+    qtyMoved: 'Qty, sq ft or cft moved', party: 'Supplier / customer name', ratePerSqft: 'Rate per sq ft',
+    ratePerSlab: 'Rate per slab', ratePerOrder: 'Rate per order / sq ft', monthlyRecovery: 'Monthly recovery',
   },
 }

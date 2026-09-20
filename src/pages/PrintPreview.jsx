@@ -1,28 +1,32 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { Printer, ArrowLeft } from 'lucide-react'
+import { Printer, ArrowLeft, Download } from 'lucide-react'
 import Toolbar from '../components/UI/Toolbar'
 import Card from '../components/UI/Card'
 import Button from '../components/UI/Button'
 import Select from '../components/UI/Select'
 import EmptyState from '../components/States/EmptyState'
 import { useLang } from '../context/LanguageContext'
+import { useToast } from '../context/ToastContext'
 import { consumePrintRequest } from '../context/AppUIContext'
 import { invoiceHTML, challanHTML, quotationHTML, payslipHTML, purchaseOrderHTML, labelHTML, stockReportHTML, wrapStyled } from '../utils/printTemplates'
 import { makeQR } from '../utils/qr'
-import { printDocument } from '../utils/exporters'
+import { printDocument, downloadPDF } from '../utils/exporters'
 import ROUTES from '../constants/routes'
 import { useNavigate } from 'react-router-dom'
 
 /**
  * PrintPreview — renders the requested document (invoice / challan /
  * quotation / payslip / PO / QR label / stock report) with a language
- * switch, then browser print → Save as PDF keeps Urdu shaping perfect.
+ * switch. "Download PDF" saves a real file directly (no print dialog);
+ * "Print" opens the browser print dialog for anyone printing on paper.
  */
 export default function PrintPreview() {
   const { t, lang, setLang } = useLang()
+  const toast = useToast()
   const navigate = useNavigate()
   const [request] = useState(() => consumePrintRequest())
   const [html, setHtml] = useState('')
+  const [downloading, setDownloading] = useState(false)
 
   const effectiveLang = request?.lang || lang
 
@@ -50,6 +54,17 @@ export default function PrintPreview() {
 
   const doPrint = () => printDocument(html, { title: request?.title || 'Document' })
 
+  const doDownload = async () => {
+    setDownloading(true)
+    try {
+      await downloadPDF(html, { title: request?.title || 'Document', lang: effectiveLang })
+    } catch (e) {
+      toast.error(t('common.error'))
+    } finally {
+      setDownloading(false)
+    }
+  }
+
   return (
     <div className="fade-in">
       <Toolbar
@@ -58,13 +73,20 @@ export default function PrintPreview() {
         actions={
           <>
             <Select
-              className="!w-auto"
+              className="!w-auto min-w-[7rem]"
               value={effectiveLang}
-              onChange={(v) => setLang(v.target?.value ?? v)}
+              onChange={(e) => setLang(e.target.value)}
               options={[{ value: 'ur', label: 'اردو' }, { value: 'en', label: 'English' }]}
             />
-            <Button variant="secondary" icon={ArrowLeft} onClick={() => navigate(-1)}>{t('print.back')}</Button>
-            <Button icon={Printer} onClick={doPrint} disabled={!html}>{t('print.print')}</Button>
+            <Button variant="secondary" icon={ArrowLeft} onClick={() => navigate(-1)}>
+              <span className="hidden sm:inline">{t('print.back')}</span>
+            </Button>
+            <Button variant="secondary" icon={Printer} onClick={doPrint} disabled={!html}>
+              <span className="hidden sm:inline">{t('print.print')}</span>
+            </Button>
+            <Button icon={Download} onClick={doDownload} disabled={!html} loading={downloading}>
+              <span className="hidden sm:inline">{t('print.downloadPdf')}</span>
+            </Button>
           </>
         }
       />
@@ -87,3 +109,4 @@ export default function PrintPreview() {
     </div>
   )
 }
+
