@@ -1,75 +1,29 @@
-import { useEffect } from 'react'
+import React, { useEffect } from 'react'
 import { X } from 'lucide-react'
-import { useFocusTrap } from '../../hooks/useFocusTrap.js'
-import { useLanguage } from '../../context/LanguageContext.jsx'
-import { cn } from '../../utils/cn.js'
+import { cn } from '../../utils/cn'
 
-/**
- * Drawer — side-sheet variant of Modal (mobile filters, detail panels).
- * side="start" (sidebar side, default) | side="end". RTL aware.
- * Escape + backdrop click + scroll lock + focus trap (via useFocusTrap).
- */
-export default function Drawer({
-  open,
-  onClose,
-  title,
-  children,
-  footer,
-  side = 'start',
-  width = 'max-w-sm',
-}) {
-  const { t } = useLanguage()
-  const trapRef = useFocusTrap({ active: open })
-
+export default function Drawer({ open, onClose, title, children, side = 'end', width = 'max-w-md' }) {
   useEffect(() => {
-    if (!open) return undefined
-    const onKeyDown = (event) => {
-      if (event.key === 'Escape') onClose?.()
-    }
-    document.addEventListener('keydown', onKeyDown)
-    document.body.style.overflow = 'hidden'
-    return () => {
-      document.removeEventListener('keydown', onKeyDown)
-      document.body.style.overflow = ''
-    }
+    if (!open) return
+    const onKey = (e) => e.key === 'Escape' && onClose?.()
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
   }, [open, onClose])
 
   if (!open) return null
+  const pos = side === 'end' ? (document.documentElement.dir === 'rtl' ? 'left-0' : 'right-0') : document.documentElement.dir === 'rtl' ? 'right-0' : 'left-0'
 
   return (
-    <div
-      className="fixed inset-0 z-[60]"
-      role="dialog"
-      aria-modal="true"
-      aria-label={typeof title === 'string' ? title : undefined}
-    >
-      {/* backdrop */}
-      <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={onClose} aria-hidden="true" />
-
-      {/* panel */}
-      <div
-        ref={trapRef}
-        tabIndex={-1}
-        className={cn(
-          'surface fade-up absolute inset-y-0 flex w-full flex-col rounded-none shadow-2xl',
-          width,
-          side === 'start' ? 'start-0' : 'end-0'
-        )}
-      >
-        <header className="flex items-center justify-between gap-3 border-b border-border px-5 py-4 dark:border-gray-700">
-          <h3 className="text-base font-bold text-main">{title}</h3>
-          <button type="button" onClick={onClose} className="icon-btn" aria-label={t('common.close')}>
+    <div className="fixed inset-0 z-[80]">
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
+      <div className={cn('absolute top-0 bottom-0 w-full card rounded-none border-y-0 flex flex-col fade-in', pos, width)}>
+        <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-[var(--border)]">
+          <h2 className="font-semibold no-clip">{title}</h2>
+          <button onClick={onClose} className="btn btn-ghost h-9 w-9 justify-center rounded-lg" aria-label="Close">
             <X size={18} />
           </button>
-        </header>
-
-        <div className="flex-1 overflow-y-auto px-5 py-4">{children}</div>
-
-        {footer && (
-          <footer className="flex flex-wrap justify-end gap-2 border-t border-border px-5 py-4 dark:border-gray-700">
-            {footer}
-          </footer>
-        )}
+        </div>
+        <div className="overflow-y-auto px-5 py-4 flex-1 safe-bottom">{children}</div>
       </div>
     </div>
   )

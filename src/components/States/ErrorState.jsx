@@ -1,29 +1,19 @@
-import { AlertTriangle, RefreshCw } from 'lucide-react'
-import Button from '../UI/Button.jsx'
+import React from 'react'
+import { AlertOctagon } from 'lucide-react'
+import { useLang } from '../../context/LanguageContext'
 
-/**
- * ErrorState — graceful degradation UI for failed sections/pages.
- * Compose it inside ErrorBoundary fallbacks or per-page try/catch seams.
- */
-export default function ErrorState({ title, description, retryLabel, onRetry, className = '' }) {
+export default function ErrorState({ message, onRetry }) {
+  const { t } = useLang()
   return (
-    <div
-      className={`surface flex flex-col items-center justify-center gap-3 border-error/30 px-6 py-12 text-center ${className}`}
-    >
-      <span className="grid h-14 w-14 place-items-center rounded-2xl bg-error/10 text-error">
-        <AlertTriangle size={26} aria-hidden="true" />
-      </span>
-      <div>
-        <p className="text-base font-bold text-main">{title}</p>
-        {description && (
-          <p className="mx-auto mt-1 max-w-sm text-sm leading-relaxed text-muted">{description}</p>
-        )}
+    <div className="py-12 text-center">
+      <div className="mx-auto h-14 w-14 rounded-2xl bg-red-500/15 text-red-500 grid place-items-center">
+        <AlertOctagon size={24} />
       </div>
+      <p className="mt-3 text-sm font-medium">{message || t('common.error')}</p>
       {onRetry && (
-        <Button variant="outline" size="sm" onClick={onRetry}>
-          <RefreshCw size={16} />
-          {retryLabel}
-        </Button>
+        <button onClick={onRetry} className="btn btn-secondary min-h-9 px-4 text-sm mt-3">
+          {t('common.retry')}
+        </button>
       )}
     </div>
   )

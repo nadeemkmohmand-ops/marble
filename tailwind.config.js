@@ -1,71 +1,38 @@
 /** @type {import('tailwindcss').Config} */
 export default {
-  content: ['./index.html', './src/**/*.{js,jsx}'],
   darkMode: 'class',
+  content: ['./index.html', './src/**/*.{js,jsx}'],
   theme: {
-    container: {
-      center: true,
-      padding: {
-        DEFAULT: '1rem',
-        sm: '1.5rem',
-      },
-    },
     extend: {
       colors: {
-        // Primary — Deep Blue (headers, primary buttons)
-        primary: {
-          DEFAULT: '#1E3A8A',
-          light: '#2E4FA8',
-          dark: '#172B66',
-          50: '#EEF2FB',
-          100: '#D9E2F2',
+        surface: {
+          light: '#f8fafc',
+          dark: '#0b1120',
         },
-        // Secondary — Light Grey (backgrounds)
-        secondary: {
-          DEFAULT: '#F3F4F6',
-          dark: '#E5E7EB',
+        brand: {
+          50: '#f0f9ff', 100: '#e0f2fe', 200: '#bae6fd', 300: '#7dd3fc', 400: '#38bdf8',
+          500: '#0ea5e9', 600: '#0284c7', 700: '#0369a1', 800: '#075985', 900: '#0c4a6e',
         },
-        // Accent — Amber (highlights, active states)
-        accent: {
-          DEFAULT: '#D97706',
-          light: '#F59E0B',
-          dark: '#B45309',
-          50: '#FEF6E7',
+        marble: {
+          50: '#fafaf9', 100: '#f5f5f4', 200: '#e7e5e4', 300: '#d6d3d1',
+          400: '#a8a29e', 500: '#78716c', 600: '#57534e', 700: '#44403c',
+          800: '#292524', 900: '#1c1917',
         },
-        // Marble White (cards, surfaces)
-        marble: '#FFFFFF',
-        // Text colors
-        'text-dark': '#1F2937',
-        'text-light': '#6B7280',
-        // Border
-        border: '#E5E7EB',
-        // Status colors
-        success: {
-          DEFAULT: '#10B981',
-          light: '#D1FAE5',
-          dark: '#047857',
-        },
-        warning: {
-          DEFAULT: '#F59E0B',
-          light: '#FEF3C7',
-          dark: '#B45309',
-        },
-        error: {
-          DEFAULT: '#EF4444',
-          light: '#FEE2E2',
-          dark: '#B91C1C',
-        },
+        success: '#10b981',
+        warning: '#f59e0b',
+        danger: '#ef4444',
+        info: '#0ea5e9',
       },
       fontFamily: {
-        // Urdu first (primary language) — Nastaliq script (CSS variables live in index.css)
-        urdu: ['var(--font-urdu)', '"Noto Nastaliq Urdu"', 'serif'],
-        // English / numbers
-        english: ['var(--font-english)', 'Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-        // Default stack: Urdu glyphs from Nastaliq, Latin/digits fall back to Inter
-        sans: ['var(--font-urdu)', '"Noto Nastaliq Urdu"', 'var(--font-english)', 'Inter', 'serif'],
+        sans: ['Inter', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'sans-serif'],
+        urdu: ['"Noto Nastaliq Urdu"', 'serif'],
       },
-      boxShadow: {
-        card: '0 1px 3px 0 rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.06)',
+      lineHeight: {
+        urdu: '2.2',
+        'urdu-lg': '2.6',
+      },
+      minHeight: {
+        'urdu-line': '3rem',
       },
     },
   },

@@ -1,41 +1,28 @@
-import { useCallback, useState } from 'react'
-import { storageGet, storageRemove, storageSet } from '../utils/storage.js'
+import { useCallback, useEffect, useState } from 'react'
+import { STORAGE_KEYS } from '../constants/storageKeys'
+import { storage } from '../utils/storage'
 
-/**
- * useLocalStorage — state persisted to localStorage (JSON by default).
- *
- *   const [draft, setDraft] = useLocalStorage('mfa-draft', { note: '' })
- *   const [token, setToken] = useLocalStorage('mfa-token', '', { json: false })
- *
- * Returns [value, setValue, remove]. `setValue` accepts a value or updater
- * function, exactly like useState.
- */
-export function useLocalStorage(key, initialValue, options = {}) {
-  const [value, setValue] = useState(() => {
-    const stored = storageGet(key, undefined, options)
-    return stored === undefined ? initialValue : stored
-  })
-
+export function useLocalStorage(key, initial) {
+  const [value, setValue] = useState(() => storage.get(key, initial))
   const set = useCallback(
     (next) => {
       setValue((prev) => {
         const resolved = typeof next === 'function' ? next(prev) : next
-        storageSet(key, resolved, options)
+        storage.set(key, resolved)
         return resolved
       })
     },
-    // options object is expected to be stable at call sites
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [key]
+    [key],
   )
-
-  const remove = useCallback(() => {
-    storageRemove(key)
-    setValue(initialValue)
+  useEffect(() => {
+    const onStorage = (e) => {
+      if (e.key === key) setValue(storage.get(key, initial))
+    }
+    window.addEventListener('storage', onStorage)
+    return () => window.removeEventListener('storage', onStorage)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key])
-
-  return [value, set, remove]
+  return [value, set]
 }
 
 export default useLocalStorage

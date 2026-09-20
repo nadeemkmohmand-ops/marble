@@ -1,61 +1,18 @@
-import { forwardRef } from 'react'
-import { ChevronDown } from 'lucide-react'
+import React from 'react'
+import { cn } from '../../utils/cn'
 
-/** Field — label + hint wrapper for any form control */
-export function Field({ label, hint, required = false, children, className = '' }) {
+export default function Input({ label, error, hint, type = 'text', className, id, ...props }) {
+  const inputId = id || `in-${label || props.name || Math.random().toString(36).slice(2, 7)}`
   return (
-    <label className={`block ${className}`}>
+    <div className={cn('w-full', className)}>
       {label && (
-        <span className="mb-1.5 block text-sm font-semibold text-main">
+        <label htmlFor={inputId} className="block text-xs font-medium text-[var(--muted)] mb-1.5 leading-urdu no-clip">
           {label}
-          {required && <span className="text-error"> *</span>}
-        </span>
+        </label>
       )}
-      {children}
-      {hint && <span className="mt-1 block text-xs text-muted">{hint}</span>}
-    </label>
-  )
-}
-
-/** Input — text / number / date / search input (Urdu labels come from Field) */
-export const Input = forwardRef(function Input({ className = '', ...props }, ref) {
-  return <input ref={ref} className={`field-input ${className}`} {...props} />
-})
-
-/** Select — native select with a direction-aware chevron (end side) */
-export function Select({ className = '', children, ...props }) {
-  return (
-    <div className={`relative ${className}`}>
-      <select className="field-input cursor-pointer appearance-none pe-10" {...props}>
-        {children}
-      </select>
-      <ChevronDown
-        size={16}
-        className="pointer-events-none absolute end-3 top-1/2 -translate-y-1/2 text-text-light"
-        aria-hidden="true"
-      />
+      <input id={inputId} type={type} className={cn('input num', error && 'border-danger')} {...props} />
+      {hint && !error && <p className="text-[11px] text-[var(--muted)] mt-1 leading-urdu no-clip">{hint}</p>}
+      {error && <p className="text-[11px] text-danger mt-1 leading-urdu no-clip">{error}</p>}
     </div>
-  )
-}
-
-/** Switch — visual toggle (UI state only, no logic attached) */
-export function Switch({ checked, onChange, label }) {
-  return (
-    <button
-      type="button"
-      role="switch"
-      aria-checked={checked}
-      aria-label={label}
-      onClick={() => onChange(!checked)}
-      className={`relative inline-flex h-7 w-12 shrink-0 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 ${
-        checked ? 'bg-accent' : 'bg-border dark:bg-gray-600'
-      }`}
-    >
-      <span
-        className={`absolute h-5 w-5 rounded-full bg-white shadow transition-all ${
-          checked ? 'start-6' : 'start-1'
-        }`}
-      />
-    </button>
   )
 }

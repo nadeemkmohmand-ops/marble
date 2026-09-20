@@ -1,143 +1,102 @@
-import { NavLink } from 'react-router-dom'
-import {
-  BarChart3,
-  Bell,
-  Boxes,
-  Calculator,
-  ClipboardList,
-  Gem,
-  HardHat,
-  Home,
-  Info,
-  Printer,
-  Settings,
-  Users,
-  Wallet,
-  X,
-} from 'lucide-react'
-import { useAppUI } from '../../context/AppUIContext.jsx'
-import { useSidebar } from '../../context/SidebarContext.jsx'
-import { PATHS } from '../../constants/routes.js'
+import React, { useMemo, useState } from 'react'
+import { NavLink, useLocation } from 'react-router-dom'
+import { X } from 'lucide-react'
+import { cn } from '../../utils/cn'
+import { NAV_GROUPS } from '../../constants/navigation'
+import { useSidebar } from '../../context/SidebarContext'
+import { useLang } from '../../context/LanguageContext'
+import { useAuth } from '../../context/AuthContext'
+import APP_INFO from '../../constants/appInfo'
 
-/**
- * Sidebar — fixed on the start side (right in RTL, left in English/LTR).
- *  - mobile  (<768px):  hidden drawer, opened by the header hamburger
- *  - desktop (≥1024px): always visible, content is padded via lg:ps-72 in Layout
- * Items are grouped into sections; open/close state lives in SidebarContext.
- */
+function NavItems({ onNavigate }) {
+  const { t } = useLang()
+  const { user, canSee } = useAuth()
+  const location = useLocation()
+
+  return (
+    <nav className="flex-1 overflow-y-auto px-3 py-2 space-y-4">
+      {NAV_GROUPS.filter((g) => g.items.some((i) => canSee(i.roles))).map((group) => (
+        <div key={group.id}>
+          <div className="px-3 pt-2 pb-1 text-[10px] font-bold uppercase tracking-wider text-[var(--muted)] leading-urdu no-clip">
+            {t(`nav.groups.${group.id}`)}
+          </div>
+          <div className="space-y-0.5">
+            {group.items
+              .filter((item) => canSee(item.roles))
+              .map((item) => {
+                const active = location.pathname === item.to
+                return (
+                  <NavLink
+                    key={item.to}
+                    to={item.to}
+                    onClick={onNavigate}
+                    className={cn(
+                      'sidebar-link flex items-center gap-3 px-3 py-2 rounded-xl text-sm transition',
+                      active
+                        ? 'bg-[var(--accent)] text-white font-semibold shadow-sm'
+                        : 'text-[var(--text)] hover:bg-[color-mix(in_srgb,var(--border)_45%,transparent)]',
+                    )}
+                  >
+                    <item.icon size={17} className="shrink-0" />
+                    <span className="truncate leading-urdu no-clip">{t(item.key)}</span>
+                  </NavLink>
+                )
+              })}
+          </div>
+        </div>
+      ))}
+    </nav>
+  )
+}
+
 export default function Sidebar() {
-  const { t, isRTL } = useAppUI()
-  const { open, closeSidebar } = useSidebar()
-
-  const sections = [
-    {
-      label: t('nav.sectionMain'),
-      items: [
-        { to: PATHS.HOME, label: t('nav.home'), icon: Home },
-        { to: PATHS.CALCULATOR, label: t('nav.calculator'), icon: Calculator },
-        { to: PATHS.INVENTORY, label: t('nav.inventory'), icon: Boxes },
-        { to: PATHS.ORDERS, label: t('nav.orders'), icon: ClipboardList },
-        { to: PATHS.REPORTS, label: t('nav.reports'), icon: BarChart3 },
-      ],
-    },
-    {
-      label: t('nav.sectionManage'),
-      items: [
-        { to: PATHS.CUSTOMERS, label: t('nav.customers'), icon: Users },
-        { to: PATHS.WORKERS, label: t('nav.workers'), icon: HardHat },
-        { to: PATHS.EXPENSES, label: t('nav.expenses'), icon: Wallet },
-        { to: PATHS.NOTIFICATIONS, label: t('nav.notifications'), icon: Bell },
-      ],
-    },
-    {
-      label: t('nav.sectionSystem'),
-      items: [
-        { to: PATHS.PRINT_PREVIEW, label: t('nav.printPreview'), icon: Printer },
-        { to: PATHS.ABOUT, label: t('nav.about'), icon: Info },
-        { to: PATHS.SETTINGS, label: t('nav.settings'), icon: Settings },
-      ],
-    },
-  ]
-
-  // Direction-aware slide-out: off-screen toward the sidebar's own edge
-  const hiddenTranslate = isRTL ? 'translate-x-full' : '-translate-x-full'
+  const { open, mobileOpen, closeMobile } = useSidebar()
+  const { lang } = useLang()
 
   return (
     <>
-      {/* dark overlay while the drawer is open (below lg) */}
-      <div
-        className={`fixed inset-0 z-40 bg-gray-900/60 backdrop-blur-sm transition-opacity duration-300 lg:hidden ${
-          open ? 'opacity-100' : 'pointer-events-none opacity-0'
-        }`}
-        onClick={closeSidebar}
-        aria-hidden="true"
-      />
-
+      {/* Desktop */}
       <aside
-        className={`fixed inset-y-0 start-0 z-50 flex w-72 max-w-[85vw] transform flex-col bg-primary-dark text-white shadow-2xl transition-transform duration-300 ease-in-out lg:translate-x-0 ${
-          open ? 'translate-x-0' : hiddenTranslate
-        }`}
-        aria-label={t('common.menu')}
+        className={cn(
+          'hidden lg:flex flex-col fixed inset-y-0 bg-[var(--card)] border-e border-[var(--border)] transition-all duration-200 z-30 no-print',
+          open ? 'w-64' : 'w-[76px]',
+        )}
       >
-        {/* brand — no truncate / no leading-tight: Nastaliq Urdu must not clip.
-            shrink-0 keeps the brand intact while the nav below scrolls. */}
-        <div className="urdu-clip-safe flex shrink-0 items-center gap-3 border-b border-white/10 px-5">
-          <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-white">
-            <Gem size={24} className="text-primary" />
-          </span>
-          <div className="min-w-0 flex-1">
-            <p className="text-base font-bold">{t('appName')}</p>
-            <p className="text-[11px] text-white/50">{t('location')}</p>
-          </div>
-          <button
-            type="button"
-            onClick={closeSidebar}
-            className="grid h-9 w-9 place-items-center rounded-lg text-white/70 transition-colors hover:bg-white/10 hover:text-white lg:hidden"
-            aria-label={t('common.close')}
-          >
-            <X size={18} />
-          </button>
-        </div>
-
-        {/* navigation — grouped sections. min-h-0 + overflow-y-auto:
-            the ONLY scrollable part of the sidebar, so every item and the
-            footer stay reachable on short screens. */}
-        <nav className="no-scrollbar min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain px-3 py-4">
-          {sections.map((section) => (
-            <div key={section.label}>
-              <p className="px-3.5 pb-1.5 text-[10px] font-bold uppercase tracking-wider text-white/40">
-                {section.label}
-              </p>
-              <div className="space-y-1">
-                {section.items.map(({ to, label, icon: Icon }) => (
-                  <NavLink
-                    key={to}
-                    to={to}
-                    onClick={closeSidebar}
-                    className={({ isActive }) =>
-                      `flex min-h-11 items-center gap-3 rounded-xl px-3.5 py-2 text-sm font-semibold transition-colors ${
-                        isActive
-                          ? 'bg-accent text-white shadow-md'
-                          : 'text-white/70 hover:bg-white/10 hover:text-white'
-                      }`
-                    }
-                  >
-                    <Icon size={20} className="shrink-0" />
-                    <span>{label}</span>
-                  </NavLink>
-                ))}
-              </div>
+        <div className="h-16 flex items-center gap-2.5 px-4 border-b border-[var(--border)]">
+          <div className="h-9 w-9 shrink-0 rounded-xl bg-[var(--accent)] grid place-items-center text-white font-bold">M</div>
+          {open && (
+            <div className="min-w-0">
+              <div className="font-bold text-sm leading-urdu no-clip">{lang === 'ur' ? APP_INFO.nameUr : APP_INFO.name}</div>
+              <div className="text-[10px] text-[var(--muted)] num">v{APP_INFO.version}</div>
             </div>
-          ))}
-        </nav>
-
-        {/* footer */}
-        <div className="urdu-clip-safe shrink-0 border-t border-white/10 px-5">
-          <p className="text-[11px] text-white/50">
-            {t('version')} — {t('appShortName')}
-          </p>
+          )}
         </div>
+        <NavItems />
       </aside>
+
+      {/* Mobile drawer */}
+      {mobileOpen && (
+        <div className="lg:hidden fixed inset-0 z-[70] no-print">
+          <div className="absolute inset-0 bg-black/50" onClick={closeMobile} />
+          <aside
+            className={cn(
+              'absolute top-0 bottom-0 w-72 bg-[var(--card)] border-e border-[var(--border)] flex flex-col fade-in',
+              lang === 'ur' ? 'right-0' : 'left-0',
+            )}
+          >
+            <div className="h-16 flex items-center justify-between px-4 border-b border-[var(--border)]">
+              <div className="flex items-center gap-2.5">
+                <div className="h-9 w-9 rounded-xl bg-[var(--accent)] grid place-items-center text-white font-bold">M</div>
+                <div className="font-bold text-sm">{lang === 'ur' ? APP_INFO.nameUr : APP_INFO.name}</div>
+              </div>
+              <button onClick={closeMobile} className="btn btn-ghost h-9 w-9 justify-center" aria-label="Close menu">
+                <X size={18} />
+              </button>
+            </div>
+            <NavItems onNavigate={closeMobile} />
+          </aside>
+        </div>
+      )}
     </>
   )
 }

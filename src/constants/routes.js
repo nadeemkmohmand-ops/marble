@@ -1,21 +1,29 @@
-/**
- * Central route path values — never hardcode path strings in components.
- * Usage: import { PATHS } from '@/constants/routes.js'
- */
-export const PATHS = {
+export const ROUTES = {
   HOME: '/',
-  LOGIN: '/login',
   CALCULATOR: '/calculator',
   INVENTORY: '/inventory',
-  ORDERS: '/orders',
+  BLOCKS: '/blocks',
+  SLABS: '/slabs',
+  OFFCUTS: '/offcuts',
+  MOVEMENTS: '/movements',
+  PRODUCTION: '/production',
+  MACHINES: '/machines',
+  MAINTENANCE: '/maintenance',
+  PURCHASES: '/purchases',
+  SUPPLIERS: '/suppliers',
   CUSTOMERS: '/customers',
+  QUOTATIONS: '/quotations',
+  ORDERS: '/orders',
   WORKERS: '/workers',
+  ATTENDANCE: '/attendance',
+  PAYROLL: '/payroll',
   EXPENSES: '/expenses',
   REPORTS: '/reports',
   NOTIFICATIONS: '/notifications',
-  PRINT_PREVIEW: '/print-preview',
+  PRINT: '/print',
   ABOUT: '/about',
   SETTINGS: '/settings',
+  LOGIN: '/login',
 }
 
-export default PATHS
+export default ROUTES

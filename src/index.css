@@ -2,307 +2,263 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ---------- Base ---------- */
+/* ═══════════════════════════════════════════════════════════════
+   ROOT / THEME TOKENS
+   ═══════════════════════════════════════════════════════════════ */
 @layer base {
   :root {
-    color-scheme: light;
-    /* Font stacks as CSS variables (referenced by tailwind.config.js) */
-    --font-urdu: 'Noto Nastaliq Urdu';
-    --font-english: 'Inter';
+    --bg: #f1f5f9;
+    --card: #ffffff;
+    --text: #0f172a;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --accent: #0ea5e9;
   }
-
-  html.dark {
-    color-scheme: dark;
+  .dark {
+    --bg: #0b1120;
+    --card: #111a2e;
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+    --border: #1e293b;
+    --accent: #38bdf8;
   }
 
   html {
-    -webkit-tap-highlight-color: transparent;
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
   }
 
-  /* Base font size 16px, line-height 1.6 (English) */
   body {
-    @apply bg-secondary text-text-dark antialiased;
-    font-size: 16px;
-    line-height: 1.6;
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    overscroll-behavior-y: none;
   }
 
-  /* Urdu (default): Nastaliq script needs a much more generous line-height to
-     avoid clipping / overlapping — its diagonal glyph stack is far taller than
-     Latin fonts. 2.2 is the safe minimum for headings AND body text. */
-  html.lang-ur body {
-    @apply font-urdu;
-    line-height: 2.2;
-  }
-
-  /* English mode: Inter first, Urdu glyphs still render through fallback */
-  html.lang-en body {
-    @apply font-english;
-  }
-
-  /* Slim custom scrollbars (WebKit + Firefox) */
-  * {
-    scrollbar-width: thin;
-    scrollbar-color: theme('colors.gray.300') transparent;
-  }
-
-  html.dark * {
-    scrollbar-color: theme('colors.gray.600') transparent;
-  }
-
-  ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
-  }
-
-  ::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  ::-webkit-scrollbar-thumb {
-    border-radius: 9999px;
-    background-color: theme('colors.gray.300');
-  }
-
-  html.dark ::-webkit-scrollbar-thumb {
-    background-color: theme('colors.gray.600');
-  }
-
-  /* ============================================================
-     URDU / RTL RENDERING FIXES (global, apply everywhere)
-     ------------------------------------------------------------
-     Noto Nastaliq Urdu glyphs are tall AND diagonally stacked, so
-     every container that clips (overflow: hidden / truncate /
-     fixed heights) cuts off the tops of letters (ا ل ک) and the
-     bottom tails (ے ٹ) and lines collide. The rules below make
-     Urdu text containers self-size and never clip.
-     ============================================================ */
-
-  /* --- 1) The reusable .urdu-text class (works in ANY language mode) --- */
-  .urdu-text,
-  [lang='ur'] {
-    font-family: var(--font-urdu), 'Noto Nastaliq Urdu', serif;
-    direction: rtl;
-    text-align: right;
-    /* generous vertical room for the Nastaliq diagonal stack */
+  /* ───────────────────────────────────────────────────────────────
+     URDU / NASTALIQ TEXT CLIPPING FIX  (the "text is cut" bug)
+     Noto Nastaliq Urdu has very tall ascenders & deep descenders.
+     Any fixed height, tight line-height, or overflow:hidden clips
+     glyphs. Rules below must stay in place.
+     ─────────────────────────────────────────────────────────────── */
+  html[lang='ur'] body,
+  html[lang='ur'] button,
+  html[lang='ur'] input,
+  html[lang='ur'] select,
+  html[lang='ur'] textarea,
+  .urdu-text {
+    font-family: 'Noto Nastaliq Urdu', serif;
+    /* generous line-height so full glyph chain (لپٹی ہوئی الفاظ) renders */
     line-height: 2.2 !important;
-    /* never clip tall glyphs or diacritics */
-    overflow: visible;
-    overflow-wrap: break-word;
-    word-break: normal;
-    /* let text wrap instead of being truncated/clipped */
-    white-space: normal;
-    /* breathing room so tops/tails are not cut by rounded/padded parents */
-    padding-top: 0.25rem;
-    padding-bottom: 0.25rem;
   }
 
-  /* Inline usage (inside sentences/buttons) should not force block alignment */
-  span.urdu-text,
-  button .urdu-text,
-  a .urdu-text,
-  td.urdu-text,
-  th.urdu-text,
-  [lang='ur']:not(body):not(p):not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(div):not(li) {
+  /* Headings need even more room in Nastaliq */
+  html[lang='ur'] h1,
+  html[lang='ur'] h2,
+  html[lang='ur'] h3,
+  html[lang='ur'] h4 {
+    line-height: 2.4 !important;
+    padding-block: 0.35em;
+  }
+
+  /* Never clip Urdu anywhere — labels, badges, table cells, nav items */
+  html[lang='ur'] .no-clip,
+  html[lang='ur'] label,
+  html[lang='ur'] th,
+  html[lang='ur'] td,
+  html[lang='ur'] .badge,
+  html[lang='ur'] nav a,
+  html[lang='ur'] .toast {
+    overflow: visible !important;
+    min-height: 2.6rem;
+  }
+
+  html[lang='ur'] .badge {
+    min-height: 2.2rem;
+    padding-block: 0.5rem !important;
+  }
+
+  /* Buttons: use min-height (not fixed height) + extra vertical padding */
+  html[lang='ur'] .btn {
+    height: auto !important;
+    min-height: 2.9rem;
+    padding-top: 0.65rem !important;
+    padding-bottom: 0.75rem !important;
+  }
+
+  /* Form controls grow with Nastaliq */
+  html[lang='ur'] input,
+  html[lang='ur'] select,
+  html[lang='ur'] textarea {
+    height: auto !important;
+    min-height: 3rem;
+    padding-top: 0.6rem !important;
+    padding-bottom: 0.7rem !important;
+  }
+
+  /* Modal titles & sidebar links never truncate Urdu */
+  html[lang='ur'] .sidebar-link {
+    min-height: 3.2rem;
+    line-height: 2 !important;
+  }
+  html[lang='ur'] .modal-title {
+    line-height: 2.3 !important;
+  }
+
+  /* Urdu inside LTR-context strings (numbers etc.) keeps direction */
+  .num,
+  input[type='number'],
+  input[type='date'] {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ── RTL polish ── */
+  html[dir='rtl'] .flip-rtl {
+    transform: scaleX(-1);
+  }
+  html[dir='rtl'] input,
+  html[dir='rtl'] textarea {
+    text-align: right;
+  }
+  html[dir='rtl'] input[type='number'],
+  html[dir='rtl'] input[type='date'],
+  html[dir='rtl'] input[type='tel'] {
+    text-align: start;
+  }
+  table {
     text-align: start;
   }
 
-  /* --- 2) Language-mode selectors: headings, paragraphs, buttons, cards,
-          table cells — applied CONSISTENTLY to every place Urdu appears --- */
-  html[lang='ur'] h1,
-  html[lang='ur'] h2,
-  html[lang='ur'] h3,
-  html[lang='ur'] h4,
-  html[lang='ur'] h5,
-  html[lang='ur'] h6,
-  html[lang='ur'] p,
-  html[lang='ur'] button,
-  html[lang='ur'] label,
-  html[lang='ur'] th,
-  html[lang='ur'] td {
-    line-height: 2.1;
-    overflow: visible;
-    overflow-wrap: break-word;
+  /* Thin scrollbars */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
   }
-
-  html[lang='ur'] h1,
-  html[lang='ur'] h2,
-  html[lang='ur'] h3,
-  html[lang='ur'] h4,
-  html[lang='ur'] h5,
-  html[lang='ur'] h6 {
-    line-height: 2;
+  *::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
   }
-
-  /* --- 3) Neutralize vertical clipping on containers that wrap Urdu ---
-     .truncate  = overflow:hidden + nowrap  →  Nastaliq gets cut off.
-     In Urdu mode text must WRAP and overflow must stay VISIBLE. */
-  html[lang='ur'] .truncate {
-    overflow: visible !important;
-    white-space: normal !important;
-    text-overflow: clip !important;
+  *::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 999px;
   }
+}
 
-  /* Card / list parents holding Urdu must not clip — BUT scrollable
-     containers (aside, nav, .overflow-y-auto) are deliberately excluded
-     so the sidebar keeps its own scrolling. */
-  html[lang='ur'] .surface,
-  html[lang='ur'] li {
-    overflow: visible;
+/* ═══════════════════════════════════════════════════════════════
+   REUSABLE COMPONENT CLASSES
+   ═══════════════════════════════════════════════════════════════ */
+@layer components {
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 1rem;
   }
-
-  /* Keep horizontal scroll behaviour for wide tables without clipping Urdu rows */
-  html[lang='ur'] .table-scroll,
-  html[lang='ur'] .overflow-x-auto {
-    overflow-x: auto;
-    overflow-y: visible;
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: 0.75rem;
+    font-weight: 500;
+    transition: all 0.15s ease;
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
   }
-
-  /* Tight Latin leading utilities collapse Nastaliq lines onto each other —
-     force generous line-height whenever the UI is in Urdu */
-  html[lang='ur'] .leading-none,
-  html[lang='ur'] .leading-tight,
-  html[lang='ur'] .leading-snug {
-    line-height: 2 !important;
+  .btn:active {
+    transform: scale(0.97);
   }
-
-  /* --- 4) Extra vertical padding where Urdu text sits in tight chrome
-     (sidebar/header brand blocks, card headers, nav rows, buttons):
-     Nastaliq needs 8–12px of head/foot room or the tops/tails are cut. */
-  html[lang='ur'] .urdu-clip-safe {
-    padding-top: 0.75rem; /* 12px */
-    padding-bottom: 0.75rem; /* 12px */
-    min-height: 0;
-    height: auto; /* never fixed-height Urdu containers */
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
   }
-
-  html[lang='ur'] button:not([role='switch']) {
-    height: auto;
-    min-height: 2.75rem; /* replaces fixed heights */
-    padding-top: 0.5rem;
-    padding-bottom: 0.5rem;
-    white-space: normal; /* wrap long Urdu labels instead of clipping */
+  .btn-ghost {
+    background: transparent;
+    color: var(--text);
   }
-
-  /* Fixed-height wrappers become self-sizing in Urdu mode */
-  html[lang='ur'] .h-16 {
-    height: auto;
-    min-height: 4rem;
+  .btn-ghost:hover {
+    background: color-mix(in srgb, var(--border) 55%, transparent);
   }
-
-  /* Sidebar section labels are ALL-CAPS Latin styling — keep tiny Urdu labels readable */
-  html[lang='ur'] .uppercase {
-    text-transform: none;
-    letter-spacing: normal;
+  .input {
+    width: 100%;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+    padding: 0.55rem 0.9rem;
+    color: var(--text);
+    outline: none;
+    transition: border 0.15s ease;
   }
-
-  /* Respect users who prefer reduced motion */
-  @media (prefers-reduced-motion: reduce) {
-    *,
-    ::before,
-    ::after {
-      animation-duration: 0.01ms !important;
-      animation-iteration-count: 1 !important;
-      transition-duration: 0.01ms !important;
-      scroll-behavior: auto !important;
+  .input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
+  }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    border-radius: 999px;
+    padding: 0.25rem 0.7rem;
+    font-size: 0.72rem;
+    font-weight: 600;
+    line-height: 1.7;
+  }
+  .skeleton {
+    background: linear-gradient(90deg, var(--border) 25%, transparent 50%, var(--border) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.4s infinite;
+    border-radius: 0.75rem;
+  }
+  @keyframes shimmer {
+    to {
+      background-position: -200% 0;
     }
   }
-}
-
-/* ---------- Reusable component classes ---------- */
-@layer components {
-  /* White "marble" surface: cards, modals, banners */
-  .surface {
-    @apply rounded-2xl border border-border bg-white shadow-card dark:border-gray-700 dark:bg-gray-800;
+  .fade-in {
+    animation: fadeIn 0.25s ease both;
   }
-
-  .text-main {
-    @apply text-text-dark dark:text-gray-100;
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
   }
-
-  .text-muted {
-    @apply text-text-light dark:text-gray-400;
-  }
-
-  /* Shared form field styling (input / select / textarea) */
-  .field-input {
-    @apply w-full rounded-xl border border-border bg-white px-4 py-3 text-sm text-text-dark transition-colors placeholder:text-text-light focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/40 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 dark:placeholder:text-gray-500;
-  }
-
-  /* Small square icon button (edit / delete / close ...) */
-  .icon-btn {
-    @apply grid h-9 w-9 place-items-center rounded-lg text-text-light transition-colors hover:bg-secondary hover:text-primary dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white;
-  }
-
-  /* iOS safe-area padding for the bottom navigation */
-  .pb-safe {
-    padding-bottom: env(safe-area-inset-bottom);
-  }
-
-  /* Skip-to-content link — visible only when focused (keyboard users) */
-  .skip-link {
-    @apply fixed start-4 top-2 z-[80] -translate-y-20 rounded-xl bg-primary px-4 py-2 text-sm font-bold text-white shadow-lg transition-transform focus:translate-y-0;
-  }
-
-  /* Urdu-safe heading: no clipping, generous Nastaliq line-height.
-     Add .urdu-text (or lang="ur") wherever Urdu renders — headings,
-     buttons, cards, table cells, nav labels — globally too (see base). */
-  .urdu-heading {
-    font-family: var(--font-urdu), 'Noto Nastaliq Urdu', serif;
-    line-height: 2;
-    overflow: visible;
-    overflow-wrap: break-word;
-    white-space: normal;
-    padding-top: 0.25rem;
-    padding-bottom: 0.25rem;
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
   }
 }
 
-/* ---------- Utilities ---------- */
-@layer utilities {
-  /* Soft entrance animation (results, modals, banners) */
-  .fade-up {
-    animation: fade-up 0.35s ease both;
+/* ═══════════════════════════════════════════════════════════════
+   PRINT (PDF via browser print — handles Urdu perfectly)
+   ═══════════════════════════════════════════════════════════════ */
+@media print {
+  body {
+    background: #fff !important;
+    color: #000 !important;
   }
-
-  /* Toast entrance (top-end corner) */
-  .toast-in {
-    animation: toast-in 0.25s ease both;
+  .no-print,
+  nav,
+  aside,
+  header.app-header,
+  .bottom-nav {
+    display: none !important;
   }
-
-  /* Hide scrollbars while keeping scrollability (sidebars, chips) */
-  .no-scrollbar {
-    scrollbar-width: none;
-    -ms-overflow-style: none;
+  .print-area {
+    box-shadow: none !important;
+    border: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    max-width: 100% !important;
   }
-
-  .no-scrollbar::-webkit-scrollbar {
-    display: none;
-  }
-
-  /* Consistent keyboard focus ring (add to any interactive element) */
-  .focus-ring {
-    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50;
-  }
-}
-
-@keyframes fade-up {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes toast-in {
-  from {
-    opacity: 0;
-    transform: translateY(-8px) scale(0.98);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
+  @page {
+    size: A4;
+    margin: 12mm;
   }
 }

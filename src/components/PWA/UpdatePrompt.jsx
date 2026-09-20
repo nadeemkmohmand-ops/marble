@@ -1,37 +1,42 @@
-import { useRef } from 'react'
+import React, { useEffect } from 'react'
 import { useRegisterSW } from 'virtual:pwa-register/react'
-import { useLanguage } from '../../context/LanguageContext.jsx'
-import { useToast } from '../../context/ToastContext.jsx'
+import { RefreshCw, X } from 'lucide-react'
+import { useLang } from '../../context/LanguageContext'
 
-/**
- * UpdatePrompt — PWA "new version available" flow.
- * Hooks vite-plugin-pwa's onNeedRefresh and surfaces a toast with a
- * "ری لوڈ کریں" action that activates the waiting service worker.
- *
- * Works when registerType is 'prompt' (see vite.config.js). With
- * 'autoUpdate' the SW swaps silently and this stays dormant — the seam
- * is ready either way.
- */
+/** Toast: new content available → reload. */
 export default function UpdatePrompt() {
-  const { t } = useLanguage()
-  const { toast } = useToast()
-  const shownRef = useRef(false)
+  const { t } = useLang()
+  const {
+    offlineReady: [offlineReady, setOfflineReady],
+    needRefresh: [needRefresh, setNeedRefresh],
+    updateServiceWorker,
+  } = useRegisterSW()
 
-  const { updateServiceWorker } = useRegisterSW({
-    onNeedRefresh() {
-      if (shownRef.current) return
-      shownRef.current = true
-      toast({
-        type: 'info',
-        message: t('pwa.updateReady'),
-        duration: 0, // sticky until dismissed / acted on
-        action: {
-          label: t('pwa.reload'),
-          onClick: () => updateServiceWorker(true),
-        },
-      })
-    },
-  })
+  useEffect(() => {
+    if (offlineReady) {
+      const t = setTimeout(() => setOfflineReady(false), 4000)
+      return () => clearTimeout(t)
+    }
+  }, [offlineReady, setOfflineReady])
 
-  return null
+  if (!needRefresh && !offlineReady) return null
+
+  return (
+    <div className="fixed top-3 inset-x-0 z-[92] flex justify-center px-3 no-print">
+      <div className="card px-4 py-3 shadow-2xl flex items-center gap-3 max-w-md fade-in">
+        <RefreshCw size={16} className="text-[var(--accent)]" />
+        <span className="text-sm leading-urdu no-clip">
+          {needRefresh ? t('pwa.updateReady') : t('pwa.offlineReady')}
+        </span>
+        {needRefresh && (
+          <button className="btn btn-primary min-h-8 px-3 text-xs" onClick={() => updateServiceWorker(true)}>
+            {t('pwa.reload')}
+          </button>
+        )}
+        <button onClick={() => (needRefresh ? setNeedRefresh(false) : setOfflineReady(false))} aria-label="Close">
+          <X size={14} className="text-[var(--muted)]" />
+        </button>
+      </div>
+    </div>
+  )
 }

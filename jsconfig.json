@@ -2,9 +2,11 @@
   "compilerOptions": {
     "baseUrl": ".",
     "jsx": "react-jsx",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
     "paths": {
       "@/*": ["src/*"]
     }
   },
-  "exclude": ["node_modules", "dist", "dev-dist"]
+  "include": ["src"]
 }

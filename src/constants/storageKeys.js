@@ -1,17 +1,42 @@
-/**
- * Every localStorage key in one place (previously hardcoded in 2+ files).
- * NOTE: `mfa-lang` / `mfa-theme` are stored as RAW strings (not JSON) because
- * the inline script in index.html reads them directly before first paint.
- */
-export const STORAGE_PREFIX = 'mfa-'
+// All localStorage keys in one place — never scatter raw strings around the app.
+const NS = 'marble'
+
+const k = (name) => `${NS}.${name}`
 
 export const STORAGE_KEYS = {
-  LANG: 'mfa-lang',
-  THEME: 'mfa-theme',
-  INSTALL_DISMISSED: 'mfa-install-dismissed',
-  USER: 'mfa-user',
-  AUTH: 'mfa-auth',
+  LANG: k('lang'),
+  THEME: k('theme'),
+  URDU_DIGITS: k('urduDigits'),
+  SIDEBAR: k('sidebar'),
+  AUTH: k('auth'),
+  USERS: k('users'),
+  SETTINGS: k('settings'),
+  COMPANY: k('company'),
+  SYNC_QUEUE: k('syncQueue'),
+  LAST_SYNC: k('lastSync'),
+  SEED_DONE: k('seedDone'),
+  PRINT_REQUEST: k('printRequest'),
+
+  // data collections
+  BLOCKS: k('blocks'),
+  SLABS: k('slabs'),
+  OFFCUTS: k('offcuts'),
+  MOVEMENTS: k('movements'),
+  CUTTING_PLANS: k('cuttingPlans'),
+  JOB_CARDS: k('jobCards'),
+  MACHINES: k('machines'),
+  MAINTENANCE: k('maintenance'),
+  PURCHASES: k('purchases'),
+  SUPPLIERS: k('suppliers'),
+  CUSTOMERS: k('customers'),
+  QUOTATIONS: k('quotations'),
+  ORDERS: k('orders'),
+  WORKERS: k('workers'),
+  ATTENDANCE: k('attendance'),
+  PIECEWORK: k('piecework'),
+  PAYROLL: k('payroll'),
+  EXPENSES: k('expenses'),
+  NOTIFICATIONS: k('notifications'),
 }
 
-/** Build a namespaced key: storageKey('draft') → 'mfa-draft' */
-export const storageKey = (name) => `${STORAGE_PREFIX}${name}`
+export default STORAGE_KEYS

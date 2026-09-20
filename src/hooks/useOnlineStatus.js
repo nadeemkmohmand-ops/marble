@@ -1,26 +1,17 @@
 import { useEffect, useState } from 'react'
 
-/**
- * useOnlineStatus — true when the browser has a network connection.
- * Powers the "آف لائن موڈ" banner in Layout.jsx (PWA hardening).
- */
 export function useOnlineStatus() {
-  const [online, setOnline] = useState(() =>
-    typeof navigator === 'undefined' ? true : navigator.onLine
-  )
-
+  const [online, setOnline] = useState(() => navigator.onLine)
   useEffect(() => {
-    const goOnline = () => setOnline(true)
-    const goOffline = () => setOnline(false)
-
-    window.addEventListener('online', goOnline)
-    window.addEventListener('offline', goOffline)
+    const up = () => setOnline(true)
+    const down = () => setOnline(false)
+    window.addEventListener('online', up)
+    window.addEventListener('offline', down)
     return () => {
-      window.removeEventListener('online', goOnline)
-      window.removeEventListener('offline', goOffline)
+      window.removeEventListener('online', up)
+      window.removeEventListener('offline', down)
     }
   }, [])
-
   return online
 }
 

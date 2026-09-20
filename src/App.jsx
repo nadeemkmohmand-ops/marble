@@ -1,48 +1,43 @@
-import { Suspense, lazy } from 'react'
-import { Route, Routes } from 'react-router-dom'
-import Layout from './components/Layout/Layout.jsx'
-import ProtectedRoute from './components/ProtectedRoute.jsx'
-import PageLoader from './components/States/PageLoader.jsx'
-import { PATHS } from './constants/routes.js'
-import { routes } from './routes.jsx'
+import React from 'react'
+import { HashRouter } from 'react-router-dom'
 
-const NotFound = lazy(() => import('./pages/NotFound.jsx'))
+import { ThemeProvider } from './context/ThemeContext'
+import { LanguageProvider } from './context/LanguageContext'
+import { ToastProvider } from './context/ToastContext'
+import { SidebarProvider } from './context/SidebarContext'
+import { AuthProvider } from './context/AuthContext'
+import { AppUIProvider } from './context/AppUIContext'
+import AppRoutes from './routes.jsx'
+import ErrorBoundary from './components/ErrorBoundary'
+import InstallPrompt from './components/PWA/InstallPrompt'
+import UpdatePrompt from './components/PWA/UpdatePrompt'
+import ScannerModal from './components/ScannerModal'
+import ConfirmDialog from './components/Feedback/ConfirmDialog'
+import { seedIfEmpty } from './data/seed'
 
-/**
- * Route tree:
- *  - /login is PUBLIC (and redirects home when already signed in)
- *  - everything else sits behind ProtectedRoute, which checks the real
- *    Supabase session and redirects to /login when there is none
- */
 export default function App() {
-  const Login = routes.find((route) => route.path === PATHS.LOGIN).element
-
+  seedIfEmpty() // first-run starter data (guarded — runs once per device)
   return (
-    <Routes>
-      {/* public route */}
-      <Route
-        path={PATHS.LOGIN}
-        element={
-          <Suspense fallback={<PageLoader />}>{Login}</Suspense>
-        }
-      />
-
-      {/* protected app shell */}
-      <Route
-        element={
-          <ProtectedRoute>
-            <Layout />
-          </ProtectedRoute>
-        }
-      >
-        {routes
-          .filter((route) => route.path !== PATHS.LOGIN)
-          .map((route) => (
-            <Route key={route.path} path={route.path} element={route.element} />
-          ))}
-        {/* Dedicated bilingual 404 (previously a silent redirect to /) */}
-        <Route path="*" element={<NotFound />} />
-      </Route>
-    </Routes>
+    <ErrorBoundary>
+      <ThemeProvider>
+        <LanguageProvider>
+          <ToastProvider>
+            <AuthProvider>
+              <SidebarProvider>
+                <HashRouter>
+                  <AppUIProvider>
+                    <AppRoutes />
+                    <ScannerModal />
+                    <ConfirmDialog />
+                    <InstallPrompt />
+                    <UpdatePrompt />
+                  </AppUIProvider>
+                </HashRouter>
+              </SidebarProvider>
+            </AuthProvider>
+          </ToastProvider>
+        </LanguageProvider>
+      </ThemeProvider>
+    </ErrorBoundary>
   )
 }

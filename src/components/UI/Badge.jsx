@@ -1,32 +1,25 @@
-import { cn } from '../../utils/cn.js'
+import React from 'react'
+import { cn } from '../../utils/cn'
+import { useLang } from '../../context/LanguageContext'
+import { statusTone } from '../../constants/enums'
 
-/**
- * Badge — status chip (inventory "کم", order status, counters…).
- * Replaces the inline status pills previously hand-drawn in Inventory/Orders.
- *
- *   <Badge variant="warning" dot>{t('inv.low')}</Badge>
- */
-const VARIANTS = {
-  success: 'bg-success-light text-success-dark dark:bg-success/15 dark:text-success',
-  warning: 'bg-warning-light text-warning-dark dark:bg-warning/15 dark:text-warning',
-  error: 'bg-error-light text-error-dark dark:bg-error/15 dark:text-error',
-  info: 'bg-primary-50 text-primary dark:bg-primary/25 dark:text-primary-light',
-  accent: 'bg-accent-50 text-accent-dark dark:bg-accent/20 dark:text-accent-light',
-  neutral: 'bg-secondary text-text-light dark:bg-gray-700 dark:text-gray-300',
+const TONES = {
+  success: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400',
+  warning: 'bg-amber-500/15 text-amber-600 dark:text-amber-400',
+  danger: 'bg-red-500/15 text-red-600 dark:text-red-400',
+  info: 'bg-sky-500/15 text-sky-600 dark:text-sky-400',
+  brand: 'bg-violet-500/15 text-violet-600 dark:text-violet-400',
+  muted: 'bg-slate-500/15 text-slate-500 dark:text-slate-400',
 }
 
-export default function Badge({ variant = 'neutral', size = 'md', dot = false, children, className = '' }) {
+/** Status badge — i18n label via enums.*, color via STATUS_TONE. */
+export default function Badge({ status, label, tone, className }) {
+  const { t } = useLang()
+  const text = label ?? t(`enums.status.${status}`)
+  const finalTone = tone || statusTone(status)
   return (
-    <span
-      className={cn(
-        'inline-flex items-center gap-1.5 whitespace-nowrap rounded-full font-bold',
-        size === 'sm' ? 'px-2 py-0.5 text-[10px]' : 'px-2.5 py-1 text-xs',
-        VARIANTS[variant] ?? VARIANTS.neutral,
-        className
-      )}
-    >
-      {dot && <span className="h-1.5 w-1.5 rounded-full bg-current" aria-hidden="true" />}
-      {children}
+    <span className={cn('badge no-clip', TONES[finalTone], className)}>
+      {text}
     </span>
   )
 }

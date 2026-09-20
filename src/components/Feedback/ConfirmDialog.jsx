@@ -1,54 +1,28 @@
+import React from 'react'
+import Modal from '../UI/Modal'
+import Button from '../UI/Button'
+import { useLang } from '../../context/LanguageContext'
 import { AlertTriangle } from 'lucide-react'
-import Modal from '../UI/Modal.jsx'
-import Button from '../UI/Button.jsx'
-import { useLanguage } from '../../context/LanguageContext.jsx'
 
-/**
- * ConfirmDialog — reusable destructive-action confirmation, built on Modal.
- *
- *   const [confirmOpen, setConfirmOpen] = useState(false)
- *   <ConfirmDialog
- *     open={confirmOpen}
- *     onClose={() => setConfirmOpen(false)}
- *     onConfirm={() => { /* do the destructive thing *\/ }}
- *     title={t('confirm.deleteTitle')}
- *     message={t('confirm.deleteMessage')}
- *   />
- */
-export default function ConfirmDialog({
-  open,
-  onClose,
-  onConfirm,
-  title,
-  message,
-  confirmLabel,
-  cancelLabel,
-  confirmVariant = 'danger',
-  icon: Icon = AlertTriangle,
-}) {
-  const { t } = useLanguage()
-
+/** Promise-based confirm dialog driven by AppUIContext.confirm(). */
+export default function ConfirmDialog({ state, onResolve }) {
+  const { t } = useLang()
+  if (!state) return null // nothing requested → don't render
   return (
-    <Modal
-      open={open}
-      onClose={onClose}
-      title={title ?? t('confirm.defaultTitle')}
-      footer={
-        <>
-          <Button variant="secondary" onClick={onClose}>
-            {cancelLabel ?? t('common.cancel')}
-          </Button>
-          <Button variant={confirmVariant} onClick={onConfirm}>
-            {confirmLabel ?? t('confirm.confirm')}
-          </Button>
-        </>
-      }
-    >
-      <div className="flex items-start gap-3">
-        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-error/10 text-error">
-          <Icon size={20} aria-hidden="true" />
-        </span>
-        <p className="pt-1 text-sm leading-relaxed text-muted">{message}</p>
+    <Modal open onClose={() => onResolve(false)} title={state?.title || t('common.confirmTitle')} size="sm">
+      <div className="flex gap-3 items-start">
+        <div className="h-10 w-10 shrink-0 rounded-full bg-red-500/15 text-red-500 grid place-items-center">
+          <AlertTriangle size={18} />
+        </div>
+        <p className="text-sm leading-urdu no-clip pt-1">{state?.message || t('common.confirmDelete')}</p>
+      </div>
+      <div className="flex justify-end gap-2 mt-5">
+        <Button variant="secondary" onClick={() => onResolve(false)}>
+          {t('common.cancel')}
+        </Button>
+        <Button variant="danger" onClick={() => onResolve(true)}>
+          {state?.confirmLabel || t('common.delete')}
+        </Button>
       </div>
     </Modal>
   )

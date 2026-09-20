@@ -1,12 +1,6 @@
-import { Component } from 'react'
-import { AlertTriangle, RotateCcw } from 'lucide-react'
+import React from 'react'
 
-/**
- * ErrorBoundary — app-wide safety net (main.jsx) and per-route net (Layout.jsx).
- * Bilingual fallback UI; shows the raw error message in dev builds only.
- * Pass `fallback(renderProps)` for a custom fallback: ({ error, reset }) => …
- */
-export default class ErrorBoundary extends Component {
+export default class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props)
     this.state = { error: null }
@@ -20,58 +14,31 @@ export default class ErrorBoundary extends Component {
     console.error('[ErrorBoundary]', error, info?.componentStack)
   }
 
-  handleReset = () => this.setState({ error: null })
-
   render() {
-    const { error } = this.state
-    if (!error) return this.props.children
-
-    if (typeof this.props.fallback === 'function') {
-      return this.props.fallback({ error, reset: this.handleReset })
-    }
-
-    return (
-      <div className="m-4 sm:m-6">
-        <div className="surface mx-auto flex max-w-lg flex-col items-center gap-4 p-8 text-center">
-          <span className="grid h-14 w-14 place-items-center rounded-2xl bg-error/10 text-error">
-            <AlertTriangle size={26} aria-hidden="true" />
-          </span>
-          <div>
-            <h2 className="text-lg font-bold text-main">کچھ غلط ہو گیا</h2>
-            <p className="text-sm font-semibold text-muted">Something went wrong</p>
-            <p className="mt-2 text-xs leading-relaxed text-muted">
-              براہ کرم دوبارہ کوشش کریں — مسئلہ برقرار رہے تو صفحہ ری لوڈ کریں۔
-              <br />
-              Please try again — reload the page if the problem persists.
-            </p>
-            {import.meta.env.DEV && (
-              <pre
-                dir="ltr"
-                className="mt-3 max-h-32 overflow-auto rounded-xl bg-secondary p-3 text-start font-english text-[11px] text-error dark:bg-gray-700/50"
-              >
-                {String(error?.message || error)}
-              </pre>
-            )}
-          </div>
-          <div className="flex flex-wrap justify-center gap-2">
+    if (this.state.error) {
+      return (
+        <div className="min-h-screen grid place-items-center p-6">
+          <div className="card p-6 max-w-md text-center">
+            <div className="mx-auto h-14 w-14 rounded-2xl bg-red-500/15 text-red-500 grid place-items-center text-2xl">⚠</div>
+            <h1 className="mt-3 font-bold text-lg">Something went wrong</h1>
+            <p dir="rtl" className="mt-1 text-sm urdu-text">کچھ غلط ہو گیا — براہ کرم دوبارہ کوشش کریں</p>
+            <pre className="mt-3 text-[11px] text-start whitespace-pre-wrap text-[var(--muted)] max-h-32 overflow-auto">
+              {String(this.state.error?.message || this.state.error)}
+            </pre>
             <button
-              type="button"
-              onClick={this.handleReset}
-              className="inline-flex h-11 items-center gap-2 rounded-xl bg-primary px-5 text-sm font-semibold text-white transition-colors hover:bg-primary-light"
+              className="btn btn-primary min-h-10 px-5 text-sm mt-4"
+              onClick={() => {
+                this.setState({ error: null })
+                window.location.hash = '#/'
+                window.location.reload()
+              }}
             >
-              <RotateCcw size={16} />
-              دوبارہ کوشش کریں
-            </button>
-            <button
-              type="button"
-              onClick={() => window.location.reload()}
-              className="inline-flex h-11 items-center gap-2 rounded-xl border border-border bg-white px-5 text-sm font-semibold text-text-dark transition-colors hover:bg-secondary dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700"
-            >
-              ری لوڈ / Reload
+              Reload / دوبارہ
             </button>
           </div>
         </div>
-      </div>
-    )
+      )
+    }
+    return this.props.children
   }
 }

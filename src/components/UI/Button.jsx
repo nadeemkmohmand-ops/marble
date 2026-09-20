@@ -1,39 +1,42 @@
-import { forwardRef } from 'react'
+import React from 'react'
+import { cn } from '../../utils/cn'
+import { Loader2 } from 'lucide-react'
 
 const VARIANTS = {
-  primary: 'bg-primary text-white shadow-sm hover:bg-primary-light focus-visible:ring-primary/50',
-  accent: 'bg-accent text-white shadow-sm hover:bg-accent-light focus-visible:ring-accent/50',
-  secondary:
-    'bg-secondary text-text-dark hover:bg-secondary-dark focus-visible:ring-gray-400 dark:bg-gray-700 dark:text-gray-100 dark:hover:bg-gray-600',
-  outline:
-    'border border-border bg-white text-text-dark hover:bg-secondary focus-visible:ring-gray-400 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700',
-  ghost: 'text-text-dark hover:bg-secondary focus-visible:ring-gray-400 dark:text-gray-200 dark:hover:bg-gray-700',
-  danger: 'bg-error text-white shadow-sm hover:bg-red-600 focus-visible:ring-error/50',
+  primary: 'btn-primary shadow-sm hover:brightness-110',
+  secondary: 'border border-[var(--border)] bg-[var(--card)] hover:bg-[color-mix(in_srgb,var(--border)_35%,transparent)]',
+  ghost: 'btn-ghost',
+  danger: 'bg-danger text-white hover:brightness-110',
+  success: 'bg-success text-white hover:brightness-110',
+  whatsapp: 'bg-[#25D366] text-white hover:brightness-105',
 }
 
 const SIZES = {
-  // min-height (NOT fixed height) — Urdu/Nastaliq labels need vertical room
-  sm: 'min-h-9 px-3 py-1.5 text-xs gap-1.5',
-  md: 'min-h-11 px-5 py-2 text-sm gap-2', // 44px — touch friendly
-  lg: 'min-h-12 px-6 py-2.5 text-base gap-2',
-  icon: 'h-11 w-11', // icon-only: no text, fixed size is safe
+  sm: 'min-h-8 px-3 text-xs',
+  md: 'min-h-10 px-4 text-sm',
+  lg: 'min-h-12 px-5 text-base',
+  icon: 'h-10 w-10 !px-0 justify-center',
 }
 
-/**
- * Button — pass `as={Link}` and `to="/path"` to render a router link as a button.
- */
-const Button = forwardRef(function Button(
-  { as: Component = 'button', variant = 'primary', size = 'md', type = 'button', className = '', ...props },
-  ref
-) {
+export default function Button({
+  as: Tag = 'button',
+  variant = 'primary',
+  size = 'md',
+  loading = false,
+  disabled = false,
+  icon: Icon,
+  className,
+  children,
+  ...props
+}) {
   return (
-    <Component
-      ref={ref}
-      type={Component === 'button' ? type : undefined}
-      className={`inline-flex select-none items-center justify-center rounded-xl font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 disabled:pointer-events-none disabled:opacity-50 ${VARIANTS[variant]} ${SIZES[size]} ${className}`}
+    <Tag
+      className={cn('btn', VARIANTS[variant], SIZES[size], disabled && 'opacity-50 pointer-events-none', className)}
+      disabled={Tag === 'button' ? disabled || loading : undefined}
       {...props}
-    />
+    >
+      {loading ? <Loader2 size={16} className="animate-spin" /> : Icon ? <Icon size={16} /> : null}
+      {children}
+    </Tag>
   )
-})
-
-export default Button
+}

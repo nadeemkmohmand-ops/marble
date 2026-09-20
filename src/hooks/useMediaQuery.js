@@ -1,25 +1,21 @@
 import { useEffect, useState } from 'react'
+import { BREAKPOINTS } from '../constants/breakpoints'
 
-/**
- * useMediaQuery — reactive CSS media query.
- *   const isDesktop = useMediaQuery(MEDIA_QUERIES.lgUp)   // ≥1024px
- *   const prefersReducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)')
- */
 export function useMediaQuery(query) {
-  const [matches, setMatches] = useState(() => {
-    if (typeof window === 'undefined') return false
-    return window.matchMedia(query).matches
-  })
-
+  const [matches, setMatches] = useState(() =>
+    typeof window !== 'undefined' ? window.matchMedia(query).matches : false,
+  )
   useEffect(() => {
-    const mediaQueryList = window.matchMedia(query)
-    const onChange = (event) => setMatches(event.matches)
-    setMatches(mediaQueryList.matches)
-    mediaQueryList.addEventListener('change', onChange)
-    return () => mediaQueryList.removeEventListener('change', onChange)
+    const mq = window.matchMedia(query)
+    const onChange = () => setMatches(mq.matches)
+    onChange()
+    mq.addEventListener('change', onChange)
+    return () => mq.removeEventListener('change', onChange)
   }, [query])
-
   return matches
 }
+
+export const useMinWidth = (bp) => useMediaQuery(`(min-width: ${BREAKPOINTS[bp] || bp}px)`)
+export const useMaxWidth = (bp) => useMediaQuery(`(max-width: ${BREAKPOINTS[bp] || bp}px)`)
 
 export default useMediaQuery

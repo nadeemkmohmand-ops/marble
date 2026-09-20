@@ -1,65 +1,47 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
-import ToastViewport from '../components/Feedback/Toast.jsx'
-
-/**
- * ToastContext — global notification mechanism (previously missing entirely).
- *
- *   const { toast } = useToast()
- *   toast('سادہ پیغام')
- *   toast({ type: 'success', message: 'محفوظ ہو گیا' })
- *   toast({ type: 'error', message: '...', duration: 0, action: { label: 'ری لوڈ', onClick } })
- *
- * Types: 'success' | 'error' | 'warning' | 'info' (default).
- * duration 0 = sticky (no auto-dismiss). Announced via an aria-live region.
- */
-export const GLOBAL_ERROR_EVENT = 'mfa:global-error'
-
-const MAX_VISIBLE = 4
-const DEFAULT_DURATION = 4000
+import React, { createContext, useCallback, useContext, useMemo, useState } from 'react'
+import Toast from '../components/Feedback/Toast'
 
 const ToastContext = createContext(null)
+let seq = 0
 
 export function ToastProvider({ children }) {
   const [toasts, setToasts] = useState([])
-  const counter = useRef(0)
 
   const dismiss = useCallback((id) => {
-    setToasts((list) => list.filter((item) => item.id !== id))
+    setToasts((list) => list.filter((t) => t.id !== id))
   }, [])
 
-  const toast = useCallback((input) => {
-    const item = typeof input === 'string' ? { message: input } : input || {}
-    counter.current += 1
-    const id = counter.current
-    const entry = { id, type: 'info', duration: DEFAULT_DURATION, ...item }
-    setToasts((list) => [...list.slice(-(MAX_VISIBLE - 1)), entry])
+  const push = useCallback((message, type = 'info', duration = 3200) => {
+    const id = ++seq
+    setToasts((list) => [...list, { id, message, type }])
+    if (duration) setTimeout(() => dismiss(id), duration)
     return id
-  }, [])
+  }, [dismiss])
 
-  // Bridge for window-level errors (see main.jsx global listeners → dev toast)
-  useEffect(() => {
-    const onGlobalError = (event) => {
-      const detail = event.detail || {}
-      toast({ type: 'error', message: detail.message || 'Unexpected error', duration: 6000 })
-    }
-    window.addEventListener(GLOBAL_ERROR_EVENT, onGlobalError)
-    return () => window.removeEventListener(GLOBAL_ERROR_EVENT, onGlobalError)
-  }, [toast])
-
-  const value = useMemo(() => ({ toast, dismiss }), [toast, dismiss])
+  const value = useMemo(
+    () => ({
+      push,
+      success: (m) => push(m, 'success'),
+      error: (m) => push(m, 'error'),
+      info: (m) => push(m, 'info'),
+    }),
+    [push],
+  )
 
   return (
     <ToastContext.Provider value={value}>
       {children}
-      <ToastViewport toasts={toasts} onDismiss={dismiss} />
+      <div className="fixed top-3 inset-x-0 z-[95] flex flex-col items-center gap-2 px-3 pointer-events-none">
+        {toasts.map((t) => (
+          <Toast key={t.id} toast={t} onDismiss={dismiss} />
+        ))}
+      </div>
     </ToastContext.Provider>
   )
 }
 
 export function useToast() {
   const ctx = useContext(ToastContext)
-  if (!ctx) {
-    throw new Error('useToast must be used inside <ToastProvider> (see context/index.jsx)')
-  }
+  if (!ctx) throw new Error('useToast must be used inside ToastProvider')
   return ctx
 }

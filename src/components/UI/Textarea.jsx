@@ -1,8 +1,15 @@
-import { forwardRef } from 'react'
+import React from 'react'
+import { cn } from '../../utils/cn'
 
-/** Textarea — multi-line input sharing the .field-input style. */
-export const Textarea = forwardRef(function Textarea({ className = '', rows = 4, ...props }, ref) {
-  return <textarea ref={ref} rows={rows} className={`field-input min-h-24 resize-y ${className}`} {...props} />
-})
-
-export default Textarea
+export default function Textarea({ label, rows = 3, className, ...props }) {
+  return (
+    <div className={cn('w-full', className)}>
+      {label && (
+        <label className="block text-xs font-medium text-[var(--muted)] mb-1.5 leading-urdu no-clip">
+          {label}
+        </label>
+      )}
+      <textarea rows={rows} className={cn('input resize-y', className)} {...props} />
+    </div>
+  )
+}

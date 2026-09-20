@@ -1,76 +1,56 @@
-import { Bell, Gem, Menu, Search } from 'lucide-react'
-import { Link } from 'react-router-dom'
-import { useAppUI } from '../../context/AppUIContext.jsx'
-import { useSidebar } from '../../context/SidebarContext.jsx'
-import { useToast } from '../../context/ToastContext.jsx'
-import Tooltip from '../UI/Tooltip.jsx'
-import UserMenu from './UserMenu.jsx'
+import React from 'react'
+import { Menu, Sun, Moon, Languages, Wifi, WifiOff, RefreshCw } from 'lucide-react'
+import { useSidebar } from '../../context/SidebarContext'
+import { useTheme } from '../../context/ThemeContext'
+import { useLang } from '../../context/LanguageContext'
+import { useOnlineStatus } from '../../hooks/useOnlineStatus'
+import { onSyncStatus } from '../../services/sync'
+import Breadcrumbs from './Breadcrumbs'
+import { cn } from '../../utils/cn'
 
-/**
- * Header — sticky top bar (deep blue).
- * Hamburger (below lg) opens the sidebar drawer (SidebarContext).
- * Adds a global-search placeholder (hidden on mobile) and a user menu.
- */
 export default function Header() {
-  const { t } = useAppUI()
-  const { openSidebar } = useSidebar()
-  const { toast } = useToast()
+  const { openMobile } = useSidebar()
+  const { theme, toggle } = useTheme()
+  const { toggleLang, lang, t } = useLang()
+  const online = useOnlineStatus()
 
   return (
-    <header className="sticky top-0 z-30 bg-primary text-white shadow-md">
-      {/* min-height instead of fixed height — Urdu brand text needs vertical room */}
-      <div className="mx-auto flex min-h-16 items-center gap-2 px-4 py-2 sm:px-6">
-        {/* hamburger — hidden on desktop (sidebar is fixed there) */}
-        <button
-          type="button"
-          onClick={openSidebar}
-          className="grid h-11 w-11 place-items-center rounded-xl transition-colors hover:bg-white/10 lg:hidden"
-          aria-label={t('common.menu')}
+    <header className="app-header sticky top-0 z-40 h-16 flex items-center gap-2 px-3 sm:px-5 bg-[var(--card)]/90 backdrop-blur border-b border-[var(--border)] no-print">
+      <button className="btn btn-ghost h-10 w-10 justify-center lg:hidden" onClick={openMobile} aria-label="Menu">
+        <Menu size={20} />
+      </button>
+      <Breadcrumbs className="hidden sm:block flex-1 min-w-0" />
+      <div className="flex-1 sm:hidden" />
+
+      <div className="flex items-center gap-1.5">
+        <SyncDot />
+        <span
+          className={cn('hidden sm:flex items-center gap-1 text-[11px] px-2 py-1 rounded-full', online ? 'text-emerald-500' : 'text-amber-500')}
+          title={online ? t('common.online') : t('common.offline')}
         >
-          <Menu size={22} />
+          {online ? <Wifi size={13} /> : <WifiOff size={13} />}
+        </span>
+        <button className="btn btn-ghost h-10 w-10 justify-center" onClick={toggleLang} title={t('settings.language')} aria-label="Language">
+          <Languages size={18} />
+          <span className="text-[10px] font-bold ms-0.5">{lang === 'ur' ? 'EN' : 'UR'}</span>
         </button>
-
-        {/* brand — no truncate / no leading-tight: Nastaliq Urdu must not clip */}
-        <div className="flex min-w-0 items-center gap-2.5">
-          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white/10 ring-1 ring-white/20">
-            <Gem size={22} className="text-accent-light" />
-          </span>
-          <div className="min-w-0">
-            <p className="text-base font-bold">{t('factoryName')}</p>
-            <p className="text-[11px] text-white/60">{t('tagline')}</p>
-          </div>
-        </div>
-
-        {/* actions */}
-        <div className="ms-auto flex items-center gap-1">
-          {/* app-wide search — framework placeholder (wire up in a later version) */}
-          <Tooltip label={t('header.searchSoon')}>
-            <button
-              type="button"
-              onClick={() => toast({ type: 'info', message: t('header.searchSoon') })}
-              className="hidden h-10 w-56 items-center gap-2 rounded-xl bg-white/10 px-3.5 text-start text-xs text-white/70 ring-1 ring-white/20 transition-colors hover:bg-white/15 md:flex"
-              aria-label={t('common.search')}
-            >
-              <Search size={16} aria-hidden="true" />
-              <span>{t('header.search')}</span>
-            </button>
-          </Tooltip>
-
-          <Link
-            to="/notifications"
-            className="relative grid h-11 w-11 place-items-center rounded-xl transition-colors hover:bg-white/10"
-            aria-label={t('set.notifications')}
-          >
-            <Bell size={20} />
-            <span
-              className="absolute end-2.5 top-2 h-2 w-2 rounded-full bg-accent-light ring-2 ring-primary"
-              aria-hidden="true"
-            />
-          </Link>
-
-          <UserMenu />
-        </div>
+        <button className="btn btn-ghost h-10 w-10 justify-center" onClick={toggle} aria-label="Theme">
+          {theme === 'light' ? <Sun size={18} /> : <Moon size={18} />}
+        </button>
       </div>
     </header>
   )
+}
+
+function SyncDot() {
+  const [sync, setSync] = React.useState(null)
+  React.useEffect(() => onSyncStatus(setSync), [])
+  if (!sync || (sync.pending === 0 && sync.lastSync)) return null
+  if (sync.pending > 0)
+    return (
+      <span className="hidden sm:flex items-center gap-1 text-[11px] text-amber-500" title={`${sync.pending} pending`}>
+        <RefreshCw size={13} className="animate-spin" />
+      </span>
+    )
+  return null
 }

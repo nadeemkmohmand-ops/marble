@@ -1,44 +1,94 @@
-/**
- * Formatters — Urdu digits, numbers, currency, dates and percentages.
- * All helpers are pure (no React, no side effects).
- */
+import { num, round, toUrduDigits, toLatinDigits } from './numbers'
 
-const URDU_DIGITS = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹']
+// ─────────────────────────────────────────────────────────────────
+// formatters — locale aware display helpers.
+// LanguageContext publishes the active locale via setFormatters(),
+// so every call anywhere (tables, exports, print templates) is
+// automatically consistent (Urdu digits, currency, etc.).
+// ─────────────────────────────────────────────────────────────────
 
-/** '2026' → '۲۰۲۶' */
-export function toUrduDigits(value) {
-  return String(value).replace(/[0-9]/g, (digit) => URDU_DIGITS[Number(digit)])
+let currentFmt = { lang: 'en', urduDigits: false, currency: 'PKR' }
+
+export function setFormatters(opts = {}) {
+  currentFmt = { ...currentFmt, ...opts }
 }
 
-/** 1250000 → '1,250,000' (Urdu digits when lang === 'ur') */
-export function formatNumber(value, lang = 'ur') {
-  const n = Number(value)
-  if (!Number.isFinite(n)) return String(value)
-  const grouped = new Intl.NumberFormat('en-US').format(n)
-  return lang === 'ur' ? toUrduDigits(grouped) : grouped
+export function getFormatters() {
+  return currentFmt
 }
 
-/** 1250000 → '۱۲٬۵۰٬۰۰۰ روپے' | 'PKR 1,250,000' */
-export function formatCurrency(value, lang = 'ur') {
-  const amount = formatNumber(value, lang)
-  return lang === 'ur' ? `${amount} روپے` : `PKR ${amount}`
+export function fmtNumber(value, opts = {}) {
+  const o = { ...currentFmt, ...opts }
+  const { lang = o.lang, urduDigits = o.urduDigits, decimals = 2 } = o
+  const n = num(value)
+  if (!Number.isFinite(n)) return urduDigits ? toUrduDigits('0') : '0'
+  const str = n.toLocaleString(lang === 'ur' ? 'en-PK' : 'en-US', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: decimals,
+  })
+  return urduDigits ? toUrduDigits(str) : str
 }
 
-/** Date → localized long date ('ur-PK' | 'en-GB') */
-export function formatDate(value, lang = 'ur', options = {}) {
-  const date = value instanceof Date ? value : new Date(value)
-  if (Number.isNaN(date.getTime())) return String(value)
-  const defaults = { year: 'numeric', month: 'long', day: 'numeric' }
-  return new Intl.DateTimeFormat(lang === 'ur' ? 'ur-PK' : 'en-GB', {
-    ...defaults,
-    ...options,
-  }).format(date)
+export function fmtCurrency(value, opts = {}) {
+  const o = { ...currentFmt, ...opts }
+  const { currency = o.currency, lang = o.lang, urduDigits = o.urduDigits } = o
+  const s = fmtNumber(value, o)
+  const symbol = currency === 'PKR' ? 'Rs' : currency
+  return lang === 'ur' ? `${s} ${urduCurrency(currency)}` : `${symbol} ${s}`
 }
 
-/** 8.5 → '۸.۵٪' | '8.5%' */
-export function formatPercent(value, lang = 'ur') {
-  const n = Number(value)
-  if (!Number.isFinite(n)) return String(value)
-  const s = `${n}%`
-  return lang === 'ur' ? toUrduDigits(s) : s
+export function urduCurrency(currency) {
+  return { PKR: 'روپے', USD: 'ڈالر', EUR: 'یورو', AED: 'درہم', CNY: 'یوان' }[currency] || currency
 }
+
+export function fmtDate(value, opts = {}) {
+  if (!value) return '—'
+  const { lang = 'en', urduDigits = false } = opts
+  const d = new Date(value)
+  if (Number.isNaN(d.getTime())) return String(value)
+  const str = d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+  return urduDigits ? toUrduDigits(str) : str
+}
+
+export function fmtDateTime(value, opts = {}) {
+  if (!value) return '—'
+  const d = new Date(value)
+  if (Number.isNaN(d.getTime())) return String(value)
+  const date = fmtDate(value, opts)
+  const time = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+  const s = `${date} ${time}`
+  return opts.urduDigits ? toUrduDigits(s) : s
+}
+
+export function todayISO() {
+  return new Date().toISOString().slice(0, 10)
+}
+
+// ── Unit formatting ──
+export function fmtUnit(value, unit, opts = {}) {
+  return `${fmtNumber(value, opts)} ${unit}`
+}
+
+export function fmtSqft(value, opts = {}) {
+  return `${fmtNumber(value, opts)} ${opts.lang === 'ur' ? 'sq ft' : 'sq ft'}`
+}
+
+export function fmtCft(value, opts = {}) {
+  return `${fmtNumber(value, opts)} cft`
+}
+
+export function fmtKg(value, opts = {}) {
+  return `${fmtNumber(value, opts)} kg`
+}
+
+export function fmtPhone(value) {
+  const s = toLatinDigits(String(value || '')).replace(/[^\d+]/g, '')
+  return s
+}
+
+// Bilingual label picker used by exports/print when i18n hook is unavailable
+export function bi(en, ur, lang) {
+  return lang === 'ur' ? ur : en
+}
+
+export { round, num }

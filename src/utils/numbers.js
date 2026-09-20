@@ -1,25 +1,37 @@
-/** Pure number helpers — clamp, coerce, round, sum. */
+// Number safety helpers — every calculation in the app goes through these.
 
-export function clamp(value, min, max) {
-  return Math.min(Math.max(value, min), max)
-}
-
-/** Number('abc') → NaN; toNumber('abc', 0) → 0 */
-export function toNumber(value, fallback = 0) {
-  const n = Number(value)
+export function num(value, fallback = 0) {
+  if (value === null || value === undefined || value === '') return fallback
+  const n = typeof value === 'number' ? value : parseFloat(toLatinDigits(String(value)))
   return Number.isFinite(n) ? n : fallback
 }
 
-export function roundTo(value, decimals = 0) {
-  const factor = 10 ** decimals
-  return Math.round(value * factor) / factor
+export function round(value, decimals = 2) {
+  const f = 10 ** decimals
+  return Math.round((num(value) + Number.EPSILON) * f) / f
 }
 
-export function isPositiveInteger(value) {
-  const n = Number(value)
-  return Number.isInteger(n) && n > 0
+export function sum(list, getter = (x) => x) {
+  return list.reduce((acc, item) => acc + num(getter(item)), 0)
 }
 
-export function sum(values = []) {
-  return values.reduce((acc, value) => acc + toNumber(value, 0), 0)
+export function clamp(value, min, max) {
+  return Math.min(Math.max(num(value), min), max)
+}
+
+export function pct(value, total) {
+  return total ? round((num(value) / num(total)) * 100, 1) : 0
+}
+
+// Urdu digits ↔ Latin digits
+export const URDU_DIGITS = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹']
+
+export function toUrduDigits(input) {
+  return String(input ?? '').replace(/[0-9]/g, (d) => URDU_DIGITS[+d])
+}
+
+export function toLatinDigits(input) {
+  return String(input ?? '')
+    .replace(/[۰-۹]/g, (d) => String(URDU_DIGITS.indexOf(d)))
+    .replace(/[٠-٩]/g, (d) => String('٠١٢٣٤٥٦٧٨٩'.indexOf(d)))
 }

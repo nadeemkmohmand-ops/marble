@@ -1,65 +1,41 @@
-import { useEffect } from 'react'
+import React, { useEffect } from 'react'
 import { X } from 'lucide-react'
-import { useFocusTrap } from '../../hooks/useFocusTrap.js'
-import { useLanguage } from '../../context/LanguageContext.jsx'
+import { cn } from '../../utils/cn'
 
-/**
- * Modal — bottom-sheet on mobile, centered dialog on sm+.
- * Closes on backdrop click, Escape key, or the X button. UI only.
- * A11y: focus is trapped inside while open (Tab cycles), and returned
- * to the trigger element on close (useFocusTrap).
- */
-export default function Modal({ open, onClose, title, children, footer, wide = false }) {
-  const { t } = useLanguage()
-  const trapRef = useFocusTrap({ active: open })
-
+export default function Modal({ open, onClose, title, children, footer, size = 'md' }) {
   useEffect(() => {
-    if (!open) return undefined
-    const onKeyDown = (event) => {
-      if (event.key === 'Escape') onClose?.()
-    }
-    document.addEventListener('keydown', onKeyDown)
+    if (!open) return
+    const onKey = (e) => e.key === 'Escape' && onClose?.()
+    document.addEventListener('keydown', onKey)
     document.body.style.overflow = 'hidden'
     return () => {
-      document.removeEventListener('keydown', onKeyDown)
+      document.removeEventListener('keydown', onKey)
       document.body.style.overflow = ''
     }
   }, [open, onClose])
 
   if (!open) return null
+  const widths = { sm: 'max-w-sm', md: 'max-w-2xl', lg: 'max-w-4xl', xl: 'max-w-6xl' }
 
   return (
-    <div
-      className="fixed inset-0 z-[60] flex items-end justify-center sm:items-center sm:p-4"
-      role="dialog"
-      aria-modal="true"
-      aria-label={typeof title === 'string' ? title : undefined}
-    >
-      {/* backdrop */}
-      <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={onClose} aria-hidden="true" />
-
-      {/* dialog */}
+    <div className="fixed inset-0 z-[80] flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
       <div
-        ref={trapRef}
-        tabIndex={-1}
-        className={`surface fade-up relative flex max-h-[85vh] w-full flex-col rounded-t-2xl shadow-2xl sm:rounded-2xl ${
-          wide ? 'sm:max-w-2xl' : 'sm:max-w-lg'
-        }`}
+        className={cn(
+          'relative card w-full max-h-[92vh] flex flex-col rounded-b-none sm:rounded-2xl animate-[fadeIn_.2s_ease]',
+          widths[size],
+        )}
+        role="dialog"
+        aria-modal="true"
       >
-        <header className="flex items-center justify-between gap-3 border-b border-border px-5 py-4 dark:border-gray-700">
-          <h3 className="text-base font-bold text-main">{title}</h3>
-          <button type="button" onClick={onClose} className="icon-btn" aria-label={t('common.close')}>
+        <div className="flex items-center justify-between gap-3 px-5 pt-4 pb-3 border-b border-[var(--border)]">
+          <h2 className="font-semibold text-base modal-title no-clip">{title}</h2>
+          <button onClick={onClose} className="btn btn-ghost h-9 w-9 justify-center rounded-lg" aria-label="Close">
             <X size={18} />
           </button>
-        </header>
-
-        <div className="overflow-y-auto px-5 py-4">{children}</div>
-
-        {footer && (
-          <footer className="flex flex-wrap justify-end gap-2 border-t border-border px-5 py-4 dark:border-gray-700">
-            {footer}
-          </footer>
-        )}
+        </div>
+        <div className="overflow-y-auto px-5 py-4 flex-1">{children}</div>
+        {footer && <div className="px-5 py-3 border-t border-[var(--border)] safe-bottom">{footer}</div>}
       </div>
     </div>
   )

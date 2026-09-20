@@ -1,43 +1,26 @@
+import React from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { ChevronRight, Home } from 'lucide-react'
-import { useLanguage } from '../../context/LanguageContext.jsx'
-import { routes } from '../../routes.jsx'
+import { ChevronRight } from 'lucide-react'
+import { useLang } from '../../context/LanguageContext'
+import { NAV_GROUPS } from '../../constants/navigation'
+import { cn } from '../../utils/cn'
 
-/**
- * Breadcrumbs — bilingual trail built from the route table titles.
- * Hidden on the dashboard. Becomes more useful with nested pages later.
- */
-export default function Breadcrumbs() {
-  const { pathname } = useLocation()
-  const { pick } = useLanguage()
-
-  if (pathname === '/') return null
-
-  const crumbs = routes.filter(
-    (route) => route.path !== '/' && route.title && pathname.startsWith(route.path)
-  )
-  if (crumbs.length === 0) return null
+export default function Breadcrumbs({ className }) {
+  const { t } = useLang()
+  const location = useLocation()
+  const current = NAV_GROUPS.flatMap((g) => g.items).find((i) => i.to === location.pathname)
 
   return (
-    <nav aria-label="breadcrumb" className="mb-3 flex items-center gap-0.5 text-xs text-muted">
-      <Link
-        to="/"
-        className="inline-flex items-center gap-1 rounded-lg px-1.5 py-1 transition-colors hover:text-primary dark:hover:text-primary-light"
-      >
-        <Home size={13} aria-hidden="true" />
-        <span>{pick({ ur: 'ہوم', en: 'Home' })}</span>
+    <nav className={cn('flex items-center gap-1 text-sm min-w-0', className)} aria-label="Breadcrumb">
+      <Link to="/" className="text-[var(--muted)] hover:text-[var(--text)] leading-urdu no-clip">
+        {t('nav.home')}
       </Link>
-      {crumbs.map((crumb) => (
-        <span key={crumb.path} className="inline-flex items-center gap-0.5">
-          <ChevronRight size={13} className="rtl:-scale-x-100" aria-hidden="true" />
-          <Link
-            to={crumb.path}
-            className="rounded-lg px-1.5 py-1 transition-colors hover:text-primary dark:hover:text-primary-light"
-          >
-            {pick(crumb.title)}
-          </Link>
-        </span>
-      ))}
+      {current && current.to !== '/' && (
+        <>
+          <ChevronRight size={13} className="text-[var(--muted)] flip-rtl" />
+          <span className="font-medium truncate leading-urdu no-clip">{t(current.key)}</span>
+        </>
+      )}
     </nav>
   )
 }
