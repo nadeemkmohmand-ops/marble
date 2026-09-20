@@ -1,163 +1,218 @@
-import { useState } from 'react'
-import { Link } from 'react-router-dom'
-import { ChevronLeft, ChevronRight, Languages, LogOut, Moon, Sun } from 'lucide-react'
-import Button from '../components/UI/Button.jsx'
-import Card from '../components/UI/Card.jsx'
-import PageHeader from '../components/UI/PageHeader.jsx'
-import { Switch } from '../components/UI/Input.jsx'
-import { useAppUI } from '../context/AppUIContext.jsx'
+import React, { useRef, useState } from 'react'
+import { Save, Download, Upload, Database, Trash2, ShieldCheck, Globe } from 'lucide-react'
+import Toolbar from '../components/UI/Toolbar'
+import Card, { CardHeader } from '../components/UI/Card'
+import Input from '../components/UI/Input'
+import Select from '../components/UI/Select'
+import Button from '../components/UI/Button'
+import Toggle from '../components/UI/Toggle'
+import { useLang } from '../context/LanguageContext'
+import { useTheme } from '../context/ThemeContext'
+import { useToast } from '../context/ToastContext'
+import { useAuth } from '../context/AuthContext'
+import { useAppUI } from '../context/AppUIContext'
+import { db } from '../services/db'
+import { createBackup, restoreBackup } from '../services/backup'
+import { testConnection } from '../services/supabaseClient'
+import APP_CONFIG from '../config/app.config'
+import { STORAGE_KEYS } from '../constants/storageKeys'
+import { storage } from '../utils/storage'
+import { LANGUAGES } from '../constants/languages'
+import { CURRENCIES } from '../constants/enums'
 
-/**
- * Settings (ترتیبات) — language toggle (Urdu/English), theme toggle
- * (light/dark), profile section and notification preferences.
- * All UI state only — nothing is sent anywhere.
- */
 export default function Settings() {
-  const { t, lang, setLang, theme, setTheme, isRTL } = useAppUI()
-  const [notif, setNotif] = useState({ lowStock: true, orders: true, dailyReport: false })
+  const { t, lang, setLang, urduDigits, setUrduDigits } = useLang()
+  const { theme, setTheme } = useTheme()
+  const toast = useToast()
+  const { users, addUser, removeUser, user } = useAuth()
+  const { confirm } = useAppUI()
+  const fileRef = useRef(null)
 
-  const Chevron = isRTL ? ChevronLeft : ChevronRight
+  const [company, setCompany] = useState(() => storage.get(STORAGE_KEYS.COMPANY, { name: APP_CONFIG.appName, address: '', phone: '', currency: APP_CONFIG.currency }))
+  const [defaults, setDefaults] = useState(() => storage.get(STORAGE_KEYS.SETTINGS, APP_CONFIG.defaults))
+  const [cloud, setCloud] = useState(null)
 
-  const notificationRows = [
-    { id: 'lowStock', label: t('set.notifLowStock'), desc: t('set.notifLowStockDesc') },
-    { id: 'orders', label: t('set.notifOrders'), desc: t('set.notifOrdersDesc') },
-    { id: 'dailyReport', label: t('set.notifReport'), desc: t('set.notifReportDesc') },
-  ]
+  const saveAll = () => {
+    storage.set(STORAGE_KEYS.COMPANY, company)
+    storage.set(STORAGE_KEYS.SETTINGS, defaults)
+    toast.success(t('settings.savedOk'))
+  }
+
+  const testCloud = async () => {
+    setCloud('testing')
+    const res = await testConnection()
+    setCloud(res)
+    toast[res.ok ? 'success' : 'error'](res.ok ? t('settings.cloudOn') : String(res.reason || t('settings.cloudOff')))
+  }
+
+  const eraseAll = async () => {
+    const ok = await confirm({ message: t('settings.resetConfirm') })
+    if (!ok) return
+    Object.values(STORAGE_KEYS)
+      .filter((k) => ![STORAGE_KEYS.LANG, STORAGE_KEYS.THEME, STORAGE_KEYS.URDU_DIGITS].includes(k))
+      .forEach((k) => storage.remove(k))
+    storage.set(STORAGE_KEYS.SEED_DONE, true) // never resurrect starter data after a wipe
+    window.location.reload()
+  }
 
   return (
-    <div className="space-y-4 sm:space-y-5">
-      <PageHeader title={t('nav.settings')} en="Settings" subtitle={t('set.subtitle')} />
+    <div className="fade-in max-w-3xl">
+      <Toolbar
+        title={t('settings.title')}
+        description={t('settings.subtitle')}
+        actions={<Button icon={Save} onClick={saveAll}>{t('common.save')}</Button>}
+      />
 
-      {/* profile */}
-      <Card>
-        <div className="flex items-center gap-4">
-          <span className="grid h-16 w-16 shrink-0 place-items-center rounded-full bg-primary text-2xl font-bold text-white">
-            م
-          </span>
-          <div className="min-w-0 flex-1">
-            <p className="text-base font-bold text-main">{t('set.userName')}</p>
-            <p className="mt-0.5 text-xs text-muted">{t('set.factoryManager')}</p>
+      <div className="space-y-4">
+        {/* Company */}
+        <Card>
+          <CardHeader title={t('settings.company')} subtitle={t('settings.logoHint')} />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <Input label={t('settings.companyName')} value={company.name || ''} onChange={(e) => setCompany((c) => ({ ...c, name: e.target.value }))} />
+            <Input label={t('settings.companyPhone')} value={company.phone || ''} onChange={(e) => setCompany((c) => ({ ...c, phone: e.target.value }))} />
+            <Input label={t('settings.companyAddress')} className="sm:col-span-2" value={company.address || ''} onChange={(e) => setCompany((c) => ({ ...c, address: e.target.value }))} />
           </div>
-          <Button variant="outline" size="sm">
-            {t('common.edit')}
-          </Button>
-        </div>
-      </Card>
+        </Card>
 
-      {/* preferences: language + theme */}
-      <Card title={t('set.preferences')}>
-        <div className="space-y-5">
-          {/* language */}
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div className="flex min-w-0 items-center gap-3">
-              <Languages size={20} className="shrink-0 text-primary dark:text-primary-light" aria-hidden="true" />
-              <div>
-                <p className="text-sm font-semibold text-main">{t('set.language')}</p>
-                <p className="text-xs text-muted">{lang === 'ur' ? 'اردو (RTL)' : 'English (LTR)'}</p>
-              </div>
-            </div>
-            <div className="grid shrink-0 grid-cols-2 gap-1 rounded-xl bg-secondary p-1 dark:bg-gray-700/50">
-              <button type="button" onClick={() => setLang('ur')} className={segmented(lang === 'ur')}>
-                اردو
-              </button>
-              <button type="button" onClick={() => setLang('en')} className={segmented(lang === 'en')}>
-                English
-              </button>
-            </div>
+        {/* Appearance */}
+        <Card>
+          <CardHeader title={t('settings.language')} />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <Select
+              label={t('settings.language')}
+              value={lang}
+              onChange={(e) => setLang(e.target.value)}
+              options={LANGUAGES.map((l) => ({ value: l.code, label: l.name }))}
+            />
+            <Select
+              label={t('settings.theme')}
+              value={theme}
+              onChange={(e) => setTheme(e.target.value)}
+              options={[
+                { value: 'light', label: t('settings.themeLight') },
+                { value: 'dark', label: t('settings.themeDark') },
+                { value: 'system', label: t('settings.themeSystem') },
+              ]}
+            />
+            <Toggle
+              label={t('settings.urduDigits')}
+              checked={Boolean(urduDigits)}
+              onChange={setUrduDigits}
+            />
           </div>
+        </Card>
 
-          <div className="border-t border-border dark:border-gray-700" />
-
-          {/* theme */}
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div className="flex min-w-0 items-center gap-3">
-              {theme === 'dark' ? (
-                <Moon size={20} className="shrink-0 text-primary dark:text-primary-light" aria-hidden="true" />
-              ) : (
-                <Sun size={20} className="shrink-0 text-primary dark:text-primary-light" aria-hidden="true" />
-              )}
-              <div>
-                <p className="text-sm font-semibold text-main">{t('set.theme')}</p>
-                <p className="text-xs text-muted">
-                  {theme === 'dark' ? t('set.dark') : t('set.light')}
-                </p>
-              </div>
-            </div>
-            <div className="grid shrink-0 grid-cols-2 gap-1 rounded-xl bg-secondary p-1 dark:bg-gray-700/50">
-              <button type="button" onClick={() => setTheme('light')} className={segmented(theme === 'light')}>
-                <span className="inline-flex items-center gap-1.5">
-                  <Sun size={14} />
-                  {t('set.light')}
-                </span>
-              </button>
-              <button type="button" onClick={() => setTheme('dark')} className={segmented(theme === 'dark')}>
-                <span className="inline-flex items-center gap-1.5">
-                  <Moon size={14} />
-                  {t('set.dark')}
-                </span>
-              </button>
-            </div>
+        {/* Business defaults */}
+        <Card>
+          <CardHeader title={t('settings.defaults')} />
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            <Select label={t('settings.currency')} value={defaults.currency || 'PKR'} onChange={(e) => setDefaults((d) => ({ ...d, currency: e.target.value }))} options={CURRENCIES.map((c) => ({ value: c, label: c }))} />
+            <Input type="number" label={t('settings.usdRate')} value={defaults.usdRate ?? 278} onChange={(e) => setDefaults((d) => ({ ...d, usdRate: parseFloat(e.target.value) || 0 }))} />
+            <Input type="number" label={t('settings.wastage')} value={defaults.defaultWastagePct ?? 8} onChange={(e) => setDefaults((d) => ({ ...d, defaultWastagePct: parseFloat(e.target.value) || 0 }))} />
+            <Input type="number" label={t('settings.margin')} value={defaults.defaultMarginPct ?? 20} onChange={(e) => setDefaults((d) => ({ ...d, defaultMarginPct: parseFloat(e.target.value) || 0 }))} />
+            <Input type="number" label={t('settings.tax')} value={defaults.defaultTaxPct ?? 0} onChange={(e) => setDefaults((d) => ({ ...d, defaultTaxPct: parseFloat(e.target.value) || 0 }))} />
+            <Input type="number" label={t('settings.blade')} value={defaults.bladeThicknessMm ?? 6.5} onChange={(e) => setDefaults((d) => ({ ...d, bladeThicknessMm: parseFloat(e.target.value) || 0 }))} />
+            <Input type="number" label={t('settings.density')} value={defaults.densityKgPerCft ?? 76} onChange={(e) => setDefaults((d) => ({ ...d, densityKgPerCft: parseFloat(e.target.value) || 0 }))} />
           </div>
-        </div>
-      </Card>
+        </Card>
 
-      {/* notifications */}
-      <Card title={t('set.notifications')}>
-        <ul className="divide-y divide-border dark:divide-gray-700">
-          {notificationRows.map((row) => (
-            <li key={row.id} className="flex items-center justify-between gap-4 py-3.5 first:pt-0 last:pb-0">
-              <div className="min-w-0">
-                <p className="text-sm font-semibold text-main">{row.label}</p>
-                <p className="mt-0.5 text-xs text-muted">{row.desc}</p>
+        {/* Cloud */}
+        <Card>
+          <CardHeader
+            title={t('settings.cloud')}
+            subtitle={APP_CONFIG.supabase.configured ? t('settings.cloudOn') : t('settings.cloudOff')}
+            action={<Database size={18} className={APP_CONFIG.supabase.configured ? 'text-emerald-500' : 'text-[var(--muted)]'} />}
+          />
+          <p className="text-xs text-[var(--muted)] leading-urdu no-clip mb-3">{t('settings.cloudHint')}</p>
+          <div className="flex items-center gap-2 flex-wrap">
+            <Button variant="secondary" icon={Globe} onClick={testCloud}>{t('settings.testConnection')}</Button>
+            {cloud === 'testing' && <span className="text-xs text-[var(--muted)]">…</span>}
+            {cloud && cloud !== 'testing' && (
+              <span className={`text-xs font-semibold ${cloud.ok ? 'text-emerald-500' : 'text-red-500'}`}>
+                {cloud.ok ? '✓' : '✗'} {cloud.ok ? t('settings.cloudOn') : cloud.reason}
+              </span>
+            )}
+          </div>
+        </Card>
+
+        {/* Backup */}
+        <Card>
+          <CardHeader title={t('settings.backup')} />
+          <div className="flex flex-wrap gap-2">
+            <Button variant="secondary" icon={Download} onClick={createBackup}>{t('settings.downloadBackup')}</Button>
+            <Button variant="secondary" icon={Upload} onClick={() => fileRef.current?.click()}>{t('settings.restoreBackup')}</Button>
+            <input
+              ref={fileRef}
+              type="file"
+              accept="application/json"
+              className="hidden"
+              onChange={async (e) => {
+                const file = e.target.files?.[0]
+                if (!file) return
+                try {
+                  await restoreBackup(file, db)
+                  toast.success(t('common.saved'))
+                } catch (err) {
+                  toast.error(err.message)
+                }
+                e.target.value = ''
+              }}
+            />
+          </div>
+        </Card>
+
+        {/* Users */}
+        <Card>
+          <CardHeader title={t('settings.users')} subtitle={`${t('settings.role')}: owner / manager / accountant / supervisor`} action={<ShieldCheck size={18} className="text-[var(--accent)]" />} />
+          <div className="space-y-2 mb-3">
+            {users.map((u) => (
+              <div key={u.id} className="flex items-center justify-between gap-3 border border-[var(--border)] rounded-xl px-3 py-2">
+                <div>
+                  <div className="text-sm font-medium leading-urdu no-clip">{u.name}</div>
+                  <div className="text-[11px] text-[var(--muted)]">{u.role} · PIN {u.pin}</div>
+                </div>
+                {u.id !== user?.id && (
+                  <button className="btn btn-ghost h-8 w-8 justify-center text-red-500" onClick={() => removeUser(u.id)} aria-label="Remove">
+                    <Trash2 size={14} />
+                  </button>
+                )}
               </div>
-              <Switch
-                checked={notif[row.id]}
-                onChange={(value) => setNotif((prev) => ({ ...prev, [row.id]: value }))}
-                label={row.label}
-              />
-            </li>
-          ))}
-        </ul>
-      </Card>
+            ))}
+          </div>
+          <AddUserForm onAdd={addUser} t={t} />
+        </Card>
 
-      {/* app info */}
-      <Card title={t('set.appInfo')}>
-        <ul className="divide-y divide-border dark:divide-gray-700">
-          <li className="flex items-center justify-between gap-3 py-3 first:pt-0">
-            <span className="text-sm text-muted">{t('set.appRowName')}</span>
-            <span className="min-w-0 text-sm font-semibold text-main">{t('appName')}</span>
-          </li>
-          <li className="flex items-center justify-between gap-3 py-3">
-            <span className="text-sm text-muted">{t('set.appRowVersion')}</span>
-            <span className="font-english text-sm font-semibold text-main" dir="ltr">
-              1.0.0
-            </span>
-          </li>
-          <li className="py-3 last:pb-0">
-            <Link
-              to="/about"
-              className="flex items-center justify-between gap-3 rounded-lg py-1 transition-colors hover:text-primary dark:hover:text-primary-light"
-            >
-              <span className="text-sm text-muted">{t('nav.about')}</span>
-              <Chevron size={18} className="text-text-light" aria-hidden="true" />
-            </Link>
-          </li>
-        </ul>
-
-        <Button variant="danger" className="mt-4 w-full">
-          <LogOut size={18} />
-          {t('set.logout')}
-        </Button>
-      </Card>
-
-      <p className="pb-2 text-center text-xs leading-relaxed text-muted">{t('demoNote')}</p>
+        {/* Danger */}
+        <Card className="border-red-500/40">
+          <CardHeader title={t('settings.reset')} subtitle={t('settings.resetConfirm')} />
+          <Button variant="danger" icon={Trash2} onClick={eraseAll}>{t('settings.resetAll')}</Button>
+        </Card>
+      </div>
     </div>
   )
 }
 
-const segmented = (active) =>
-  `rounded-lg px-4 py-2 text-xs font-bold transition-colors ${
-    active
-      ? 'bg-white text-primary shadow-sm dark:bg-gray-800 dark:text-white'
-      : 'text-text-light hover:text-text-dark dark:text-gray-400 dark:hover:text-gray-200'
-  }`
+function AddUserForm({ onAdd, t }) {
+  const [form, setForm] = useState({ name: '', role: 'supervisor', pin: '' })
+  return (
+    <form
+      className="grid grid-cols-1 sm:grid-cols-4 gap-3 items-end"
+      onSubmit={(e) => {
+        e.preventDefault()
+        if (!form.name || !form.pin) return
+        onAdd(form)
+        setForm({ name: '', role: 'supervisor', pin: '' })
+      }}
+    >
+      <Input label={t('fields.name')} value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} />
+      <Select
+        label={t('settings.role')}
+        value={form.role}
+        onChange={(e) => setForm((f) => ({ ...f, role: e.target.value }))}
+        options={['owner', 'manager', 'accountant', 'supervisor'].map((r) => ({ value: r, label: r }))}
+      />
+      <Input label="PIN" type="password" inputMode="numeric" value={form.pin} onChange={(e) => setForm((f) => ({ ...f, pin: e.target.value }))} />
+      <Button type="submit" className="min-h-10">{t('settings.addUser')}</Button>
+    </form>
+  )
+}

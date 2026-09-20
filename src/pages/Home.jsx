@@ -1,108 +1,215 @@
+import React, { useMemo } from 'react'
 import { Link } from 'react-router-dom'
-import { Gem } from 'lucide-react'
-import Card from '../components/UI/Card.jsx'
-import ChartPlaceholder from '../components/UI/ChartPlaceholder.jsx'
-import { useAppUI } from '../context/AppUIContext.jsx'
-import { homeStats, quickActions, recentActivities, weeklyProduction } from '../data/placeholderData.js'
+import {
+  Wallet, HandCoins, Banknote, TrendingUp, Package, Layers, Scissors,
+  HardHat, Cog, Plus, Calculator, FileText, CalendarCheck, BarChart3,
+} from 'lucide-react'
+import {
+  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, PieChart, Pie, Cell, Legend,
+} from 'recharts'
 
-/**
- * Home (ہوم) — Dashboard with static summary cards, quick actions,
- * recent activity list and a weekly production chart. All numbers are placeholders.
- */
+import StatCard from '../components/UI/StatCard'
+import Card from '../components/UI/Card'
+import Table from '../components/UI/Table'
+import Badge from '../components/UI/Badge'
+import Button from '../components/UI/Button'
+import EmptyState from '../components/States/EmptyState'
+import { useCollection } from '../hooks/useCollection'
+import { useLang } from '../context/LanguageContext'
+import { useAuth } from '../context/AuthContext'
+import { orderTotals } from '../utils/calculations'
+import { fmtCurrency, fmtNumber, fmtDate } from '../utils/formatters'
+import ROUTES from '../constants/routes'
+
+const PIE_COLORS = ['#0ea5e9', '#8b5cf6', '#f59e0b', '#10b981', '#ef4444']
+
 export default function Home() {
-  const { t, pick } = useAppUI()
+  const { t, lang, fmtNum } = useLang()
+  const { user } = useAuth()
+  const { items: blocks } = useCollection('blocks')
+  const { items: slabs } = useCollection('slabs')
+  const { items: offcuts } = useCollection('offcuts')
+  const { items: orders } = useCollection('orders')
+  const { items: purchases } = useCollection('purchases')
+  const { items: expenses } = useCollection('expenses')
+  const { items: workers } = useCollection('workers')
+  const { items: attendance } = useCollection('attendance')
+  const { items: machines } = useCollection('machines')
+  const { items: movements } = useCollection('movements')
+
+  const monthPrefix = new Date().toISOString().slice(0, 7)
+
+  const stats = useMemo(() => {
+    const stockValue =
+      blocks.filter((b) => b.status !== 'sold').reduce((a, b) => a + (b.landedTotal || 0), 0) +
+      slabs.filter((s) => ['available', 'reserved'].includes(s.status)).reduce((a, s) => a + (s.price || 0), 0)
+    const validOrders = orders.filter((o) => o.status !== 'cancelled')
+    const revenue = validOrders.reduce((a, o) => a + (o.total || 0), 0)
+    const received = validOrders.reduce((a, o) => a + (o.paidAmount || 0), 0)
+    const payables = purchases.reduce((a, p) => a + ((p.landedTotal || 0) - (p.paidAmount || 0)), 0)
+    const monthOrders = validOrders.filter((o) => (o.date || '').startsWith(monthPrefix))
+    const monthSales = monthOrders.reduce((a, o) => a + (o.total || 0), 0)
+    const monthExpenses = expenses.filter((e) => (e.date || '').startsWith(monthPrefix)).reduce((a, e) => a + (e.amount || 0), 0)
+    const today = new Date().toISOString().slice(0, 10)
+    const presentToday = attendance.filter((a) => a.date === today && ['present', 'half'].includes(a.status)).length
+    return { stockValue, receivables: revenue - received, payables, monthSales, monthProfit: monthSales - monthExpenses, monthExpenses, presentToday }
+  }, [blocks, slabs, orders, purchases, expenses, attendance, monthPrefix])
+
+  const monthly = useMemo(() => {
+    const map = new Map()
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date()
+      d.setMonth(d.getMonth() - i)
+      const key = d.toISOString().slice(0, 7)
+      map.set(key, { month: key.slice(2), sales: 0, expenses: 0 })
+    }
+    orders.filter((o) => o.status !== 'cancelled').forEach((o) => {
+      const k = (o.date || '').slice(0, 7)
+      if (map.has(k)) map.get(k).sales += o.total || 0
+    })
+    expenses.forEach((e) => {
+      const k = (e.date || '').slice(0, 7)
+      if (map.has(k)) map.get(k).expenses += e.amount || 0
+    })
+    return [...map.values()]
+  }, [orders, expenses])
+
+  const gradeData = useMemo(() => {
+    const grades = { A: 0, B: 0, C: 0 }
+    slabs.forEach((s) => {
+      if (s.grade in grades) grades[s.grade] += 1
+    })
+    return Object.entries(grades).map(([name, value]) => ({ name, value })).filter((d) => d.value > 0)
+  }, [slabs])
+
+  const role = user?.role || 'owner'
+  const isFinance = role === 'owner' || role === 'accountant'
+
+  const quickActions = [
+    { to: ROUTES.BLOCKS, icon: Plus, label: t('home.addBlock') },
+    { to: ROUTES.QUOTATIONS, icon: FileText, label: t('home.newQuote') },
+    { to: ROUTES.ORDERS, icon: FileText, label: t('home.newOrder') },
+    { to: ROUTES.ATTENDANCE, icon: CalendarCheck, label: t('home.markAttendance') },
+    { to: ROUTES.CALCULATOR, icon: Calculator, label: t('nav.calculator') },
+    { to: ROUTES.REPORTS, icon: BarChart3, label: t('nav.reports') },
+  ]
 
   return (
-    <div className="space-y-4 sm:space-y-5">
-      {/* welcome banner */}
-      <section className="relative overflow-hidden rounded-2xl bg-gradient-to-bl from-primary-light to-primary-dark p-5 text-white shadow-md sm:p-6">
-        <Gem size={150} strokeWidth={1} className="pointer-events-none absolute -bottom-8 -start-8 text-white/10" aria-hidden="true" />
-        <p className="text-sm text-white/70">{t('home.welcome')}</p>
-        <h1 className="mt-1 text-2xl font-bold sm:text-3xl">{t('factoryName')}</h1>
-        <p className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-xs text-white/80">
-          <span className="h-1.5 w-1.5 rounded-full bg-success" aria-hidden="true" />
-          {t('home.todayDate')}
-        </p>
-      </section>
+    <div className="fade-in space-y-5">
+      <div>
+        <h1 className="text-xl font-bold leading-urdu-lg no-clip">
+          {t('home.welcome')}{user ? ` — ${user.name}` : ''}
+        </h1>
+        <p className="text-xs text-[var(--muted)] leading-urdu no-clip">{t(`home.role${role.charAt(0).toUpperCase()}${role.slice(1)}`)}</p>
+      </div>
 
-      {/* summary cards */}
-      <section className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
-        {homeStats.map((stat) => (
-          <StatCard key={stat.labelKey} stat={stat} label={t(stat.labelKey)} />
-        ))}
-      </section>
+      {/* KPI row */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        {isFinance ? (
+          <>
+            <StatCard label={t('home.stockValue')} value={fmtCurrency(stats.stockValue, { lang })} icon={Wallet} tone="brand" />
+            <StatCard label={t('home.receivables')} value={fmtCurrency(stats.receivables, { lang })} icon={HandCoins} tone="danger" />
+            <StatCard label={t('home.payables')} value={fmtCurrency(stats.payables, { lang })} icon={Banknote} tone="warning" />
+            <StatCard label={t('home.monthProfit')} value={fmtCurrency(stats.monthProfit, { lang })} icon={TrendingUp} tone="success" />
+          </>
+        ) : (
+          <>
+            <StatCard label={t('home.blocksAvailable')} value={blocks.filter((b) => b.status === 'available').length} icon={Package} tone="info" />
+            <StatCard label={t('home.slabsAvailable')} value={slabs.filter((s) => s.status === 'available').length} icon={Layers} tone="success" />
+            <StatCard label={t('home.workersToday')} value={stats.presentToday} icon={HardHat} tone="brand" />
+            <StatCard label={t('home.machinesRunning')} value={machines.filter((m) => m.status === 'running').length} icon={Cog} tone="warning" />
+          </>
+        )}
+      </div>
 
-      {/* quick actions */}
-      <section aria-label={t('home.quickActions')}>
-        <div className="grid grid-cols-3 gap-3 sm:gap-4">
-          {quickActions.map((action) => (
-            <Link
-              key={action.to}
-              to={action.to}
-              className={`flex min-h-20 flex-col items-center justify-center gap-2 rounded-2xl px-2 py-3 text-center shadow-sm transition-colors ${action.cls}`}
-            >
-              <action.icon size={24} />
-              <span className="text-[11px] font-bold leading-tight sm:text-sm">{t(action.labelKey)}</span>
+      {/* Second row for non-finance roles keeps finance visible to owner only */}
+      {isFinance && (
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <StatCard label={t('home.blocksAvailable')} value={blocks.filter((b) => b.status === 'available').length} icon={Package} tone="info" />
+          <StatCard label={t('home.slabsAvailable')} value={fmtNum(slabs.filter((s) => s.status === 'available').reduce((a, s) => a + (s.areaSqft || 0), 0), 0)} sub="sq ft" icon={Layers} tone="success" />
+          <StatCard label={t('home.workersToday')} value={stats.presentToday} icon={HardHat} tone="brand" />
+          <StatCard label={t('home.monthExpenses')} value={fmtCurrency(stats.monthExpenses, { lang })} icon={Wallet} tone="danger" />
+        </div>
+      )}
+
+      {/* Quick actions */}
+      <Card>
+        <h3 className="font-semibold text-sm mb-3 leading-urdu no-clip">{t('home.quickActions')}</h3>
+        <div className="flex flex-wrap gap-2">
+          {quickActions.map((a) => (
+            <Link key={a.to} to={a.to}>
+              <Button variant="secondary" size="sm" icon={a.icon} className="!min-h-9">
+                {a.label}
+              </Button>
             </Link>
           ))}
         </div>
-      </section>
+      </Card>
 
-      {/* activity + chart */}
-      <section className="grid gap-4 sm:gap-5 lg:grid-cols-2">
-        <Card title={t('home.recentActivity')}>
-          <ul className="divide-y divide-border dark:divide-gray-700">
-            {recentActivities.map((activity) => (
-              <li key={activity.id} className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
-                <span
-                  className={`mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-full ${activity.iconClass}`}
-                >
-                  <activity.icon size={16} />
-                </span>
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-semibold leading-snug text-main">{pick(activity.title)}</p>
-                  <p className="mt-0.5 truncate text-xs text-muted">{pick(activity.detail)}</p>
-                </div>
-                <span className="shrink-0 whitespace-nowrap pt-0.5 text-[11px] text-muted">
-                  {pick(activity.time)}
-                </span>
-              </li>
-            ))}
-          </ul>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {/* Sales chart */}
+        <Card className="lg:col-span-2">
+          <h3 className="font-semibold text-sm mb-4 leading-urdu no-clip">{t('home.salesTrend')}</h3>
+          <div className="h-64" dir="ltr">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={monthly} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                <XAxis dataKey="month" tick={{ fontSize: 11 }} stroke="var(--muted)" />
+                <YAxis tick={{ fontSize: 11 }} stroke="var(--muted)" width={54} />
+                <Tooltip contentStyle={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 12, fontSize: 12 }} />
+                <Legend wrapperStyle={{ fontSize: 11 }} />
+                <Bar dataKey="sales" name={t('reports.revenue')} fill="#0ea5e9" radius={[6, 6, 0, 0]} />
+                <Bar dataKey="expenses" name={t('nav.expenses')} fill="#f59e0b" radius={[6, 6, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
         </Card>
 
-        <Card
-          title={t('home.weeklyOverview')}
-          action={
-            <Link
-              to="/reports"
-              className="text-xs font-bold text-primary transition-colors hover:text-primary-light dark:text-primary-light"
-            >
-              {t('home.viewReports')}
-            </Link>
-          }
-        >
-          <ChartPlaceholder
-            data={weeklyProduction.map((d) => ({ label: pick(d.label), value: d.value }))}
-            height="h-48"
-          />
+        {/* Grade pie */}
+        <Card>
+          <h3 className="font-semibold text-sm mb-4 leading-urdu no-clip">{t('home.byGrade')}</h3>
+          {gradeData.length === 0 ? (
+            <EmptyState title={t('common.noData')} />
+          ) : (
+            <div className="h-64" dir="ltr">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie data={gradeData} dataKey="value" nameKey="name" innerRadius={45} outerRadius={80} paddingAngle={3}>
+                    {gradeData.map((_, i) => (
+                      <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip contentStyle={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 12, fontSize: 12 }} />
+                  <Legend wrapperStyle={{ fontSize: 11 }} />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+          )}
         </Card>
-      </section>
-    </div>
-  )
-}
-
-function StatCard({ stat, label }) {
-  const Icon = stat.icon
-  return (
-    <div className="surface p-4">
-      <div className="flex items-center justify-between gap-2">
-        <span className="text-xs font-medium leading-snug text-muted">{label}</span>
-        <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-lg ${stat.iconClass}`}>
-          <Icon size={18} />
-        </span>
       </div>
-      <p className="mt-2 font-english text-2xl font-bold text-main sm:text-3xl">{stat.value}</p>
+
+      {/* Recent movements */}
+      <Card>
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="font-semibold text-sm leading-urdu no-clip">{t('home.recentMovements')}</h3>
+          <Link to={ROUTES.MOVEMENTS} className="text-xs text-[var(--accent)]">{t('common.details')}</Link>
+        </div>
+        {movements.length === 0 ? (
+          <EmptyState title={t('common.noData')} />
+        ) : (
+          <Table
+            columns={[
+              { key: 'date', label: t('common.date'), render: (r) => <span className="num">{fmtDate(r.date)}</span> },
+              { key: 'type', label: t('fields.type'), render: (r) => <span className="leading-urdu no-clip">{t(`enums.movement.${r.type}`)}</span> },
+              { key: 'refId', label: t('fields.refId'), render: (r) => <span className="num">{r.refId || '—'}</span> },
+              { key: 'qty', label: t('fields.quantity'), render: (r) => <span className="num">{fmtNum(r.qty)}</span> },
+              { key: 'party', label: t('fields.party') },
+            ]}
+            rows={movements.slice(0, 6)}
+            empty={<EmptyState title={t('common.noData')} />}
+          />
+        )}
+      </Card>
     </div>
   )
 }

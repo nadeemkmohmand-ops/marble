@@ -1,93 +1,33 @@
-import { CheckCircle2, Code2, Factory, Mail, MapPin, Phone } from 'lucide-react'
-import Card from '../components/UI/Card.jsx'
-import PageHeader from '../components/UI/PageHeader.jsx'
-import { useAppUI } from '../context/AppUIContext.jsx'
-import { appFeatures, factoryInfo } from '../data/placeholderData.js'
+import React from 'react'
+import Toolbar from '../components/UI/Toolbar'
+import Card, { CardHeader } from '../components/UI/Card'
+import { useLang } from '../context/LanguageContext'
+import APP_INFO from '../constants/appInfo'
+import { CheckCircle2 } from 'lucide-react'
 
-/**
- * About (تعارف) — app description, features, factory info and
- * developer contact placeholders.
- */
 export default function About() {
-  const { t, pick } = useAppUI()
-
+  const { t, lang } = useLang()
+  const features = (t('about.featureList') || '').split(' · ')
   return (
-    <div className="space-y-4 sm:space-y-5">
-      <PageHeader title={t('nav.about')} en="About" subtitle={t('about.subtitle')} />
-
-      {/* app identity */}
+    <div className="fade-in max-w-2xl">
+      <Toolbar title={t('about.title')} description={t('about.subtitle')} />
+      <Card className="text-center mb-4">
+        <div className="mx-auto h-16 w-16 rounded-2xl bg-[var(--accent)] grid place-items-center text-white text-3xl font-bold">M</div>
+        <h2 className="mt-3 font-bold text-lg leading-urdu no-clip">{lang === 'ur' ? APP_INFO.nameUr : APP_INFO.name}</h2>
+        <p className="text-xs text-[var(--muted)] num mt-1">{t('about.version')} {APP_INFO.version}</p>
+      </Card>
       <Card>
-        <div className="flex flex-col items-center gap-3 py-4 text-center">
-          <img src="/icons/icon-192x192.png" alt={t('appName')} className="h-20 w-20 rounded-2xl shadow-md" />
-          <div>
-            <h2 className="text-lg font-bold text-main">{t('appName')}</h2>
-            <p className="mt-0.5 text-xs text-muted">{t('tagline')}</p>
-          </div>
-          <span
-            className="rounded-full bg-primary-50 px-3 py-1 font-english text-xs font-bold text-primary dark:bg-primary/25 dark:text-primary-light"
-            dir="ltr"
-          >
-            v1.0.0
-          </span>
-        </div>
-      </Card>
-
-      {/* description */}
-      <Card title={t('about.appTitle')}>
-        <p className="text-sm leading-loose text-main">{t('about.description1')}</p>
-        <p className="mt-3 text-sm leading-loose text-main">{t('about.description2')}</p>
-      </Card>
-
-      {/* features */}
-      <Card title={t('about.features')}>
-        <ul className="grid gap-3 sm:grid-cols-2">
-          {appFeatures.map((feature, index) => (
-            <li key={index} className="flex items-start gap-2.5">
-              <CheckCircle2 size={18} className="mt-0.5 shrink-0 text-success" aria-hidden="true" />
-              <span className="text-sm font-medium leading-relaxed text-main">{pick(feature)}</span>
+        <CardHeader title={t('about.features')} />
+        <ul className="space-y-2">
+          {features.map((f, i) => (
+            <li key={i} className="flex items-start gap-2.5 text-sm leading-urdu no-clip">
+              <CheckCircle2 size={16} className="text-emerald-500 shrink-0 mt-1" />
+              <span>{f}</span>
             </li>
           ))}
         </ul>
       </Card>
-
-      {/* factory + developer */}
-      <div className="grid gap-4 sm:gap-5 lg:grid-cols-2">
-        <Card title={t('about.factoryInfo')}>
-          <ul className="divide-y divide-border dark:divide-gray-700">
-            <InfoRow icon={Factory} label={t('about.factory')} value={pick(factoryInfo.name)} />
-            <InfoRow icon={MapPin} label={t('about.address')} value={pick(factoryInfo.address)} />
-            <InfoRow icon={Phone} label={t('about.phone')} value={factoryInfo.phone} ltr />
-            <InfoRow icon={Mail} label={t('about.email')} value={factoryInfo.email} ltr />
-          </ul>
-        </Card>
-
-        <Card title={t('about.developerInfo')}>
-          <div className="flex items-center gap-3">
-            <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-accent/15 text-accent-dark dark:text-accent-light">
-              <Code2 size={22} />
-            </span>
-            <div className="min-w-0 flex-1">
-              <p className="text-sm font-bold text-main">{t('about.developerName')}</p>
-              <p className="mt-0.5 text-xs leading-relaxed text-muted">{t('about.developerNote')}</p>
-            </div>
-          </div>
-        </Card>
-      </div>
+      <p className="text-[11px] text-[var(--muted)] mt-4 text-center leading-urdu no-clip">{t('about.tech')}</p>
     </div>
-  )
-}
-
-function InfoRow({ icon: Icon, label, value, ltr = false }) {
-  return (
-    <li className="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
-      <Icon size={18} className="shrink-0 text-primary dark:text-primary-light" aria-hidden="true" />
-      <span className="w-16 shrink-0 text-xs font-semibold text-muted sm:w-20">{label}</span>
-      <span
-        className={`min-w-0 flex-1 text-sm font-medium text-main ${ltr ? 'font-english' : ''}`}
-        dir={ltr ? 'ltr' : undefined}
-      >
-        {value}
-      </span>
-    </li>
   )
 }
