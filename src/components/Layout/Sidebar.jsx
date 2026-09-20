@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import { X } from 'lucide-react'
 import { cn } from '../../utils/cn'
@@ -50,53 +50,36 @@ function NavItems({ onNavigate }) {
 }
 
 export default function Sidebar() {
-  const { open, mobileOpen, closeMobile } = useSidebar()
+  const { open, close } = useSidebar()
   const { lang } = useLang()
 
+  if (!open) return null
+
   return (
-    <>
-      {/* Desktop */}
+    <div className="fixed inset-0 z-[70] no-print">
+      {/* Backdrop — click to close, leaving the current page full-screen underneath */}
+      <div className="absolute inset-0 bg-black/50" onClick={close} />
+
       <aside
         className={cn(
-          'hidden lg:flex flex-col fixed inset-y-0 bg-[var(--card)] border-e border-[var(--border)] transition-all duration-200 z-30 no-print',
-          open ? 'w-64' : 'w-[76px]',
+          'absolute top-0 bottom-0 w-72 max-w-[85vw] bg-[var(--card)] border-e border-[var(--border)] flex flex-col fade-in',
+          lang === 'ur' ? 'right-0' : 'left-0',
         )}
       >
-        <div className="h-16 flex items-center gap-2.5 px-4 border-b border-[var(--border)]">
-          <div className="h-9 w-9 shrink-0 rounded-xl bg-[var(--accent)] grid place-items-center text-white font-bold">M</div>
-          {open && (
+        <div className="h-16 shrink-0 flex items-center justify-between px-4 border-b border-[var(--border)]">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="h-9 w-9 shrink-0 rounded-xl bg-[var(--accent)] grid place-items-center text-white font-bold">M</div>
             <div className="min-w-0">
-              <div className="font-bold text-sm leading-urdu no-clip">{lang === 'ur' ? APP_INFO.nameUr : APP_INFO.name}</div>
+              <div className="font-bold text-sm truncate leading-urdu no-clip">{lang === 'ur' ? APP_INFO.nameUr : APP_INFO.name}</div>
               <div className="text-[10px] text-[var(--muted)] num">v{APP_INFO.version}</div>
             </div>
-          )}
+          </div>
+          <button onClick={close} className="btn btn-ghost h-9 w-9 justify-center shrink-0" aria-label="Close menu">
+            <X size={18} />
+          </button>
         </div>
-        <NavItems />
+        <NavItems onNavigate={close} />
       </aside>
-
-      {/* Mobile drawer */}
-      {mobileOpen && (
-        <div className="lg:hidden fixed inset-0 z-[70] no-print">
-          <div className="absolute inset-0 bg-black/50" onClick={closeMobile} />
-          <aside
-            className={cn(
-              'absolute top-0 bottom-0 w-72 bg-[var(--card)] border-e border-[var(--border)] flex flex-col fade-in',
-              lang === 'ur' ? 'right-0' : 'left-0',
-            )}
-          >
-            <div className="h-16 flex items-center justify-between px-4 border-b border-[var(--border)]">
-              <div className="flex items-center gap-2.5">
-                <div className="h-9 w-9 rounded-xl bg-[var(--accent)] grid place-items-center text-white font-bold">M</div>
-                <div className="font-bold text-sm">{lang === 'ur' ? APP_INFO.nameUr : APP_INFO.name}</div>
-              </div>
-              <button onClick={closeMobile} className="btn btn-ghost h-9 w-9 justify-center" aria-label="Close menu">
-                <X size={18} />
-              </button>
-            </div>
-            <NavItems onNavigate={closeMobile} />
-          </aside>
-        </div>
-      )}
-    </>
+    </div>
   )
 }

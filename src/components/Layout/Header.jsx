@@ -9,14 +9,14 @@ import Breadcrumbs from './Breadcrumbs'
 import { cn } from '../../utils/cn'
 
 export default function Header() {
-  const { openMobile } = useSidebar()
+  const { toggle: toggleSidebar } = useSidebar()
   const { theme, toggle } = useTheme()
   const { toggleLang, lang, t } = useLang()
   const online = useOnlineStatus()
 
   return (
     <header className="app-header sticky top-0 z-40 h-16 flex items-center gap-2 px-3 sm:px-5 bg-[var(--card)]/90 backdrop-blur border-b border-[var(--border)] no-print">
-      <button className="btn btn-ghost h-10 w-10 justify-center lg:hidden" onClick={openMobile} aria-label="Menu">
+      <button className="btn btn-ghost h-10 w-10 justify-center" onClick={toggleSidebar} aria-label="Menu">
         <Menu size={20} />
       </button>
       <Breadcrumbs className="hidden sm:block flex-1 min-w-0" />

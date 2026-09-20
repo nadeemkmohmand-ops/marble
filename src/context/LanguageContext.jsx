@@ -8,9 +8,22 @@ import APP_CONFIG from '../config/app.config'
 
 const LanguageContext = createContext(null)
 
+// One-time migration: earlier builds defaulted Urdu (۰۱۲۳) digits to ON.
+// If a device never made an explicit choice, force plain 0123 digits.
+const URDU_DIGITS_MIGRATION_KEY = 'urduDigitsMigratedToLatinV1'
+function getInitialUrduDigits() {
+  const alreadyMigrated = storage.get(URDU_DIGITS_MIGRATION_KEY, false)
+  if (!alreadyMigrated) {
+    storage.set(URDU_DIGITS_MIGRATION_KEY, true)
+    storage.set(STORAGE_KEYS.URDU_DIGITS, false)
+    return false
+  }
+  return storage.get(STORAGE_KEYS.URDU_DIGITS, false)
+}
+
 export function LanguageProvider({ children }) {
   const [lang, setLangState] = useState(() => storage.get(STORAGE_KEYS.LANG, DEFAULT_LANGUAGE))
-  const [urduDigits, setUrduDigitsState] = useState(() => storage.get(STORAGE_KEYS.URDU_DIGITS, true))
+  const [urduDigits, setUrduDigitsState] = useState(getInitialUrduDigits)
 
   useEffect(() => {
     storage.set(STORAGE_KEYS.LANG, lang)

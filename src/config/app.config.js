@@ -17,7 +17,7 @@ export const APP_CONFIG = {
 
   // Editable defaults (Settings page can override; stored in STORAGE_KEYS.SETTINGS)
   defaults: {
-    urduDigits: true,
+    urduDigits: false,
     defaultWastagePct: 8, // % wastage on orders
     defaultMarginPct: 20,
     defaultTaxPct: 0,

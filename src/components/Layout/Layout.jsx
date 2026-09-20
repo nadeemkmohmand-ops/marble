@@ -4,10 +4,8 @@ import { useEffect } from 'react'
 import Sidebar from './Sidebar'
 import Header from './Header'
 import BottomNav from './BottomNav'
-import { useSidebar } from '../../context/SidebarContext'
 
 export default function Layout() {
-  const { open } = useSidebar()
   const location = useLocation()
 
   useEffect(() => {
@@ -17,7 +15,7 @@ export default function Layout() {
   return (
     <div className="min-h-screen">
       <Sidebar />
-      <div className={`transition-all duration-200 ${open ? 'lg:ms-64' : 'lg:ms-[76px]'}`}>
+      <div>
         <Header />
         <main className="p-3 sm:p-5 pb-24 lg:pb-8 max-w-7xl mx-auto w-full">
           <Outlet />

@@ -5,21 +5,22 @@ import { storage } from '../utils/storage'
 const SidebarContext = createContext(null)
 
 export function SidebarProvider({ children }) {
-  const [open, setOpen] = useState(() => storage.get(STORAGE_KEYS.SIDEBAR, false))
+  // `open` now means "the drawer is open" on ALL screen sizes (desktop + mobile).
+  // The sidebar is fully hidden by default and only appears as an overlay
+  // when the hamburger button is clicked; it never reserves layout space.
+  const [open, setOpen] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
 
   const value = useMemo(
     () => ({
       open,
-      toggle: () =>
-        setOpen((o) => {
-          const next = !o
-          storage.set(STORAGE_KEYS.SIDEBAR, next)
-          return next
-        }),
+      toggle: () => setOpen((o) => !o),
+      close: () => setOpen(false),
+      // Kept for backwards compatibility with any code still calling these —
+      // both now drive the same single overlay drawer as `open`/`toggle`.
       mobileOpen,
-      openMobile: () => setMobileOpen(true),
-      closeMobile: () => setMobileOpen(false),
+      openMobile: () => setOpen(true),
+      closeMobile: () => setOpen(false),
     }),
     [open, mobileOpen],
   )
