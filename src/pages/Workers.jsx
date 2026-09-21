@@ -14,10 +14,12 @@ export default function Workers() {
       config={{
         collection: 'workers',
         i18nPrefix: 'workers',
-        searchKeys: ['name', 'phone', 'skill', 'cnic'],
-        defaults: () => ({ skill: 'helper', rateType: 'daily', dailyRate: 0, advances: 0, deductions: 0, loan: 0, status: 'available' }),
+        searchKeys: ['name', 'nameEn', 'designation', 'phone', 'skill', 'cnic'],
+        defaults: () => ({ designation: '', skill: 'helper', rateType: 'daily', dailyRate: 0, advances: 0, deductions: 0, loan: 0, status: 'available' }),
         columns: [
           { key: 'name', label: 'Name', render: (r) => <span className="font-semibold">{r.name}</span> },
+          { key: 'nameEn', render: (r) => r.nameEn || '—' },
+          { key: 'designation', render: (r) => r.designation || '—' },
           { key: 'skill', enumKey: 'enums.skill' },
           { key: 'phone', label: 'Phone', render: (r) => <span className="num">{r.phone || '—'}</span> },
           { key: 'rateType', enumKey: 'enums.rateType' },
@@ -29,7 +31,9 @@ export default function Workers() {
         ],
         fields: [
           { key: 'name', required: true },
-          { key: 'skill', type: 'select', options: opts(WORKER_SKILLS), required: true },
+          { key: 'nameEn', hint: t('hints.nameEn') },
+          { key: 'designation', hint: t('fields.designation'), placeholder: t('hints.designation') },
+          { key: 'skill', type: 'select', options: opts(WORKER_SKILLS) },
           { key: 'phone', type: 'tel' },
           { key: 'cnic' },
           { key: 'rateType', type: 'select', options: opts(RATE_TYPES) },

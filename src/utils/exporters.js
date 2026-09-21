@@ -6,7 +6,8 @@
 //   summary + optional file via Web Share).
 // ─────────────────────────────────────────────────────────────────
 import * as XLSX from 'xlsx'
-import { fmtDate } from './formatters'
+import { fmtDate, bidiSafe } from './formatters'
+import { getFactoryName, factoryFileTag } from './factory'
 import APP_CONFIG from '../config/app.config'
 
 function downloadBlob(blob, filename) {
@@ -24,20 +25,28 @@ function safeName(name) {
   return String(name || 'export').replace(/[\\/:*?"<>|]+/g, '-').slice(0, 80)
 }
 
+/** Every download filename starts with the factory name. */
+function dlName(title) {
+  return `${factoryFileTag()}-${safeName(title)}`
+}
+
 /** columns: [{key, label, format?}] · rows: [objects] */
-function toMatrix(columns, rows) {
-  const head = columns.map((c) => c.label)
+function toMatrix(columns, rows, rtl = false) {
+  const head = columns.map((c) => bidiSafe(c.label, rtl))
   const body = rows.map((r) =>
     columns.map((c) => {
       const v = typeof c.format === 'function' ? c.format(r[c.key], r) : r[c.key]
-      return v === null || v === undefined ? '' : String(v)
+      return bidiSafe(v === null || v === undefined ? '' : String(v), rtl)
     }),
   )
   return [head, ...body]
 }
 
-export function exportCSV({ title, columns, rows }) {
-  const matrix = toMatrix(columns, rows)
+export function exportCSV({ title, columns, rows, lang = 'en' }) {
+  const rtl = lang === 'ur'
+  const matrix = toMatrix(columns, rows, rtl)
+  // Factory banner rows — every download names the factory.
+  matrix.unshift([], [`${getFactoryName(lang)} — ${title} — ${fmtDate(new Date())}`], [getFactoryName(lang)])
   const csv = matrix
     .map((line) =>
       line
@@ -49,44 +58,48 @@ export function exportCSV({ title, columns, rows }) {
     )
     .join('\r\n')
   // BOM → Excel/Sheets detect UTF-8 (Urdu shows correctly)
-  downloadBlob(new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' }), `${safeName(title)}.csv`)
+  downloadBlob(new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' }), `${dlName(title)}.csv`)
 }
 
-export function exportXLSX({ title, columns, rows, sheetName }) {
-  const matrix = toMatrix(columns, rows)
+export function exportXLSX({ title, columns, rows, sheetName, lang = 'en' }) {
+  const rtl = lang === 'ur'
+  const matrix = toMatrix(columns, rows, rtl)
+  // Factory banner rows — every download names the factory.
+  matrix.unshift([], [`${getFactoryName(lang)} — ${title} — ${fmtDate(new Date())}`], [getFactoryName(lang)])
   const ws = XLSX.utils.aoa_to_sheet(matrix)
   ws['!cols'] = columns.map((c) => ({ wch: Math.max(12, Math.min(40, c.label.length + 8)) }))
   // RTL sheet when the title is Urdu-ish (contains Arabic-block chars)
-  if (/[\u0600-\u06FF]/.test(title)) ws['!views'] = [{ RTL: true }]
+  if (/[\u0600-\u06FF]/.test(title) || rtl) ws['!views'] = [{ RTL: true }]
   const wb = XLSX.utils.book_new()
   XLSX.utils.book_append_sheet(wb, ws, (sheetName || safeName(title)).slice(0, 31))
-  XLSX.writeFile(wb, `${safeName(title)}.xlsx`)
+  XLSX.writeFile(wb, `${dlName(title)}.xlsx`)
 }
 
 export function exportDOC({ title, columns, rows, meta = {}, lang = 'en' }) {
   const rtl = lang === 'ur'
   const dir = rtl ? 'rtl' : 'ltr'
   const font = rtl ? "'Noto Nastaliq Urdu', serif" : "'Inter', Arial, sans-serif"
-  const matrix = toMatrix(columns, rows)
+  const matrix = toMatrix(columns, rows, rtl)
   const html = `<!DOCTYPE html>
 <html lang="${lang}" dir="${dir}"><head><meta charset="utf-8">
-<title>${escapeHtml(title)}</title>
+<title>${escapeHtml(getFactoryName(lang))} — ${escapeHtml(title)}</title>
 <style>
   body { font-family:${font}; direction:${dir}; }
   h1 { text-align:center; font-size:18px; }
   .meta { text-align:center; font-size:12px; color:#444; margin-bottom:12px; }
   table { border-collapse:collapse; width:100%; font-size:12px; }
-  th, td { border:1px solid #999; padding:6px 8px; text-align:${rtl ? 'right' : 'left'}; }
+  th, td { border:1px solid #999; padding:6px 8px; text-align:${rtl ? 'right' : 'left'};
+    unicode-bidi:plaintext; }
   th { background:#e8eef5; }
 </style></head><body>
-<h1>${escapeHtml(title)}</h1>
-<div class="meta">${escapeHtml(meta.company || APP_CONFIG.appName)} — ${fmtDate(new Date())}</div>
+<h1>${escapeHtml(getFactoryName(lang))}</h1>
+<div class="meta">${escapeHtml(title)} — ${fmtDate(new Date())}</div>
 <table>
 <thead><tr>${matrix[0].map((h) => `<th>${escapeHtml(h)}</th>`).join('')}</tr></thead>
 <tbody>${matrix.slice(1).map((line) => `<tr>${line.map((c) => `<td>${escapeHtml(c)}</td>`).join('')}</tr>`).join('')}</tbody>
 </table>
 </body></html>`
-  downloadBlob(new Blob(['\uFEFF' + html], { type: 'application/msword;charset=utf-8' }), `${safeName(title)}.doc`)
+  downloadBlob(new Blob(['\uFEFF' + html], { type: 'application/msword;charset=utf-8' }), `${dlName(title)}.doc`)
 }
 
 /**
@@ -131,12 +144,15 @@ export async function downloadPDF(html, { title = 'Document', lang = 'en' } = {}
   try {
     await html2pdf()
       .set({
-        filename: `${safeName(title)}.pdf`,
+        filename: `${dlName(title)}.pdf`,
         margin: 10,
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak: { mode: ['css', 'legacy'] },
+        // 'avoid-all' moves a whole row/heading/footer to the next page
+        // instead of slicing through the middle of the text — this is
+        // what fixed the "bottom line is cut" problem.
+        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] },
       })
       .from(src)
       .save()
@@ -148,7 +164,7 @@ export async function downloadPDF(html, { title = 'Document', lang = 'en' } = {}
 /** Single record → readable WhatsApp message with ALL info. */
 export function recordToText({ title, fields, record, lang = 'en' }) {
   const L = lang === 'ur'
-  const lines = [`*${title}*`, '']
+  const lines = [`*${getFactoryName(lang)}*`, `*${title}*`, '']
   fields.forEach((f) => {
     const label = f.label
     let v = typeof f.format === 'function' ? f.format(record[f.key], record) : record[f.key]
@@ -163,7 +179,7 @@ export function recordToText({ title, fields, record, lang = 'en' }) {
 /** Table → WhatsApp friendly text summary. */
 export function tableToText({ title, columns, rows, limit = 25, lang = 'en' }) {
   const L = lang === 'ur'
-  const lines = [`*${title}* (${L ? 'کل' : 'Total'}: ${rows.length})`, '']
+  const lines = [`*${getFactoryName(lang)}*`, `*${title}* (${L ? 'کل' : 'Total'}: ${rows.length})`, '']
   rows.slice(0, limit).forEach((r, i) => {
     const cells = columns.slice(0, 6).map((c) => {
       const v = typeof c.format === 'function' ? c.format(r[c.key], r) : r[c.key]

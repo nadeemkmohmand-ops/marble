@@ -2,6 +2,134 @@
 
 ---
 
+## ROUND 4 — 2026-09-21 (v2.3.0 — Almakka Factory update)
+
+Everything below was verified in a real browser (desktop + 390×844
+mobile viewport) in both Urdu and English modes.
+
+### 1. PDF text no longer cut at the bottom
+
+**Files:** `src/utils/printTemplates.js`, `src/utils/exporters.js`
+
+- Root cause: Urdu Nastaliq glyphs paint BELOW their text line-box.
+  When the footer line sits flush with the document bottom, the PDF
+  canvas ends mid-glyph and the last line looks cut in half.
+- Fix: reserved bottom space (`padding-bottom:26px` on `.print-doc`,
+  extra footer padding) and added `avoid-all` page-break mode so rows,
+  headings and the footer are moved to the next page whole instead of
+  being sliced.
+
+### 2. Brackets no longer mirrored — "L×W×H (in)" (was ")in(")
+
+**Files:** `src/utils/printTemplates.js`, `src/hooks/useExport.js`,
+`src/utils/exporters.js`, `src/utils/formatters.js`, `src/index.css`
+
+- Root cause: html2canvas (the PDF rasterizer) implements its own
+  simplified bidi and mirrors brackets / reorders Latin words inside
+  RTL documents. CSS `unicode-bidi` alone is ignored by it.
+- Fix (three layers):
+  1. every pure-Latin run in generated documents is wrapped in
+     `<span dir="ltr">` at HTML-build time (invisible in a browser);
+  2. `unicode-bidi: plaintext` CSS for on-screen tables & browser
+     print preview;
+  3. XLSX/CSV cells get Unicode ISOLATE marks (U+2066…U+2069) so
+     Excel also shows "60×48×96", "L×W×H (in)", "BLK-0001" correctly
+     in Urdu sheets.
+
+### 3. Factory name on EVERY download
+
+**Files:** `src/utils/factory.js` (NEW), `src/utils/printTemplates.js`,
+`src/utils/exporters.js`, `src/hooks/useExport.js`
+
+- English mode prints **Almakka Factory**, Urdu mode prints
+  **المکہ فیکٹری** — as the letterhead of every PDF (invoices,
+  challans, quotations, payslips, purchase orders, table reports),
+  as banner rows in every Excel/CSV, as the title line in Word,
+  as the first line of WhatsApp texts, and as the filename prefix
+  (`Almakka-Factory-…`).
+- A custom name typed in Settings → Company profile always wins.
+
+### 4. NEW section: Partners (کاروباری ساتھی)
+
+**Files:** `src/pages/Partners.jsx` (NEW), `src/constants/enums.js`,
+`src/constants/routes.js`, `src/constants/navigation.js`,
+`src/constants/storageKeys.js`, `src/services/db.js`, `src/utils/id.js`,
+`src/i18n/locales/en.js`, `src/i18n/locales/ur.js`, `src/routes.jsx`
+
+- Register for the rock business relations, everything typed by hand:
+  - کچا پتھر ادھار دینے والے — gives raw rock on credit
+  - تراشا ماربل ادھار لینے والے — takes cut marble on credit
+  - اپنا پتھر — فیکٹری کاٹتی ہے — own rock, factory cuts for a fee
+  - اپنی گاڑی پر پتھر لاتے ہیں — brings rock by own vehicle
+  - دیگر — other
+- Fields: name (Urdu) + name in English, relation type, phone,
+  WhatsApp, vehicle no, opening balance, address, notes.
+- Full export suite + XLSX template download + upload import.
+
+### 5. NEW section: Electricity & Solar (بجلی و سولر)
+
+**Files:** `src/pages/Utilities.jsx` (NEW) + same registration files
+as Partners
+
+- One register for WAPDA bills and solar production.
+- The unit price is a normal editable field — the tariff changes, so
+  you write the new price on every bill by hand.
+- Amount auto-suggests units × price but stays overwritable; previous
+  reading, current reading, meter no and bill no included.
+- Stats: this month's electricity cost, solar units, totals.
+
+### 6. Labours & Staff (مزدور و عملہ) — names in both languages + manual designation
+
+**Files:** `src/pages/Workers.jsx`, `src/i18n/locales/en.js`,
+`src/i18n/locales/ur.js`
+
+- New fields: **Name in English** (نام انگریزی میں) and
+  **Designation** — free text, type anything (Manager, Foreman,
+  Labour, Driver, Guard…) instead of a fixed list.
+- Skill remains as an optional quick-tag. Table, search, exports,
+  payslips and templates all include the new fields.
+
+### 7. Machineries (مشینری) — manual machine names + their work
+
+**Files:** `src/pages/Machines.jsx`, `src/i18n/locales/*.js`
+
+- New **Work / purpose** field — what the machine does, typed freely.
+- Machine type is now optional (any machine can be added by hand).
+
+### 8. Machine burn / fire register + food & solar expenses
+
+**Files:** `src/constants/enums.js`, `src/i18n/locales/*.js`
+
+- Maintenance types now include **Burned / fire (جلنہ / آگ)** —
+  a machine that gets burned is logged with cost, downtime and parts.
+- Expense categories now include **Food / meals (کھانا پینا)** and
+  **Solar (سولر)** next to Tea (چائے).
+- Leaves stay in Attendance (حاضری → رخصت) and salary in Payroll
+  (تنخواہ) — both already support the full register.
+
+### 9. Urdu ⇄ English consistency
+
+**Files:** `src/i18n/locales/en.js`, `src/i18n/locales/ur.js`,
+`scripts/check-i18n.mjs`
+
+- Fixed 38 missing translations that showed raw keys on screen
+  (e.g. the dashboard column that literally displayed
+  "FIELDS.QUANTITY" — now تعداد / Qty).
+- Added every key for the new sections, user menu, offline banner,
+  404 page, PWA prompts and About page — in BOTH languages.
+- New audit script `scripts/check-i18n.mjs` verifies 463/463 keys
+  exist in both locales. Output: `MISSING IN EN: none / MISSING IN
+  UR: none`.
+
+### 10. Mobile friendly
+
+All new sections use the same responsive CrudPage (stacked form
+fields, sticky Save button, 40px touch targets, bottom nav) —
+verified at 390×844 in both languages.
+
+---
+
+
 ## ROUND 3 — 2026-09-21 (this update, v2.2.0)
 
 Verified the whole app end-to-end in a real browser (delete, add, save,

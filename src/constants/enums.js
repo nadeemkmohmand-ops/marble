@@ -34,15 +34,17 @@ export const RATE_TYPES = ['daily', 'piece']
 export const ATTENDANCE_STATUS = ['present', 'absent', 'half', 'leave']
 export const MACHINE_TYPES = ['gang_saw', 'multi_wire', 'edge_cutter', 'polishing_line', 'crane', 'loader']
 export const MACHINE_STATUS = ['running', 'idle', 'maintenance', 'broken']
-export const MAINTENANCE_TYPES = ['blade_change', 'belt', 'bearing', 'electrical', 'oil', 'other']
+export const MAINTENANCE_TYPES = ['blade_change', 'belt', 'bearing', 'electrical', 'oil', 'burn', 'other']
 export const EXPENSE_CATEGORIES = [
   'electricity',
+  'solar',
   'diesel',
   'rent',
   'transport',
   'tools',
   'blades',
   'tea',
+  'food',
   'salaries',
   'repairs',
   'misc',
@@ -50,6 +52,18 @@ export const EXPENSE_CATEGORIES = [
 export const SUPPLIER_TYPES = ['quarry', 'import', 'local']
 export const SELL_BY = ['sqft', 'running_ft', 'piece']
 export const CURRENCIES = ['PKR', 'USD', 'EUR', 'AED', 'CNY']
+
+// Partners — the rock business relations around the factory (manual register).
+export const PARTNER_TYPES = [
+  'raw_lend',      // gives raw rocks on credit (lend)
+  'marble_borrow', // takes cut marble on credit (borrow)
+  'custom_cut',    // brings own rock; factory cuts it for a fee
+  'transport',     // brings rocks in their own vehicles
+  'other',
+]
+
+// Utilities — electricity & solar billing (unit price is manual, it changes).
+export const UTILITY_TYPES = ['electricity', 'solar']
 
 // Badge color per status key (shared look across pages)
 export const STATUS_TONE = {
@@ -77,6 +91,12 @@ export const STATUS_TONE = {
   expired: 'muted',
   converted: 'info',
   transferred: 'info',
+  custom_cut: 'info',
+  transport: 'info',
+  raw_lend: 'warning',
+  marble_borrow: 'brand',
+  electricity: 'warning',
+  solar: 'success',
   sold: 'brand',
   confirmed: 'brand',
   absent: 'danger',

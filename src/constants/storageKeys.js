@@ -38,6 +38,8 @@ export const STORAGE_KEYS = {
   PIECEWORK: k('piecework'),
   PAYROLL: k('payroll'),
   EXPENSES: k('expenses'),
+  PARTNERS: k('partners'),
+  UTILITIES: k('utilities'),
   NOTIFICATIONS: k('notifications'),
 }
 

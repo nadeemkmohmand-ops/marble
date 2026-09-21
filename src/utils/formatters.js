@@ -91,4 +91,21 @@ export function bi(en, ur, lang) {
   return lang === 'ur' ? ur : en
 }
 
+// ── Bidi safety (fixes ")in(" bracket mirroring) ──
+// Inside RTL text, neutral characters (brackets, ×, dashes) around a
+// Latin run get mirrored by the Unicode bidi algorithm — "L×W×H (in)"
+// renders as ")in( L×W×H". Wrapping a purely-Latin run in Unicode
+// ISOLATE marks (U+2066 … U+2069) freezes its LTR order everywhere:
+// Excel, Word, CSV viewers and PDF text — no visual character added.
+const ARABIC_RE = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/
+const LATINISH_RE = /[A-Za-z0-9([{"'°×\-]/
+
+export function bidiSafe(value, rtl) {
+  const s = value === null || value === undefined ? '' : String(value)
+  if (!rtl || !s) return s
+  if (ARABIC_RE.test(s)) return s // already RTL — leave untouched
+  if (!LATINISH_RE.test(s)) return s
+  return '\u2066' + s + '\u2069'
+}
+
 export { round, num }

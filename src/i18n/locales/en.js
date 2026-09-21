@@ -18,6 +18,16 @@ export const en = {
     summary: 'Summary', download: 'Download', copying: 'Copied', copy: 'Copy',
     optional: 'optional', none: 'None', select: 'Select…', grandTotal: 'Grand total',
     outstanding: 'Outstanding', overdue: 'Overdue', loading: 'Loading…',
+    previous: 'Previous', next: 'Next',
+  },
+
+  appName: 'Marble Manager',
+  tagline: 'Complete factory management',
+  factoryName: 'Almakka Factory',
+
+  notFound: {
+    title: 'Page not found', desc: 'The link you followed is broken or the page was moved.',
+    backHome: 'Back to dashboard',
   },
 
   nav: {
@@ -26,8 +36,8 @@ export const en = {
     movements: 'Stock Movements', production: 'Production & Cutting',
     machines: 'Machines', maintenance: 'Maintenance', purchases: 'Purchases',
     suppliers: 'Suppliers', customers: 'Customers', quotations: 'Quotations',
-    orders: 'Orders', workers: 'Workers', attendance: 'Attendance',
-    payroll: 'Payroll', expenses: 'Expenses', reports: 'Reports',
+    orders: 'Orders', workers: 'Labours & Staff', partners: 'Partners', attendance: 'Attendance',
+    payroll: 'Payroll', expenses: 'Expenses', utilities: 'Electricity & Solar', reports: 'Reports',
     notifications: 'Notifications', settings: 'Settings', about: 'About',
     login: 'Login',
     groups: {
@@ -39,6 +49,7 @@ export const en = {
 
   home: {
     welcome: 'Welcome',
+    todayDate: 'Today', recentActivity: 'Recent activity', weeklyOverview: 'This week', viewReports: 'Open reports',
     roleOwner: 'Owner view — full financials', roleManager: 'Manager view — operations',
     roleAccountant: 'Accountant view — payments & ledgers', roleSupervisor: 'Supervisor view — yard & jobs',
     stockValue: 'Stock value', receivables: 'Receivables', payables: 'Payables',
@@ -119,6 +130,9 @@ export const en = {
     notes: 'Notes', amount: 'Amount', vendor: 'Vendor', blockRef: 'Block reference',
     pieceCutting: 'Cutting rate (per sq ft)', piecePolishing: 'Polishing rate (per sq ft)',
     pieceLoading: 'Loading rate (per slab)', pieceInstallation: 'Installation rate (per order)',
+    nameEn: 'Name in English', designation: 'Designation (type any)', work: 'Machine work / purpose',
+    units: 'Units', unitPrice: 'Unit price', meterNo: 'Meter no.', billNo: 'Bill no.',
+    prevReading: 'Previous reading', curReading: 'Current reading', quantity: 'Qty',
   },
 
   enums: {
@@ -147,13 +161,19 @@ export const en = {
     },
     maintenanceType: {
       blade_change: 'Blade change', belt: 'Belt', bearing: 'Bearing', electrical: 'Electrical',
-      oil: 'Oil / lubrication', other: 'Other',
+      oil: 'Oil / lubrication', burn: 'Burned / fire', other: 'Other',
     },
     expenseCategory: {
-      electricity: 'Electricity', diesel: 'Diesel', rent: 'Rent', transport: 'Transport',
-      tools: 'Tools', blades: 'Blades', tea: 'Tea / welfare', salaries: 'Salaries',
+      electricity: 'Electricity', solar: 'Solar', diesel: 'Diesel', rent: 'Rent', transport: 'Transport',
+      tools: 'Tools', blades: 'Blades', tea: 'Tea / welfare', food: 'Food / meals', salaries: 'Salaries',
       repairs: 'Repairs', misc: 'Miscellaneous',
     },
+    partnerType: {
+      raw_lend: 'Gives raw rock on credit', marble_borrow: 'Takes cut marble on credit',
+      custom_cut: 'Own rock — factory cuts', transport: 'Brings rock by own vehicle',
+      other: 'Other',
+    },
+    utilityType: { electricity: 'Electricity', solar: 'Solar' },
     supplierType: { quarry: 'Quarry', import: 'Import', local: 'Local' },
     sellBy: { sqft: 'Sq ft', running_ft: 'Running ft', piece: 'Piece' },
   },
@@ -180,8 +200,8 @@ export const en = {
     recovery: 'Recovery %', theoretical: 'Theoretical', saleable: 'Saleable',
     costPerSqft: 'Cost / sq ft', selectBlock: 'Select block', planSizes: 'Plan / slab sizes',
   },
-  machines: { title: 'Machine Register', subtitle: 'Gang saws, multi-wire, edge cutters, polishing lines' },
-  maintenance: { title: 'Maintenance', subtitle: 'Blades, belts, bearings, downtime and schedule' },
+  machines: { title: 'Machineries', subtitle: 'Add any machine by hand — name, its work, condition and cost' },
+  maintenance: { title: 'Maintenance & Repairs', subtitle: 'Blades, belts, breakdowns, burned machines — cost and downtime' },
   purchases: {
     title: 'Purchases', subtitle: 'Landed cost of every lot — block, freight, customs, clearing',
     landed: 'Landed cost', balance: 'Balance',
@@ -206,8 +226,11 @@ export const en = {
     nextStatus: 'Move forward', items: 'Order items',
   },
   workers: {
-    title: 'Workers', subtitle: 'Skills, daily & piece rates, advances and loans',
+    title: 'Labours & Staff', subtitle: 'Names in Urdu & English, designation, rates, advances and loans',
     payslip: 'Payslip',
+  },
+  partners: {
+    title: 'Partners', subtitle: 'Rock lenders, marble borrowers, custom cutting, vehicle suppliers',
   },
   attendance: {
     title: 'Attendance', subtitle: 'Daily present / absent / half / leave + overtime',
@@ -224,8 +247,11 @@ export const en = {
     generated: 'Payslips generated', nothingToGenerate: 'No workers to process',
   },
   expenses: {
-    title: 'Expenses & Overheads', subtitle: 'Electricity, diesel, rent, tools — allocated to lot / order / machine',
+    title: 'Expenses & Overheads', subtitle: 'Tea, food, diesel, rent, tools — allocated to lot / order / machine',
     monthTotal: 'This month', recurring: 'Recurring monthly', costSqft: 'Cost per sq ft produced',
+  },
+  utilities: {
+    title: 'Electricity & Solar', subtitle: 'Bills, units and unit price — the price is manual, write the new one when it changes',
   },
   reports: {
     title: 'Reports & Dashboards', subtitle: 'Real numbers from your data — export or share any report',
@@ -280,10 +306,17 @@ export const en = {
   login: {
     title: 'Sign in', subtitle: 'Choose your user and enter PIN',
     user: 'User', pin: 'PIN', signIn: 'Sign in', continueGuest: 'Continue without signing in',
-    wrongPin: 'Wrong PIN', userNotFound: 'User not found',
+    wrongPin: 'Wrong PIN', userNotFound: 'User not found', remember: 'Remember me',
   },
   about: {
     title: 'About', subtitle: 'Marble Manager — complete factory management',
+    appTitle: 'Marble Manager', tagline: 'Complete factory management',
+    description1: 'Almakka Factory manages every marble block from quarry to delivered slab — inventory, cutting, sales, labour and accounts in one app.',
+    description2: 'Works fully offline in the yard and syncs to the cloud when internet is available.',
+    factoryInfo: 'Factory information', factory: 'Factory', address: 'Address', phone: 'Phone', email: 'Email',
+    managementTitle: 'Management', founder: 'Founder', otherDesignations: 'Other designations',
+    developerInfo: 'Developer', developerName: 'Marble Manager team',
+    developerNote: 'For support or changes, contact the factory management.',
     features: 'What is inside', version: 'Version',
     featureList: 'Block & slab inventory with QR · offcuts & bundles · stock movements · cutting plans, yield & kerf · purchases with landed cost · quotations to invoices · customer & supplier ledgers · attendance & payroll with Urdu payslips · expenses · machines & maintenance · reports with Excel/PDF/Word/CSV export and WhatsApp sharing · offline PWA with cloud sync',
     tech: 'Built with React, Vite, Tailwind, Supabase-ready offline-first storage',
@@ -292,7 +325,14 @@ export const en = {
     installTitle: 'Install Marble Manager', installHint: 'Works offline in the yard — add to home screen',
     install: 'Install', dismiss: 'Later',
     updateReady: 'New version ready', offlineReady: 'App ready to work offline', reload: 'Reload',
+    offline: 'You are offline — the app keeps working, data syncs later',
+    addToHome: 'Add to Home screen', installSuccess: 'App installed on this device',
+    installManual: 'Open the browser menu and choose “Add to Home screen”',
   },
+  auth: { signedOut: 'Signed out' },
+  menu: { profile: 'Profile' },
+  header: { account: 'Account' },
+  set: { userName: 'User', factoryManager: 'Factory manager', logout: 'Log out' },
   scanner: {
     hint: 'Point the camera at the slab / block QR label', cameraError: 'Camera not available. Check permissions.',
   },
@@ -307,8 +347,11 @@ export const en = {
     purchases: 'Purchases', landedTotal: 'Landed total', paid: 'Paid', payable: 'Payable',
     suppliers: 'Suppliers', quarryImport: 'Quarry / import', totalPayable: 'Total payable', local: 'Local',
     customers: 'Customers', totalReceivable: 'Total receivable', totalBusiness: 'Total business',
-    withBalance: 'With balance', workers: 'Workers', cutters: 'Cutters', polishers: 'Polishers',
+    withBalance: 'With balance', workers: 'Labours', cutters: 'Cutters', polishers: 'Polishers',
     advancesOutstanding: 'Advances outstanding', allExpenses: 'All expenses', recurringMonthly: 'Recurring monthly',
+    partners: 'Partners', lenders: 'Rock lenders', borrowers: 'Marble borrowers', transporters: 'Vehicle suppliers',
+    monthElectricity: 'Electricity this month', monthSolarUnits: 'Solar units this month',
+    allUnits: 'All units', allAmount: 'All billed',
     entries: 'Entries', quotations: 'Quotations', accepted: 'Accepted', acceptedValue: 'Accepted value',
     pipeline: 'Pipeline', orders: 'Orders', inProduction: 'In production', revenue: 'Revenue',
     receivable: 'Receivable',
@@ -320,5 +363,11 @@ export const en = {
     areaFromQty: 'Auto: L × W × qty', blockRef: 'Block ID if received', refId: 'Block / slab / offcut ID',
     qtyMoved: 'Qty, sq ft or cft moved', party: 'Supplier / customer name', ratePerSqft: 'Rate per sq ft',
     ratePerSlab: 'Rate per slab', ratePerOrder: 'Rate per order / sq ft', monthlyRecovery: 'Monthly recovery',
+    nameEn: 'Write the same name in English letters', vehicleNo: 'Vehicle number if they bring rock by truck',
+    designation: 'Manager, Foreman, Labour, Driver, Guard… (type anything)',
+    openingBalance: 'Amount owed at the start (advance or credit)',
+    meterNo: 'Electricity meter number', units: 'Units used (WAPDA) or produced (solar)',
+    unitPrice: 'Price of one unit — write the current rate by hand',
+    amountAuto: 'Auto: units × price — overwrite if the bill says different',
   },
 }

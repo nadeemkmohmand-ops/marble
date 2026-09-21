@@ -21,9 +21,11 @@ const Customers = lazy(() => import('./pages/Customers'))
 const Quotations = lazy(() => import('./pages/Quotations'))
 const Orders = lazy(() => import('./pages/Orders'))
 const Workers = lazy(() => import('./pages/Workers'))
+const Partners = lazy(() => import('./pages/Partners'))
 const Attendance = lazy(() => import('./pages/Attendance'))
 const Payroll = lazy(() => import('./pages/Payroll'))
 const Expenses = lazy(() => import('./pages/Expenses'))
+const Utilities = lazy(() => import('./pages/Utilities'))
 const Reports = lazy(() => import('./pages/Reports'))
 const Notifications = lazy(() => import('./pages/Notifications'))
 const PrintPreview = lazy(() => import('./pages/PrintPreview'))
@@ -53,9 +55,11 @@ export default function AppRoutes() {
         <Route path="/quotations" element={page(<Quotations />)} />
         <Route path="/orders" element={page(<Orders />)} />
         <Route path="/workers" element={page(<Workers />)} />
+        <Route path="/partners" element={page(<Partners />)} />
         <Route path="/attendance" element={page(<Attendance />)} />
         <Route path="/payroll" element={page(<Payroll />)} />
         <Route path="/expenses" element={page(<Expenses />)} />
+        <Route path="/utilities" element={page(<Utilities />)} />
         <Route path="/reports" element={page(<Reports />)} />
         <Route path="/notifications" element={page(<Notifications />)} />
         <Route path="/print" element={page(<PrintPreview />)} />

@@ -3,7 +3,8 @@ import { useLang } from '../context/LanguageContext'
 import {
   exportCSV, exportXLSX, exportDOC, downloadPDF, whatsappText, shareFile, tableToText, recordToText,
 } from '../utils/exporters'
-import { wrapStyled } from '../utils/printTemplates'
+import { wrapStyled, escBidi } from '../utils/printTemplates'
+import { getFactoryName } from '../utils/factory'
 import { useToast } from '../context/ToastContext'
 
 /**
@@ -50,28 +51,27 @@ export function useExport({ title, columns, rows, meta } = {}) {
   }, [title, columns, rows, lang, t, toast])
 }
 
-function toCsvText({ columns, rows }) {
+function toCsvText({ columns, rows, lang = 'en' }) {
   const esc = (s) => `"${String(s ?? '').replace(/"/g, '""')}"`
-  const lines = [columns.map((c) => esc(c.label)).join(',')]
+  const lines = [`"${getFactoryName(lang)}"`, `"${columns.map((c) => esc(c.label)).join(',')}"`]
   rows.forEach((r) => lines.push(columns.map((c) => esc(r[c.key])).join(',')))
   return lines.join('\r\n')
 }
 
 function stockTableHTML({ columns, rows }) {
-  const head = columns.map((c) => `<th>${escapeHtml(c.label)}</th>`).join('')
+  // escBidi = escape + wrap pure-Latin runs in <span dir="ltr"> so the
+  // PDF rasterizer (html2canvas) cannot mirror "(in)" into ")in(" or
+  // reorder Latin words inside RTL documents.
+  const head = columns.map((c) => `<th>${escBidi(c.label)}</th>`).join('')
   const body = rows
     .map(
       (r) =>
         `<tr>${columns
-          .map((c) => `<td>${escapeHtml(typeof c.format === 'function' ? c.format(r[c.key], r) : r[c.key] ?? '')}</td>`)
+          .map((c) => `<td>${escBidi(typeof c.format === 'function' ? c.format(r[c.key], r) : r[c.key] ?? '')}</td>`)
           .join('')}</tr>`,
     )
     .join('')
   return `<table><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table>`
-}
-
-function escapeHtml(s) {
-  return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 }
 
 export default useExport

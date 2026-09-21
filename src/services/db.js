@@ -47,6 +47,8 @@ export const COLLECTIONS = {
   piecework: STORAGE_KEYS.PIECEWORK,
   payroll: STORAGE_KEYS.PAYROLL,
   expenses: STORAGE_KEYS.EXPENSES,
+  partners: STORAGE_KEYS.PARTNERS,
+  utilities: STORAGE_KEYS.UTILITIES,
   notifications: STORAGE_KEYS.NOTIFICATIONS,
 }
 

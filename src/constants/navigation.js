@@ -1,7 +1,7 @@
 import {
   LayoutDashboard, Boxes, Package, Scissors, ShoppingCart, Users, HardHat,
   Receipt, BarChart3, Calculator, Settings, Info, Bell, Truck, Wrench,
-  PackageCheck, ArrowLeftRight, FileText, UserCog, LogIn,
+  PackageCheck, ArrowLeftRight, FileText, UserCog, LogIn, Handshake, Zap,
 } from 'lucide-react'
 
 import ROUTES from './routes'
@@ -39,6 +39,7 @@ export const NAV_GROUPS = [
     items: [
       { to: ROUTES.PURCHASES, key: 'nav.purchases', icon: ShoppingCart },
       { to: ROUTES.SUPPLIERS, key: 'nav.suppliers', icon: Truck },
+      { to: ROUTES.PARTNERS, key: 'nav.partners', icon: Handshake },
     ],
   },
   {
@@ -61,6 +62,7 @@ export const NAV_GROUPS = [
     id: 'finance',
     items: [
       { to: ROUTES.EXPENSES, key: 'nav.expenses', icon: Receipt },
+      { to: ROUTES.UTILITIES, key: 'nav.utilities', icon: Zap },
       { to: ROUTES.REPORTS, key: 'nav.reports', icon: BarChart3, roles: ['owner', 'accountant', 'manager'] },
     ],
   },

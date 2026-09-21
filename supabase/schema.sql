@@ -1,62 +1,40 @@
 -- ═══════════════════════════════════════════════════════════════════
---  MARBLE MANAGER — COMPLETE SUPABASE SETUP (run in the SQL Editor)
---  Version 2.2 · 2026-09-21
+--  ALMAKKA FACTORY — MARBLE MANAGER · COMPLETE SUPABASE SETUP
+--  Version 2.3 · 2026-09-21
 -- ═══════════════════════════════════════════════════════════════════
 --  HOW TO USE
 --    1. Open your Supabase project → SQL Editor → New query
---    2. Paste this WHOLE file and press RUN (it takes a few seconds)
---    3. Reload the app — saving, editing, DELETING and cloud sync
---       now work correctly.
+--    2. Paste this WHOLE file and press RUN (takes a few seconds)
+--    3. Reload the app — everything works: save, edit, DELETE, cloud sync.
 --
---  WHAT THIS DOES
---    • Creates ALL 19 tables the app needs with the exact columns the
---      app writes (any tables you made by hand earlier are replaced —
---      hand-made tables were missing columns like attendance.date,
---      which broke saving and deleting).
---    • Turns on Row Level Security with a policy that lets the app
---      (anon key) SELECT / INSERT / UPDATE / DELETE — this is what
---      makes "Delete" work from the app.
---    • Grants full table permissions to anon + authenticated roles.
---    • Adds automatic updated_at triggers and helpful indexes.
+--  SAFE TO RUN AGAIN AND AGAIN (idempotent)
+--    · This version NEVER drops a table and NEVER deletes data.
+--      Running it on an existing database only ADDS what is missing.
+--    · If you ran the earlier v2.2 script before, just run this file —
+--      it upgrades your database in place.
 --
---  ⚠ NOTE: the script starts by DROPPING the app's tables. Your cloud
---    tables are currently empty or partially created, so nothing real
---    is lost — the real data lives in the app and will sync back up.
---    If you EVER have important cloud data first run:
---      select * from customers;  -- etc. and export it.
+--  WHAT IS NEW IN 2.3 (compared to 2.2)
+--    · NEW TABLE  partners  — the rock-business register:
+--        raw_lend      = gives raw rocks on credit (ادھار)
+--        marble_borrow = takes cut marble on credit
+--        custom_cut    = brings own rock, factory cuts it for a fee
+--        transport     = brings rocks in their own vehicles
+--    · NEW TABLE  utilities — electricity & solar bills with a MANUAL
+--        unit price (the price changes, so it is typed on every bill).
+--    · workers   + name_en (English name), designation (free text:
+--        Manager / Foreman / Labour …)
+--    · machines  + work (what the machine does — free text)
+--    · RLS + full permissions re-applied to ALL 21 tables so Delete
+--      keeps working from the app.
 -- ═══════════════════════════════════════════════════════════════════
 
 create extension if not exists "pgcrypto";
 
 -- ────────────────────────────────────────────────────────────────
--- 1. Drop old / partial tables (child tables first)
--- ────────────────────────────────────────────────────────────────
-drop table if exists attendance    cascade;
-drop table if exists piecework     cascade;
-drop table if exists payroll       cascade;
-drop table if exists offcuts       cascade;
-drop table if exists slabs         cascade;
-drop table if exists cutting_plans cascade;
-drop table if exists job_cards     cascade;
-drop table if exists maintenance   cascade;
-drop table if exists movements     cascade;
-drop table if exists purchases     cascade;
-drop table if exists quotations    cascade;
-drop table if exists orders        cascade;
-drop table if exists expenses      cascade;
-drop table if exists workers       cascade;
-drop table if exists machines      cascade;
-drop table if exists suppliers     cascade;
-drop table if exists customers     cascade;
-drop table if exists blocks        cascade;
-drop table if exists notifications cascade;
-
--- ────────────────────────────────────────────────────────────────
--- 2. Tables (columns match the app fields 1:1, snake_case)
+-- 1. Tables — "if not exists" so nothing is ever dropped or emptied
 -- ────────────────────────────────────────────────────────────────
 
--- Raw marble blocks
-create table blocks (
+create table if not exists blocks (
   id text primary key,
   block_no        text,
   lot_no          text,
@@ -90,8 +68,7 @@ create table blocks (
   updated_at      timestamptz default now()
 );
 
--- Cut slabs (child of a block)
-create table slabs (
+create table if not exists slabs (
   id text primary key,
   parent_block    text references blocks(id) on delete set null,
   length_ft       numeric,
@@ -116,8 +93,7 @@ create table slabs (
   updated_at      timestamptz default now()
 );
 
--- Offcuts / remnants
-create table offcuts (
+create table if not exists offcuts (
   id text primary key,
   parent_slab     text references slabs(id) on delete set null,
   length_ft       numeric,
@@ -138,8 +114,7 @@ create table offcuts (
   updated_at      timestamptz default now()
 );
 
--- Stock movements (audit trail)
-create table movements (
+create table if not exists movements (
   id text primary key,
   date            date,
   type            text,
@@ -154,10 +129,10 @@ create table movements (
   updated_at      timestamptz default now()
 );
 
--- Machines
-create table machines (
+create table if not exists machines (
   id text primary key,
   name            text,
+  work            text,
   type            text,
   status          text default 'running',
   location        text,
@@ -170,8 +145,7 @@ create table machines (
   updated_at      timestamptz default now()
 );
 
--- Maintenance log
-create table maintenance (
+create table if not exists maintenance (
   id text primary key,
   date            date,
   machine_name    text,
@@ -186,8 +160,7 @@ create table maintenance (
   updated_at      timestamptz default now()
 );
 
--- Cutting plans
-create table cutting_plans (
+create table if not exists cutting_plans (
   id text primary key,
   block_id        text references blocks(id) on delete set null,
   planned_slabs   text,
@@ -200,8 +173,7 @@ create table cutting_plans (
   updated_at      timestamptz default now()
 );
 
--- Job cards
-create table job_cards (
+create table if not exists job_cards (
   id text primary key,
   date            date,
   machine_name    text,
@@ -217,8 +189,7 @@ create table job_cards (
   updated_at      timestamptz default now()
 );
 
--- Suppliers
-create table suppliers (
+create table if not exists suppliers (
   id text primary key,
   name            text,
   type            text default 'local',
@@ -235,8 +206,7 @@ create table suppliers (
   updated_at      timestamptz default now()
 );
 
--- Purchases (landed cost lots)
-create table purchases (
+create table if not exists purchases (
   id text primary key,
   date            date,
   supplier_name   text,
@@ -259,8 +229,7 @@ create table purchases (
   updated_at      timestamptz default now()
 );
 
--- Customers
-create table customers (
+create table if not exists customers (
   id text primary key,
   name            text,
   phone           text,
@@ -272,8 +241,7 @@ create table customers (
   updated_at      timestamptz default now()
 );
 
--- Quotations
-create table quotations (
+create table if not exists quotations (
   id text primary key,
   date            date,
   customer_name   text,
@@ -292,8 +260,7 @@ create table quotations (
   updated_at      timestamptz default now()
 );
 
--- Orders
-create table orders (
+create table if not exists orders (
   id text primary key,
   date            date,
   customer_name   text,
@@ -315,10 +282,11 @@ create table orders (
   updated_at      timestamptz default now()
 );
 
--- Workers
-create table workers (
+create table if not exists workers (
   id text primary key,
   name            text,
+  name_en         text,
+  designation     text,
   skill           text,
   phone           text,
   cnic            text,
@@ -340,8 +308,7 @@ create table workers (
   updated_at      timestamptz default now()
 );
 
--- Attendance
-create table attendance (
+create table if not exists attendance (
   id text primary key,
   date            date,
   worker_id       text,
@@ -352,8 +319,7 @@ create table attendance (
   updated_at      timestamptz default now()
 );
 
--- Piece work
-create table piecework (
+create table if not exists piecework (
   id text primary key,
   date            date,
   worker_id       text,
@@ -366,8 +332,7 @@ create table piecework (
   updated_at      timestamptz default now()
 );
 
--- Payroll (payslips)
-create table payroll (
+create table if not exists payroll (
   id text primary key,
   period          text,
   worker_id       text,
@@ -388,8 +353,7 @@ create table payroll (
   updated_at      timestamptz default now()
 );
 
--- Expenses
-create table expenses (
+create table if not exists expenses (
   id text primary key,
   date            date,
   category        text,
@@ -404,8 +368,40 @@ create table expenses (
   updated_at      timestamptz default now()
 );
 
--- Notifications
-create table notifications (
+-- ★ NEW 2.3 — Partners (rock business relations)
+create table if not exists partners (
+  id text primary key,
+  name            text,
+  name_en         text,
+  type            text default 'raw_lend',
+  phone           text,
+  whatsapp        text,
+  vehicle_no      text,
+  address         text,
+  opening_balance numeric default 0,
+  notes           text,
+  created_at      timestamptz default now(),
+  updated_at      timestamptz default now()
+);
+
+-- ★ NEW 2.3 — Utilities (electricity & solar bills, manual unit price)
+create table if not exists utilities (
+  id text primary key,
+  date            date,
+  type            text default 'electricity',
+  meter_no        text,
+  bill_no         text,
+  prev_reading    numeric default 0,
+  cur_reading     numeric default 0,
+  units           numeric default 0,
+  unit_price      numeric default 0,
+  amount          numeric default 0,
+  notes           text,
+  created_at      timestamptz default now(),
+  updated_at      timestamptz default now()
+);
+
+create table if not exists notifications (
   id text primary key,
   kind            text,
   severity        text,
@@ -417,24 +413,34 @@ create table notifications (
 );
 
 -- ────────────────────────────────────────────────────────────────
--- 3. Indexes for the app's common filters
+-- 2. Column patches — adds the 2.3 fields to databases that were
+--    set up with an older script. "if not exists" = safe to re-run.
 -- ────────────────────────────────────────────────────────────────
-create index slabs_status_idx      on slabs(status);
-create index slabs_parent_idx      on slabs(parent_block);
-create index blocks_status_idx     on blocks(status);
-create index movements_date_idx    on movements(date desc);
-create index movements_type_idx    on movements(type);
-create index orders_status_idx     on orders(status);
-create index orders_customer_idx   on orders(customer_name);
-create index purchases_supplier_idx on purchases(supplier_name);
-create index attendance_date_idx   on attendance(date);
-create index attendance_worker_idx on attendance(worker_id);
-create index expenses_date_idx     on expenses(date desc);
-create index piecework_date_idx    on piecework(date);
-create index payroll_period_idx    on payroll(period);
+alter table workers  add column if not exists name_en     text;
+alter table workers  add column if not exists designation text;
+alter table machines add column if not exists work        text;
 
 -- ────────────────────────────────────────────────────────────────
--- 4. Automatic updated_at on every edit
+-- 3. Indexes for the app's common filters (safe to re-run)
+-- ────────────────────────────────────────────────────────────────
+create index if not exists slabs_status_idx      on slabs(status);
+create index if not exists slabs_parent_idx      on slabs(parent_block);
+create index if not exists blocks_status_idx     on blocks(status);
+create index if not exists movements_date_idx    on movements(date desc);
+create index if not exists movements_type_idx    on movements(type);
+create index if not exists orders_status_idx     on orders(status);
+create index if not exists orders_customer_idx   on orders(customer_name);
+create index if not exists purchases_supplier_idx on purchases(supplier_name);
+create index if not exists attendance_date_idx   on attendance(date);
+create index if not exists attendance_worker_idx on attendance(worker_id);
+create index if not exists expenses_date_idx     on expenses(date desc);
+create index if not exists piecework_date_idx    on piecework(date);
+create index if not exists payroll_period_idx    on payroll(period);
+create index if not exists partners_type_idx     on partners(type);
+create index if not exists utilities_date_idx    on utilities(date desc);
+
+-- ────────────────────────────────────────────────────────────────
+-- 4. Automatic updated_at on every edit (re-applied safely)
 -- ────────────────────────────────────────────────────────────────
 create or replace function touch_updated_at() returns trigger as $$
 begin
@@ -448,15 +454,16 @@ declare t text;
 begin
   foreach t in array array['blocks','slabs','offcuts','movements','machines','maintenance',
     'cutting_plans','job_cards','suppliers','purchases','customers','quotations','orders',
-    'workers','attendance','piecework','payroll','expenses','notifications']
+    'workers','attendance','piecework','payroll','expenses','partners','utilities','notifications']
   loop
+    execute format('drop trigger if exists trg_touch_%1$s on %1$s', t);
     execute format('create trigger trg_touch_%1$s before update on %1$s
                     for each row execute function touch_updated_at()', t);
   end loop;
 end $$;
 
 -- ────────────────────────────────────────────────────────────────
--- 5. Permissions — THIS is what makes Delete / Edit work in the app
+-- 5. Permissions + RLS — THIS is what makes Delete / Edit work
 --    The app talks to Supabase with the public anon key, so the anon
 --    role must be allowed to read and write every table.
 -- ────────────────────────────────────────────────────────────────
@@ -464,12 +471,16 @@ grant usage on schema public to anon, authenticated;
 grant all privileges on all tables in schema public to anon, authenticated;
 grant all privileges on all sequences in schema public to anon, authenticated;
 
+-- Future tables created later are auto-granted too.
+alter default privileges in schema public grant all on tables to anon, authenticated;
+alter default privileges in schema public grant all on sequences to anon, authenticated;
+
 do $$
 declare t text;
 begin
   foreach t in array array['blocks','slabs','offcuts','movements','machines','maintenance',
     'cutting_plans','job_cards','suppliers','purchases','customers','quotations','orders',
-    'workers','attendance','piecework','payroll','expenses','notifications']
+    'workers','attendance','piecework','payroll','expenses','partners','utilities','notifications']
   loop
     -- RLS on, with one fully-permissive policy for this single-tenant app.
     -- (Only this app's anon key can reach the DB; tighten per-user later.)
@@ -484,12 +495,16 @@ end $$;
 -- ────────────────────────────────────────────────────────────────
 -- 6. Verify — run these if you want to double-check the setup
 -- ────────────────────────────────────────────────────────────────
--- Should list all 19 tables:
+-- Should list all 21 tables:
 --   select table_name from information_schema.tables
 --   where table_schema = 'public' order by table_name;
 --
 -- Should return rows (policies exist and are permissive):
 --   select tablename, policyname from pg_policies where schemaname = 'public';
+--
+-- The two new columns must show here:
+--   select column_name from information_schema.columns where table_name = 'workers';
+--   select column_name from information_schema.columns where table_name = 'machines';
 --
 -- Quick write/delete smoke test (safe — inserts then deletes one row):
 --   insert into attendance (id, date, worker_name, status) values ('__smoke_test__', now()::date, 'test', 'present');

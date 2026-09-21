@@ -4,7 +4,7 @@ const PREFIXES = {
   maintenance: 'MNT', purchases: 'PUR', suppliers: 'SUP', customers: 'CUS',
   quotations: 'QTN', orders: 'ORD', workers: 'WRK', attendance: 'ATT',
   piecework: 'PWK', payroll: 'PAY', expenses: 'EXP', cuttingPlans: 'CUT', jobCards: 'JOB',
-  notifications: 'NTF',
+  notifications: 'NTF', partners: 'PTR', utilities: 'UTL',
 }
 
 function rand() {

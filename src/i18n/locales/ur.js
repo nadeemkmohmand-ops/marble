@@ -19,6 +19,16 @@ export const ur = {
     summary: 'خلاصہ', download: 'ڈاؤن لوڈ', copying: 'کاپی ہو گیا', copy: 'کاپی',
     optional: 'اختیاری', none: 'کوئی نہیں', select: 'منتخب کریں…', grandTotal: 'گرینڈ ٹوٹل',
     outstanding: 'واجب الادا', overdue: 'تاخیری', loading: 'لوڈ ہو رہا ہے…',
+    previous: 'پچھلا', next: 'اگلا',
+  },
+
+  appName: 'ماربل منیجر',
+  tagline: 'فیکٹری کا مکمل نظام',
+  factoryName: 'المکہ فیکٹری',
+
+  notFound: {
+    title: 'صفحہ نہیں ملا', desc: 'یہ لنک ٹوٹا ہوا ہے یا صفحہ ہٹا دیا گیا ہے۔',
+    backHome: 'ڈیش بورڈ پر واپس',
   },
 
   nav: {
@@ -27,8 +37,8 @@ export const ur = {
     movements: 'اسٹاک موومنٹ', production: 'پروڈکشن و کٹنگ',
     machines: 'مشینیں', maintenance: 'دیکھ بھال', purchases: 'خریداری',
     suppliers: 'سپلائرز', customers: 'گاہک', quotations: 'تخمینے',
-    orders: 'آرڈرز', workers: 'مزدور', attendance: 'حاضری',
-    payroll: 'تنخواہ', expenses: 'اخراجات', reports: 'رپورٹس',
+    orders: 'آرڈرز', workers: 'مزدور و عملہ', partners: 'کاروباری ساتھی', attendance: 'حاضری',
+    payroll: 'تنخواہ', expenses: 'اخراجات', utilities: 'بجلی و سولر', reports: 'رپورٹس',
     notifications: 'اطلاعات', settings: 'ترتیبات', about: 'تعارف',
     login: 'لاگ ان',
     groups: {
@@ -40,6 +50,7 @@ export const ur = {
 
   home: {
     welcome: 'خوش آمدید',
+    todayDate: 'آج کی تاریخ', recentActivity: 'حالیہ سرگرمی', weeklyOverview: 'اس ہفتے', viewReports: 'رپورٹس کھولیں',
     roleOwner: 'مالک کا منظر — مکمل مالی تفصیل', roleManager: 'منیجر کا منظر — آپریشنز',
     roleAccountant: 'اکاؤنٹنٹ کا منظر — ادائیگیاں و کھاتے', roleSupervisor: 'سپروائزر کا منظر — یارڈ و کام',
     stockValue: 'اسٹاک کی مالیت', receivables: 'وصول کرنا ہے', payables: 'ادا کرنا ہے',
@@ -120,6 +131,9 @@ export const ur = {
     notes: 'نوٹس', amount: 'رقم', vendor: 'وینڈر', blockRef: 'بلاک حوالہ',
     pieceCutting: 'کٹنگ ریٹ (فی سکوئر فٹ)', piecePolishing: 'پالشنگ ریٹ (فی سکوئر فٹ)',
     pieceLoading: 'لوڈنگ ریٹ (فی سلیب)', pieceInstallation: 'تنصیب ریٹ (فی آرڈر)',
+    nameEn: 'نام (انگریزی میں)', designation: 'عہدہ (خود لکھیں)', work: 'مشین کا کام',
+    units: 'یونٹس', unitPrice: 'فی یونٹ ریٹ', meterNo: 'میٹر نمبر', billNo: 'بل نمبر',
+    prevReading: 'پچھلا ریڈنگ', curReading: 'نئی ریڈنگ', quantity: 'تعداد',
   },
 
   enums: {
@@ -148,13 +162,19 @@ export const ur = {
     },
     maintenanceType: {
       blade_change: 'بلیڈ تبدیل', belt: 'بیلٹ', bearing: 'بیئرنگ', electrical: 'بجلی کا کام',
-      oil: 'تیل / لوبریکیشن', other: 'دیگر',
+      oil: 'تیل / لوبریکیشن', burn: 'جلنہ / آگ', other: 'دیگر',
     },
     expenseCategory: {
-      electricity: 'بجلی', diesel: 'ڈیزل', rent: 'کرایہ', transport: 'ٹرانسپورٹ',
-      tools: 'اوزار', blades: 'بلیڈز', tea: 'چائے', salaries: 'تنخواہیں',
+      electricity: 'بجلی', solar: 'سولر', diesel: 'ڈیزل', rent: 'کرایہ', transport: 'ٹرانسپورٹ',
+      tools: 'اوزار', blades: 'بلیڈز', tea: 'چائے', food: 'کھانا پینا', salaries: 'تنخواہیں',
       repairs: 'مرمات', misc: 'متفرقات',
     },
+    partnerType: {
+      raw_lend: 'کچا پتھر ادھار دیتے ہیں', marble_borrow: 'تراشا ماربل ادھار لے جاتے ہیں',
+      custom_cut: 'اپنا پتھر — فیکٹری کاٹتی ہے', transport: 'اپنی گاڑی پر پتھر لاتے ہیں',
+      other: 'دیگر',
+    },
+    utilityType: { electricity: 'بجلی (واپڈا)', solar: 'سولر' },
     supplierType: { quarry: 'کوئری', import: 'امپورٹ', local: 'مقامی' },
     sellBy: { sqft: 'سکوئر فٹ', running_ft: 'رننگ فٹ', piece: 'پیس' },
   },
@@ -181,8 +201,8 @@ export const ur = {
     recovery: 'وصولی فیصد', theoretical: 'نظری', saleable: 'قابلِ فروخت',
     costPerSqft: 'لاگت فی سکوئر فٹ', selectBlock: 'بلاک منتخب کریں', planSizes: 'پلان / سلیب سائز',
   },
-  machines: { title: 'مشین رجسٹر', subtitle: 'گیگ سا، ملٹی وائر، ایج کٹر، پالشنگ لائن' },
-  maintenance: { title: 'دیکھ بھال', subtitle: 'بلیڈ، بیلٹ، بیئرنگ، بند وقت اور شیڈول' },
+  machines: { title: 'مشینری', subtitle: 'ہر مشین خود شامل کریں — نام، اس کا کام، حالت اور لاگت' },
+  maintenance: { title: 'دیکھ بھال و مرمات', subtitle: 'بلیڈ، بیلٹ، خرابیاں، جلی مشینیں — لاگت اور بند وقت' },
   purchases: {
     title: 'خریداری', subtitle: 'ہر لاٹ کی کل لینڈڈ لاگت — بلاک، بھاڑا، کسٹم، کلئیرنگ',
     landed: 'لینڈڈ لاگت', balance: 'بقایا',
@@ -207,8 +227,11 @@ export const ur = {
     nextStatus: 'آگے بڑھائیں', items: 'آرڈر آئٹمز',
   },
   workers: {
-    title: 'مزدور', subtitle: 'ہنر، ڈیلی و ٹکڑا ریٹ، ایڈوانس و قرضے',
+    title: 'مزدور و عملہ', subtitle: 'نام اردو و انگریزی دونوں میں، عہدہ، ریٹ، ایڈوانس و قرضے',
     payslip: 'تنخواہ پرچی',
+  },
+  partners: {
+    title: 'کاروباری ساتھی', subtitle: 'کچا پتھر دینے والے، ماربل لینے والے، کسٹم کٹنگ، گاڑی والے',
   },
   attendance: {
     title: 'حاضری', subtitle: 'روزانہ حاضر / غیر حاضر / نصف / رخصت + اوور ٹائم',
@@ -225,8 +248,11 @@ export const ur = {
     generated: 'پرچیاں تیار ہو گئیں', nothingToGenerate: 'پروسیس کے لیے کوئی مزدور نہیں',
   },
   expenses: {
-    title: 'اخراجات', subtitle: 'بجلی، ڈیزل، کرایہ، اوزار — لاٹ / آرڈر / مشین پر خرچ',
+    title: 'اخراجات', subtitle: 'چائے، کھانا، ڈیزل، کرایہ، اوزار — لاٹ / آرڈر / مشین پر خرچ',
     monthTotal: 'اس ماہ', recurring: 'ماہانہ بار بار', costSqft: 'فی سکوئر فٹ پیداواری لاگت',
+  },
+  utilities: {
+    title: 'بجلی و سولر', subtitle: 'بل، یونٹس اور فی یونٹ ریٹ — ریٹ ہاتھ سے لکھیں، بدلے تو نئی رقم درج کریں',
   },
   reports: {
     title: 'رپورٹس و ڈیش بورڈز', subtitle: 'آپ کے ڈیٹا سے حقیقی اعداد — ایکسپورٹ یا واٹس ایپ شیئر',
@@ -281,10 +307,17 @@ export const ur = {
   login: {
     title: 'سائن اِن', subtitle: 'صارف منتخب کریں اور پِن درج کریں',
     user: 'صارف', pin: 'پِن', signIn: 'سائن اِن', continueGuest: 'بغیر سائن اِن جاری رکھیں',
-    wrongPin: 'پِن غلط ہے', userNotFound: 'صارف نہیں ملا',
+    wrongPin: 'پِن غلط ہے', userNotFound: 'صارف نہیں ملا', remember: 'مجھے یاد رکھیں',
   },
   about: {
     title: 'تعارف', subtitle: 'ماربل منیجر — فیکٹری کا مکمل نظام',
+    appTitle: 'ماربل منیجر', tagline: 'فیکٹری کا مکمل نظام',
+    description1: 'المکہ فیکٹری ہر ماربل بلاک کو کوئری سے ڈیلیور شدہ سلیب تک منیج کرتی ہے — انوینٹری، کٹنگ، سیلز، مزدور اور اکاؤنٹس ایک ایپ میں۔',
+    description2: 'یارڈ میں مکمل آف لائن کام کرتی ہے اور انٹرنیٹ آنے پر کلاؤڈ سے سنک ہوتی ہے۔',
+    factoryInfo: 'فیکٹری کی معلومات', factory: 'فیکٹری', address: 'پتہ', phone: 'فون', email: 'ای میل',
+    managementTitle: 'انتظامیہ', founder: 'بانی', otherDesignations: 'دیگر عہدے',
+    developerInfo: 'ڈیویلپر', developerName: 'ماربل منیجر ٹیم',
+    developerNote: 'معاونت یا تبدیلی کے لیے فیکٹری انتظامیہ سے رابطہ کریں۔',
     features: 'اس میں کیا ہے', version: 'ورژن',
     featureList: 'کیو آر کے ساتھ بلاک و سلیب انوینٹری · بچے ٹکڑے و بنڈل · اسٹاک موومنٹس · کٹنگ پلان، وصولی و کیرف · لینڈڈ لاگت خریداری · تخمینہ سے بل تک · گاہک و سپلائر کھاتے · حاضری و تنخواہ اردو پرچی سمیت · اخراجات · مشین و دیکھ بھال · ایکسل/پی ڈی ایف/ورڈ/CSV ایکسپورٹ اور واٹس ایپ شیئر کے ساتھ رپورٹس · آف لائن ایپ و کلاؤڈ سنک',
     tech: 'React، Vite، Tailwind اور آف لائن فرسٹ اسٹوریج (سپابیس ریڈی) پر بنایا گیا',
@@ -293,7 +326,14 @@ export const ur = {
     installTitle: 'ایپ انسٹال کریں', installHint: 'یارڈ میں آف لائن چلے گی — ہوم اسکرین پر شامل کریں',
     install: 'انسٹال', dismiss: 'بعد میں',
     updateReady: 'نیا ورژن تیار ہے', offlineReady: 'ایپ آف لائن کام کے لیے تیار ہے', reload: 'دوبارہ لوڈ',
+    offline: 'آپ آف لائن ہیں — ایپ کام کرتی رہے گی، ڈیٹا بعد میں سنک ہوگا',
+    addToHome: 'ہوم اسکرین پر شامل کریں', installSuccess: 'ایپ اس ڈیوائس پر انسٹال ہو گئی',
+    installManual: 'براؤزر کا مینو کھولیں اور “ہوم اسکرین پر شامل کریں” چنیں',
   },
+  auth: { signedOut: 'سائن آؤٹ ہو گیا' },
+  menu: { profile: 'پروفائل' },
+  header: { account: 'اکاؤنٹ' },
+  set: { userName: 'صارف', factoryManager: 'فیکٹری منیجر', logout: 'لاگ آؤٹ' },
   scanner: {
     hint: 'کیمرہ سلیب / بلاک کے کیو آر لیبل پر رکھیں', cameraError: 'کیمرہ دستیاب نہیں — اجازت چیک کریں۔',
   },
@@ -310,6 +350,9 @@ export const ur = {
     customers: 'گاہک', totalReceivable: 'کل وصول کرنا ہے', totalBusiness: 'کل کاروبار',
     withBalance: 'بقایا والے', workers: 'مزدور', cutters: 'کٹر', polishers: 'پالشر',
     advancesOutstanding: 'باقی ایڈوانس', allExpenses: 'تمام اخراجات', recurringMonthly: 'ماہانہ بار بار',
+    partners: 'ساتھی', lenders: 'پتھر دینے والے', borrowers: 'ماربل لینے والے', transporters: 'گاڑی والے',
+    monthElectricity: 'اس ماہ بجلی', monthSolarUnits: 'اس ماہ سولر یونٹس',
+    allUnits: 'تمام یونٹس', allAmount: 'کل بل',
     entries: 'اندراجات', quotations: 'تخمینے', accepted: 'منظور شدہ', acceptedValue: 'منظور شدہ مالیت',
     pipeline: 'زیرِ التوا قیمت', orders: 'آرڈرز', inProduction: 'پیداوار میں', revenue: 'آمدنی',
     receivable: 'وصول کرنا ہے',
@@ -321,5 +364,11 @@ export const ur = {
     areaFromQty: 'خودکار: لمبائی × چوڑائی × تعداد', blockRef: 'بلاک آئی ڈی اگر موصول ہوا', refId: 'بلاک / سلیب / ٹکڑا آئی ڈی',
     qtyMoved: 'تعداد، سکوئر فٹ یا کیوبک فٹ', party: 'سپلائر / گاہک کا نام', ratePerSqft: 'ریٹ فی سکوئر فٹ',
     ratePerSlab: 'ریٹ فی سلیب', ratePerOrder: 'ریٹ فی آرڈر / سکوئر فٹ', monthlyRecovery: 'ماہانہ کٹوتی',
+    nameEn: 'وہی نام انگریزی حروف میں لکھیں', vehicleNo: 'گاڑی نمبر اگر ٹرک پر پتھر لاتے ہیں',
+    designation: 'منیجر، فورمین، مزدور، ڈرائیور، چوکیدار… (کچھ بھی لکھ سکتے ہیں)',
+    openingBalance: 'شروع کا بقایا یا ایڈوانس',
+    meterNo: 'بجلی کا میٹر نمبر', units: 'استعمال شدہ یونٹس (واپڈا) یا تیار شدہ (سولر)',
+    unitPrice: 'ایک یونٹ کی قیمت — موجودہ ریٹ ہاتھ سے لکھیں',
+    amountAuto: 'خودکار: یونٹس × ریٹ — بل کے مطابق لکھ سکتے ہیں',
   },
 }

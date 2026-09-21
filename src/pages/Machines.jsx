@@ -15,11 +15,12 @@ export default function Machines() {
       config={{
         collection: 'machines',
         i18nPrefix: 'machines',
-        searchKeys: ['id', 'name', 'type', 'location', 'notes'],
+        searchKeys: ['id', 'name', 'type', 'work', 'location', 'notes'],
         defaults: () => ({ status: 'running' }),
         columns: [
           { key: 'id', label: 'ID', render: (r) => <span className="num font-semibold">{r.id}</span> },
           { key: 'name', label: 'Name' },
+          { key: 'work', render: (r) => <span className="leading-urdu no-clip">{r.work || '—'}</span>, exportFormat: (v) => String(v || '') },
           { key: 'type', enumKey: 'enums.machineType' },
           { key: 'status', label: 'Status', render: (r) => <Badge status={r.status} />, format: (v) => v },
           { key: 'location', label: 'Location' },
@@ -28,7 +29,8 @@ export default function Machines() {
         ],
         fields: [
           { key: 'name', required: true },
-          { key: 'type', type: 'select', options: opts(MACHINE_TYPES), enumPrefix: 'machineType', required: true },
+          { key: 'work', hint: t('fields.work') },
+          { key: 'type', type: 'select', options: opts(MACHINE_TYPES), enumPrefix: 'machineType' },
           { key: 'status', type: 'select', options: opts(MACHINE_STATUS) },
           { key: 'location' },
           { key: 'powerKw', type: 'number', min: 0 },

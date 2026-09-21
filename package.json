@@ -1,7 +1,7 @@
 {
   "name": "marble",
   "private": true,
-  "version": "2.2.0",
+  "version": "2.3.0",
   "type": "module",
   "description": "Marble factory management — blocks, slabs, cutting, sales, payroll (Urdu/English PWA)",
   "scripts": {

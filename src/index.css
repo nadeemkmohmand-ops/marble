@@ -86,6 +86,16 @@
     word-break: keep-all;
   }
 
+  /* Bidi fix for mixed Latin runs inside RTL tables: "L×W×H (in)"
+     must never render as ")in(". unicode-bidi:plaintext lets every
+     cell pick its own direction from its first strong character. */
+  html[lang='ur'] th,
+  html[lang='ur'] td,
+  .print-doc th,
+  .print-doc td {
+    unicode-bidi: plaintext;
+  }
+
   html[lang='ur'] .badge {
     min-height: 2.2rem;
     padding-block: 0.5rem !important;
