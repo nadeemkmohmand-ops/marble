@@ -45,10 +45,17 @@ export default function Header() {
 function SyncDot() {
   const [sync, setSync] = React.useState(null)
   React.useEffect(() => onSyncStatus(setSync), [])
-  if (!sync || (sync.pending === 0 && sync.lastSync)) return null
+  if (!sync) return null
+  // Cloud sync failed (e.g. missing table / policies) — show a visible warning
+  if (sync.lastError)
+    return (
+      <span className="flex items-center text-red-500" title={sync.lastError}>
+        <WifiOff size={13} />
+      </span>
+    )
   if (sync.pending > 0)
     return (
-      <span className="hidden sm:flex items-center gap-1 text-[11px] text-amber-500" title={`${sync.pending} pending`}>
+      <span className="flex items-center text-amber-500" title={`${sync.pending} pending`}>
         <RefreshCw size={13} className="animate-spin" />
       </span>
     )

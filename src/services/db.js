@@ -9,8 +9,8 @@
 import { STORAGE_KEYS } from '../constants/storageKeys'
 import { storage } from '../utils/storage'
 import { uid } from '../utils/id'
-import { isSupabaseConfigured, getSupabase } from './supabaseClient'
-import { syncNow } from './sync'
+import { isSupabaseConfigured } from './supabaseClient'
+import { syncNow, enqueueDelete } from './sync'
 
 /** Next human serial for a collection, e.g. BLK-0007 (max existing + 1). */
 function nextIdFor(collection, rows) {
@@ -102,13 +102,18 @@ export const db = {
     return rec
   },
 
+  /**
+   * Delete a record. Local removal is instant; the cloud delete is
+   * queued (tombstoned) so it retries until Supabase confirms — a
+   * failed cloud delete can never resurrect the record on next pull.
+   */
   remove(collection, id) {
     const rows = storage.get(keyOf(collection), [])
     const next = rows.filter((r) => r.id !== id)
     storage.set(keyOf(collection), next)
     emit(collection)
     if (isSupabaseConfigured()) {
-      getSupabase()?.from(collection).delete().eq('id', id).then(() => {}, () => {})
+      enqueueDelete(collection, id)
     }
   },
 

@@ -62,7 +62,9 @@ export default function ImportButton({ config, size = 'md' }) {
         disabled={busy}
       >
         {busy ? <Loader2 size={15} className="animate-spin" /> : <Upload size={15} />}
-        <span className="hidden sm:inline">{t('import.upload')}</span>
+        {/* Label always visible — on mobile it was icon-only and users
+            couldn't find the upload / template feature. */}
+        <span className="leading-urdu no-clip">{t('import.upload')}</span>
         <ChevronDown size={13} className={cn('transition', open && 'rotate-180')} />
       </button>
 
@@ -82,6 +84,9 @@ export default function ImportButton({ config, size = 'md' }) {
             <Upload size={15} />
             <span className="leading-urdu no-clip">{t('import.uploadFile')}</span>
           </button>
+          <p className="px-2.5 pb-1 pt-1.5 text-[11px] leading-urdu no-clip text-[var(--muted)]">
+            {t('import.dropHint')}
+          </p>
         </div>
       )}
 
@@ -94,9 +99,9 @@ export default function ImportButton({ config, size = 'md' }) {
           title={t('import.title')}
           size="sm"
           footer={
-            <div className="flex justify-end gap-2">
-              <Button variant="secondary" onClick={() => setPreview(null)}>{t('import.cancel')}</Button>
-              <Button onClick={confirmImport} disabled={!preview.rows.length}>{t('import.confirmImport')}</Button>
+            <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+              <Button variant="secondary" onClick={() => setPreview(null)} className="w-full sm:w-auto">{t('import.cancel')}</Button>
+              <Button onClick={confirmImport} disabled={!preview.rows.length} className="w-full sm:w-auto">{t('import.confirmImport')}</Button>
             </div>
           }
         >

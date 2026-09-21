@@ -7,28 +7,35 @@
 import { fmtDate, fmtCurrency, fmtNumber } from './formatters'
 import { orderTotals } from './calculations'
 
+// FIX (style leak): these rules used to target `body` and bare
+// `table`/`th`/`td` selectors. The <style> tag ships inside documents
+// rendered on-screen (PrintPreview) and inside the off-screen PDF
+// holder — unscoped selectors restyled the WHOLE live app (body
+// margins, every table) while a document was open/exported.
+// Everything is now scoped under .print-doc, the wrapper div that
+// docShell() puts around every document.
 const baseCss = (rtl) => `
-  * { box-sizing:border-box; }
-  body { font-family:${rtl ? "'Noto Nastaliq Urdu', serif" : "'Inter', Arial, sans-serif"}; direction:${rtl ? 'rtl' : 'ltr'};
-         margin:24px; color:#111; line-height:${rtl ? '2' : '1.5'}; }
-  .doc-head { display:flex; justify-content:space-between; align-items:flex-start; border-bottom:3px solid #0f172a; padding-bottom:12px; margin-bottom:16px; }
-  .doc-title { font-size:22px; font-weight:700; }
-  .doc-sub { font-size:12px; color:#555; }
-  table { border-collapse:collapse; width:100%; margin-top:10px; }
-  th, td { border:1px solid #999; padding:6px 9px; font-size:12px; text-align:${rtl ? 'right' : 'left'}; }
-  th { background:#eef2f7; }
-  .totals td { border:none; padding:3px 9px; font-size:13px; }
-  .grand { font-weight:700; border-top:2px solid #0f172a !important; font-size:15px; }
-  .stamp { margin-top:36px; display:flex; justify-content:space-between; font-size:12px; }
-  .stamp .box { border:1px dashed #777; padding:28px 40px 6px; }
-  .qr { width:110px; height:110px; }
-  .label { width:320px; border:2px solid #0f172a; border-radius:10px; padding:12px; text-align:center; page-break-inside:avoid; margin:8px; display:inline-block; vertical-align:top; }
-  .muted { color:#666; font-size:11px; }
-  .footer { margin-top:26px; border-top:1px solid #bbb; padding-top:8px; font-size:11px; color:#666; text-align:center; }
+  .print-doc * { box-sizing:border-box; }
+  .print-doc { font-family:${rtl ? "'Noto Nastaliq Urdu', serif" : "'Inter', Arial, sans-serif"}; direction:${rtl ? 'rtl' : 'ltr'};
+         margin:24px; color:#111; line-height:${rtl ? '2' : '1.5'}; background:#fff; }
+  .print-doc .doc-head { display:flex; justify-content:space-between; align-items:flex-start; border-bottom:3px solid #0f172a; padding-bottom:12px; margin-bottom:16px; }
+  .print-doc .doc-title { font-size:22px; font-weight:700; }
+  .print-doc .doc-sub { font-size:12px; color:#555; }
+  .print-doc table { border-collapse:collapse; width:100%; margin-top:10px; }
+  .print-doc th, .print-doc td { border:1px solid #999; padding:6px 9px; font-size:12px; text-align:${rtl ? 'right' : 'left'}; }
+  .print-doc th { background:#eef2f7; }
+  .print-doc .totals td { border:none; padding:3px 9px; font-size:13px; }
+  .print-doc .grand { font-weight:700; border-top:2px solid #0f172a !important; font-size:15px; }
+  .print-doc .stamp { margin-top:36px; display:flex; justify-content:space-between; font-size:12px; }
+  .print-doc .stamp .box { border:1px dashed #777; padding:28px 40px 6px; }
+  .print-doc .qr { width:110px; height:110px; }
+  .print-doc .label { width:320px; border:2px solid #0f172a; border-radius:10px; padding:12px; text-align:center; page-break-inside:avoid; margin:8px; display:inline-block; vertical-align:top; }
+  .print-doc .muted { color:#666; font-size:11px; }
+  .print-doc .footer { margin-top:26px; border-top:1px solid #bbb; padding-top:8px; font-size:11px; color:#666; text-align:center; }
 `
 
 function docShell(title, bodyHtml, rtl) {
-  return `<div>${bodyHtml}<div class="footer">${title}</div></div>`
+  return `<div class="print-doc" dir="${rtl ? 'rtl' : 'ltr'}">${bodyHtml}<div class="footer">${title}</div></div>`
 }
 
 function companyHeader(company, docType, docNo, dateVal) {

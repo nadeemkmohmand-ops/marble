@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { Download, FileText, FileSpreadsheet, File as FileIcon, MessageCircle, Share2, Printer, ChevronDown } from 'lucide-react'
+import { Download, FileText, FileSpreadsheet, File as FileIcon, MessageCircle, Share2, ChevronDown } from 'lucide-react'
 import { cn } from '../../utils/cn'
 import { useLang } from '../../context/LanguageContext'
 import { useExport } from '../../hooks/useExport'
@@ -7,7 +7,8 @@ import { useToast } from '../../context/ToastContext'
 
 /**
  * ExportMenu — the universal "save & share" control present on every
- * data page: Excel / PDF / Word / CSV / WhatsApp / Native share / Print.
+ * data page: Excel / PDF / Word / CSV / WhatsApp / Native share.
+ * PDF downloads a real .pdf file instantly — no print dialog anywhere.
  */
 export default function ExportMenu({ title, columns, rows, meta, size = 'md', label }) {
   const { t, lang } = useLang()
@@ -32,7 +33,6 @@ export default function ExportMenu({ title, columns, rows, meta, size = 'md', la
     { icon: Download, label: 'CSV', run: ex.csv },
     { icon: MessageCircle, label: 'WhatsApp', run: () => ex.whatsapp(meta?.phone), tone: 'text-[#25D366]' },
     { icon: Share2, label: t('common.share'), run: () => ex.share().then((m) => m === 'cancelled' && null) },
-    { icon: Printer, label: t('common.print'), run: ex.printTable },
   ]
 
   return (

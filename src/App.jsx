@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { HashRouter } from 'react-router-dom'
 
 import { ThemeProvider } from './context/ThemeContext'
@@ -14,9 +14,18 @@ import UpdatePrompt from './components/PWA/UpdatePrompt'
 import ScannerModal from './components/ScannerModal'
 import ConfirmDialog from './components/Feedback/ConfirmDialog'
 import { seedIfEmpty } from './data/seed'
+import { isSupabaseConfigured } from './services/supabaseClient'
+import { pullRemote, flush } from './services/sync'
 
 export default function App() {
-  seedIfEmpty() // first-run starter data (guarded — runs once per device)
+  useEffect(() => {
+    seedIfEmpty() // first-run starter data (guarded — runs once per device)
+    // Cloud mirror: pull latest from Supabase, then push anything queued.
+    if (isSupabaseConfigured() && navigator.onLine) {
+      pullRemote().then(() => flush())
+    }
+  }, [])
+
   return (
     <ErrorBoundary>
       <ThemeProvider>

@@ -149,6 +149,8 @@ function readFileAsArrayBuffer(file) {
  * parseUploadedFile — reads a File (.xlsx/.xls/.csv), matches its
  * header row back to the tab's fields (by label, in either language,
  * order-independent), and returns { rows, errors, skippedHeaders }.
+ * The template's filled-in EXAMPLE row is recognised and skipped
+ * automatically, so users can type their data straight below it.
  * Does not save anything — the caller decides what to do with rows.
  */
 export async function parseUploadedFile(file, { config, t, lang }) {
@@ -179,13 +181,62 @@ export async function parseUploadedFile(file, { config, t, lang }) {
     })
   })
 
+  // The example row shipped inside the downloaded template — never import it.
+  const exampleCells = fields.map((f) => {
+    const v = exampleValueFor(f, refCache)
+    return f.type === 'select' ? optionLabel(f, v, t) : v
+  })
+
   const skippedHeaders = headerRow.filter((h, i) => h && !colToField[i]).map(String)
   const errors = []
   const rows = []
 
+  // Compare each raw row against the example row cell-by-cell using
+  // the header→field mapping (order-independent templates still match).
+  // Cells are normalised first because Excel converts dates to Date
+  // objects and numbers to numeric cells on re-read.
+  const normCell = (f, cell) => {
+    if (cell === undefined || cell === null) return ''
+    if (f.type === 'date') return String(coerceValue(f, cell) ?? '').trim()
+    if (f.type === 'number') {
+      const s = String(cell).trim()
+      if (s === '') return ''
+      const n = parseFloat(String(cell).replace(/,/g, ''))
+      return Number.isFinite(n) ? String(n) : s
+    }
+    if (f.type === 'checkbox') {
+      return ['1', 'true', 'yes', 'ہاں', 'y'].includes(String(cell).trim().toLowerCase()) ? 'true' : 'false'
+    }
+    return String(cell).trim()
+  }
+  const normExample = (f, ex) => {
+    if (f.type === 'checkbox') return ex ? 'true' : 'false'
+    if (f.type === 'number') return String(parseFloat(ex))
+    return String(ex ?? '').trim()
+  }
+  const matchesExample = (rawRow) => {
+    let anyFilled = false
+    for (let i = 0; i < colToField.length; i++) {
+      const f = colToField[i]
+      if (!f) continue
+      const cell = rawRow[i]
+      const ex = exampleCells[fields.indexOf(f)]
+      const cellStr = normCell(f, cell)
+      if (cellStr !== '') anyFilled = true
+      if (cellStr !== normExample(f, ex)) return false
+    }
+    return anyFilled
+  }
+
+  let exampleSkipped = false
+
   dataRows.forEach((rawRow, rIdx) => {
     const isBlank = rawRow.every((c) => String(c ?? '').trim() === '')
     if (isBlank) return
+    if (!exampleSkipped && matchesExample(rawRow)) {
+      exampleSkipped = true // template's example row — silently ignore
+      return
+    }
     const rec = {}
     colToField.forEach((f, cIdx) => {
       if (!f) return

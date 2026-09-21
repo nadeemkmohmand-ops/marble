@@ -233,14 +233,19 @@
   .fade-in {
     animation: fadeIn 0.25s ease both;
   }
+  /* FIX (Save button off-screen): the keyframes used to animate
+     `transform: translateY(6px)`. An animation-tainted transform makes
+     the page div the CONTAINING BLOCK for position:fixed descendants,
+     so the Add/Edit modal (fixed inset-0) anchored to the page instead
+     of the viewport — on tall pages its sticky Save footer sat BELOW
+     the visible screen ("no submit button at the end of the form").
+     Opacity-only keeps the fade without breaking fixed positioning. */
   @keyframes fadeIn {
     from {
       opacity: 0;
-      transform: translateY(6px);
     }
     to {
       opacity: 1;
-      transform: none;
     }
   }
   .safe-bottom {

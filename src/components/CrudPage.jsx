@@ -246,9 +246,11 @@ export default function CrudPage({ config }) {
         title={crud.editingId ? t('common.edit') : t('common.add')}
         size={config.modalSize || 'md'}
         footer={
-          <div className="flex justify-end gap-2">
-            <Button variant="secondary" onClick={crud.close}>{t('common.cancel')}</Button>
-            <Button onClick={submit} loading={crud.saving}>{t('common.save')}</Button>
+          /* Stacked, full-width Save/Cancel on phones — the Save button
+             is always visible (sticky footer) and easy to tap. */
+          <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+            <Button variant="secondary" onClick={crud.close} className="w-full sm:w-auto">{t('common.cancel')}</Button>
+            <Button onClick={submit} loading={crud.saving} className="w-full sm:w-auto">{t('common.save')}</Button>
           </div>
         }
       >

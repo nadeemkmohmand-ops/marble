@@ -13,6 +13,8 @@ export const STORAGE_KEYS = {
   SETTINGS: k('settings'),
   COMPANY: k('company'),
   SYNC_QUEUE: k('syncQueue'),
+  DELETED_QUEUE: k('deletedQueue'),
+  DELETED_IDS: k('deletedIds'),
   LAST_SYNC: k('lastSync'),
   SEED_DONE: k('seedDone'),
   PRINT_REQUEST: k('printRequest'),

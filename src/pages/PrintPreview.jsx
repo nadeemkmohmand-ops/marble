@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { Printer, ArrowLeft, Download } from 'lucide-react'
+import { ArrowLeft, Download } from 'lucide-react'
 import Toolbar from '../components/UI/Toolbar'
 import Card from '../components/UI/Card'
 import Button from '../components/UI/Button'
@@ -10,15 +10,15 @@ import { useToast } from '../context/ToastContext'
 import { consumePrintRequest } from '../context/AppUIContext'
 import { invoiceHTML, challanHTML, quotationHTML, payslipHTML, purchaseOrderHTML, labelHTML, stockReportHTML, wrapStyled } from '../utils/printTemplates'
 import { makeQR } from '../utils/qr'
-import { printDocument, downloadPDF } from '../utils/exporters'
+import { downloadPDF } from '../utils/exporters'
 import ROUTES from '../constants/routes'
 import { useNavigate } from 'react-router-dom'
 
 /**
- * PrintPreview — renders the requested document (invoice / challan /
+ * PDFPreview — renders the requested document (invoice / challan /
  * quotation / payslip / PO / QR label / stock report) with a language
- * switch. "Download PDF" saves a real file directly (no print dialog);
- * "Print" opens the browser print dialog for anyone printing on paper.
+ * switch. "Download PDF" saves a real file directly. No print dialog
+ * anywhere in the app.
  */
 export default function PrintPreview() {
   const { t, lang, setLang } = useLang()
@@ -52,7 +52,11 @@ export default function PrintPreview() {
     }
   }, [request, effectiveLang])
 
-  const doPrint = () => printDocument(html, { title: request?.title || 'Document' })
+  const goBack = () => {
+    // Always land somewhere known — even after a refresh or direct link.
+    if (window.history.length > 1) navigate(-1)
+    else navigate(ROUTES.HOME)
+  }
 
   const doDownload = async () => {
     setDownloading(true)
@@ -78,14 +82,14 @@ export default function PrintPreview() {
               onChange={(e) => setLang(e.target.value)}
               options={[{ value: 'ur', label: 'اردو' }, { value: 'en', label: 'English' }]}
             />
-            <Button variant="secondary" icon={ArrowLeft} onClick={() => navigate(-1)}>
-              <span className="hidden sm:inline">{t('print.back')}</span>
-            </Button>
-            <Button variant="secondary" icon={Printer} onClick={doPrint} disabled={!html}>
-              <span className="hidden sm:inline">{t('print.print')}</span>
+            <Button variant="secondary" icon={ArrowLeft} onClick={goBack}>
+              {/* Back must ALWAYS be visible on every screen size — it was
+                  icon-only on mobile before, so users got "stuck" here. */}
+              <span>{t('print.back')}</span>
             </Button>
             <Button icon={Download} onClick={doDownload} disabled={!html} loading={downloading}>
               <span className="hidden sm:inline">{t('print.downloadPdf')}</span>
+              <span className="sm:hidden">PDF</span>
             </Button>
           </>
         }
@@ -100,7 +104,7 @@ export default function PrintPreview() {
         </Card>
       ) : (
         <Card>
-          <EmptyState icon={Printer} title={t('print.noDoc')} />
+          <EmptyState icon={Download} title={t('print.noDoc')} />
           <div className="text-center">
             <Button variant="secondary" onClick={() => navigate(ROUTES.ORDERS)}>{t('nav.orders')}</Button>
           </div>

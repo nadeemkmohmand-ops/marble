@@ -4,16 +4,15 @@ import {
   exportCSV, exportXLSX, exportDOC, downloadPDF, whatsappText, shareFile, tableToText, recordToText,
 } from '../utils/exporters'
 import { wrapStyled } from '../utils/printTemplates'
-import { useAppUI } from '../context/AppUIContext'
 import { useToast } from '../context/ToastContext'
 
 /**
  * useExport({ title, columns, rows }) — every page gets the full
  * export suite in one hook: xlsx / pdf / doc / csv / whatsapp / share.
+ * PDF is a REAL one-click file download — the print dialog was removed.
  */
 export function useExport({ title, columns, rows, meta } = {}) {
   const { lang, t } = useLang()
-  const { requestPrint } = useAppUI()
   const toast = useToast()
 
   return useMemo(() => {
@@ -45,12 +44,10 @@ export function useExport({ title, columns, rows, meta } = {}) {
           blob,
         })
       },
-      // Opens the on-screen print preview page — for actually printing on paper.
-      printTable: () => requestPrint({ template: 'stockReport', data: { rows, columns, title: ctx.title }, title: ctx.title }),
       _ctx: ctx,
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [title, columns, rows, lang, t, requestPrint, toast])
+  }, [title, columns, rows, lang, t, toast])
 }
 
 function toCsvText({ columns, rows }) {

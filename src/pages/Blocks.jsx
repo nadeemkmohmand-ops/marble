@@ -7,7 +7,8 @@ import { Package } from 'lucide-react'
 import { useLang } from '../context/LanguageContext'
 import Badge from '../components/UI/Badge'
 
-const GRADE_OPTIONS = GRADES.map((g) => ({ value: g, label: g }))
+// No hardcoded labels — grade values translate via enums.grade (Urdu: الف/ب/ج)
+const GRADE_OPTIONS = GRADES.map((g) => ({ value: g }))
 
 export default function Blocks() {
   const { t } = useLang()
@@ -38,7 +39,7 @@ export default function Blocks() {
           { key: 'cft', label: 'CFT', render: (r) => <span className="num">{fmtNumber(r.cft)}</span>, format: (v) => fmtNumber(v) },
           { key: 'weightKg', label: 'kg', render: (r) => <span className="num">{fmtNumber(r.weightKg, 0)}</span>, format: (v) => fmtNumber(v, 0) },
           { key: 'landedTotal', label: 'Landed', render: (r) => <span className="num">{fmtCurrency(r.landedTotal)}</span>, format: (v) => fmtNumber(v) },
-          { key: 'grade', label: 'Grade' },
+          { key: 'grade', label: 'Grade', enumKey: 'enums.grade' },
           { key: 'yard', label: 'Yard' },
           { key: 'status', label: 'Status', render: (r) => <Badge status={r.status} />, format: (v) => v },
         ],

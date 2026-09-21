@@ -5,7 +5,7 @@ import OrderItemsEditor from '../components/OrderItemsEditor'
 import { orderTotals } from '../utils/calculations'
 import { ORDER_STATUS } from '../constants/enums'
 import { fmtCurrency, fmtDate, todayISO, fmtNumber } from '../utils/formatters'
-import { Receipt, Printer, Truck } from 'lucide-react'
+import { Receipt, FileText, Truck } from 'lucide-react'
 import Badge from '../components/UI/Badge'
 import { useAppUI } from '../context/AppUIContext'
 import { useLang } from '../context/LanguageContext'
@@ -78,7 +78,7 @@ function PrintInvoice({ record }) {
     <Button
       size="sm"
       variant="secondary"
-      icon={Printer}
+      icon={FileText}
       onClick={() =>
         requestPrint({
           template: 'invoice',

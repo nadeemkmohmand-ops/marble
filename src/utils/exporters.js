@@ -1,8 +1,9 @@
 // ─────────────────────────────────────────────────────────────────
 // exporters.js — save / share any table in the app:
-//   Excel (.xlsx) · Word (.doc) · PDF (via print dialog — perfect
-//   Urdu rendering) · CSV (UTF-8 BOM so Excel opens it correctly) ·
-//   WhatsApp (full readable summary + optional file via Web Share).
+//   Excel (.xlsx) · Word (.doc) · PDF (real one-click .pdf download,
+//   perfect Urdu rendering — the print dialog was removed) · CSV
+//   (UTF-8 BOM so Excel opens it correctly) · WhatsApp (full readable
+//   summary + optional file via Web Share).
 // ─────────────────────────────────────────────────────────────────
 import * as XLSX from 'xlsx'
 import { fmtDate } from './formatters'
@@ -88,22 +89,6 @@ export function exportDOC({ title, columns, rows, meta = {}, lang = 'en' }) {
   downloadBlob(new Blob(['\uFEFF' + html], { type: 'application/msword;charset=utf-8' }), `${safeName(title)}.doc`)
 }
 
-/** PDF = print dialog → "Save as PDF". This keeps Urdu shaping perfect. */
-export function printDocument(html, { title = 'Document' } = {}) {
-  const frame = document.createElement('iframe')
-  frame.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;'
-  document.body.appendChild(frame)
-  const doc = frame.contentDocument
-  doc.open()
-  doc.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>${escapeHtml(title)}</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;600&family=Inter:wght@400;600&display=swap">
-</head><body>${html}
-<script>window.onload=function(){setTimeout(function(){window.print()},350)}<\/script>
-</body></html>`)
-  doc.close()
-  setTimeout(() => frame.remove(), 60000)
-}
-
 /**
  * downloadPDF — a REAL one-click PDF file, no print dialog, no manual
  * "Save as PDF" step. Renders the document off-screen in the current
@@ -112,6 +97,14 @@ export function printDocument(html, { title = 'Document' } = {}) {
  * then embeds that image into a PDF page-by-page with jsPDF. Because
  * it's a picture of real, already-correct HTML, Urdu/Nastaliq shaping
  * comes out exactly as it looks on screen.
+ *
+ * FIX (blank-PDF bug): html2pdf keeps the source element's own
+ * `position:fixed` in its render copy, and a fixed clone escapes the
+ * render container's flow — the container collapses to height 0 and
+ * the PDF comes out BLANK. The fix is to render an INNER, static
+ * (in-flow) child while the off-screen wrapper holds it. The inner
+ * width is exactly the A4 inner width (210mm − 2×10mm margins =
+ * 190mm ≈ 718px) so nothing is clipped or squeezed.
  */
 export async function downloadPDF(html, { title = 'Document', lang = 'en' } = {}) {
   const { default: html2pdf } = await import('html2pdf.js')
@@ -125,6 +118,16 @@ export async function downloadPDF(html, { title = 'Document', lang = 'en' } = {}
   holder.innerHTML = html
   document.body.appendChild(holder)
 
+  // The element handed to html2pdf must be in normal flow (static).
+  // Prefer the template's own .print-doc wrapper; otherwise wrap.
+  let src = holder.querySelector('.print-doc')
+  if (!src) {
+    src = document.createElement('div')
+    src.innerHTML = html
+    holder.appendChild(src)
+  }
+  src.style.cssText += ';width:718px;margin:0;background:#fff;'
+
   try {
     await html2pdf()
       .set({
@@ -135,7 +138,7 @@ export async function downloadPDF(html, { title = 'Document', lang = 'en' } = {}
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
         pagebreak: { mode: ['css', 'legacy'] },
       })
-      .from(holder)
+      .from(src)
       .save()
   } finally {
     holder.remove()
@@ -208,5 +211,5 @@ function escapeHtml(s) {
     .replace(/"/g, '&quot;')
 }
 
-export const exporters = { exportCSV, exportXLSX, exportDOC, printDocument, downloadPDF, whatsappText, shareFile, recordToText, tableToText }
+export const exporters = { exportCSV, exportXLSX, exportDOC, downloadPDF, whatsappText, shareFile, recordToText, tableToText }
 export default exporters

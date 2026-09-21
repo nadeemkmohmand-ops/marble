@@ -32,7 +32,7 @@ export default function Slabs() {
           { key: 'thicknessMm', label: 'mm', render: (r) => <span className="num">{r.thicknessMm}</span> },
           { key: 'areaSqft', label: 'Sq ft', render: (r) => <span className="num font-semibold">{fmtNumber(r.areaSqft)}</span>, format: (v) => fmtNumber(v) },
           { key: 'finish', enumKey: 'enums.finish' },
-          { key: 'grade', label: 'Grade' },
+          { key: 'grade', label: 'Grade', enumKey: 'enums.grade' },
           { key: 'rack', label: 'Rack' },
           { key: 'status', label: 'Status', render: (r) => <Badge status={r.status} />, format: (v) => v },
         ],

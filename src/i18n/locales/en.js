@@ -7,7 +7,7 @@ export const en = {
     requiredFields: 'Please fill all required fields', saved: 'Saved successfully',
     deleted: 'Deleted', error: 'Something went wrong', retry: 'Retry',
     noData: 'Nothing here yet', addFirst: 'Use the + button to add your first record',
-    export: 'Export', print: 'Print', share: 'Share', scan: 'Scan', pdf: 'PDF',
+    export: 'Export', share: 'Share', scan: 'Scan', pdf: 'PDF',
     total: 'Total', subtotal: 'Subtotal', balance: 'Balance', paid: 'Paid',
     date: 'Date', from: 'From', to: 'To', status: 'Status', notes: 'Notes',
     phone: 'Phone', whatsapp: 'WhatsApp', address: 'Address', name: 'Name',
@@ -116,6 +116,9 @@ export const en = {
     cost: 'Cost', location: 'Location', downtime: 'Downtime (hrs)', technician: 'Technician',
     nextDue: 'Next due', parts: 'Parts replaced', downHours: 'Downtime (hrs)',
     photos: 'Photos', status: 'Status', qtyArea: 'Quantity / area', value: 'Value',
+    notes: 'Notes', amount: 'Amount', vendor: 'Vendor', blockRef: 'Block reference',
+    pieceCutting: 'Cutting rate (per sq ft)', piecePolishing: 'Polishing rate (per sq ft)',
+    pieceLoading: 'Loading rate (per slab)', pieceInstallation: 'Installation rate (per order)',
   },
 
   enums: {
@@ -130,10 +133,11 @@ export const en = {
       running: 'Running', idle: 'Idle', maintenance: 'Maintenance', broken: 'Broken',
     },
     finish: { polished: 'Polished', honed: 'Honed', brushed: 'Brushed', raw: 'Raw' },
+    grade: { A: 'A', B: 'B', C: 'C' },
     edge: { none: 'None', chamfer: 'Chamfer', bevel: 'Bevel', bullnose: 'Bullnose', ogee: 'Ogee' },
     movement: {
-      purchase_in: 'Purchase inward', cutting_out: 'Cutting output', transfer: 'Yard transfer',
-      sale: 'Sale / delivery', damage: 'Damage / wastage', return: 'Return', adjustment: 'Adjustment',
+      purchase_in: 'Purchase in', cutting_out: 'Cutting out', transfer: 'Transfer',
+      sale: 'Sale', damage: 'Damage', return: 'Return', adjustment: 'Adjustment',
     },
     skill: { cutter: 'Cutter', polisher: 'Polisher', loader: 'Loader', fitter: 'Fitter', foreman: 'Foreman', helper: 'Helper' },
     rateType: { daily: 'Daily rate', piece: 'Piece rate' },
@@ -251,12 +255,11 @@ export const en = {
     advanceDue: 'Advance recovery due', markRead: 'Mark all read', empty: 'No notifications',
   },
   print: {
-    title: 'Print Preview', subtitle: 'Save as PDF or print — Urdu renders perfectly',
-    print: 'Print', downloadPdf: 'Download PDF', back: 'Back', company: 'Company', invoice: 'Invoice',
+    title: 'PDF Preview', subtitle: 'Download the document as a PDF file — Urdu renders perfectly',
+    downloadPdf: 'Download PDF', back: 'Back', company: 'Company', invoice: 'Invoice',
     challan: 'Challan', quotation: 'Quotation', payslip: 'Payslip',
     purchaseOrder: 'Purchase order', label: 'QR label', stockReport: 'Stock report',
     noDoc: 'Open a document from any page (invoice, challan, payslip, label…)',
-    copies: 'Copies',
   },
   settings: {
     title: 'Settings', subtitle: 'Company, language, defaults, backup and cloud sync',

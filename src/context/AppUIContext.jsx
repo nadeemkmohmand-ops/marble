@@ -56,9 +56,12 @@ export function AppUIProvider({ children }) {
     })
   }, [])
 
+  // FIX: confirmState/resolveConfirm MUST be exposed, otherwise the
+  // ConfirmDialog can never render and every delete hangs forever —
+  // this was the "records can't be deleted" bug.
   const value = useMemo(
-    () => ({ confirm, requestPrint, requestScan, scanState, resolveScan }),
-    [confirm, requestPrint, requestScan, scanState, resolveScan],
+    () => ({ confirm, requestPrint, requestScan, scanState, resolveScan, confirmState, resolveConfirm }),
+    [confirm, requestPrint, requestScan, scanState, resolveScan, confirmState, resolveConfirm],
   )
 
   return <AppUIContext.Provider value={value}>{children}</AppUIContext.Provider>

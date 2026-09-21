@@ -12,8 +12,6 @@ import EmptyState from '../components/States/EmptyState'
 import { useCollection } from '../hooks/useCollection'
 import { useLang } from '../context/LanguageContext'
 import { useToast } from '../context/ToastContext'
-import { useAppUI } from '../context/AppUIContext'
-import { db } from '../services/db'
 import { fmtCurrency, fmtNumber, todayISO } from '../utils/formatters'
 
 /**
@@ -25,7 +23,6 @@ import { fmtCurrency, fmtNumber, todayISO } from '../utils/formatters'
 export default function Payroll() {
   const { t, lang, fmtNum } = useLang()
   const toast = useToast()
-  const { requestPrint } = useAppUI()
   const { items: workers } = useCollection('workers')
   const { items: attendance } = useCollection('attendance')
   const { items: piecework, add: addPiece } = useCollection('piecework')
