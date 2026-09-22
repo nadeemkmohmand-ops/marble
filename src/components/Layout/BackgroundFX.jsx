@@ -17,15 +17,25 @@ import React, { useMemo } from 'react'
    evenly scattered across the width with varied size/speed. */
 const BUBBLES = [
   { left: '4%', size: 10, duration: 17, delay: 0, drift: '1.2rem' },
+  { left: '9%', size: 6, duration: 13, delay: 1.2, drift: '0.6rem' },
   { left: '12%', size: 16, duration: 23, delay: 3.5, drift: '-1.8rem' },
+  { left: '17%', size: 9, duration: 18, delay: 8.2, drift: '1rem' },
   { left: '21%', size: 8, duration: 15, delay: 7, drift: '0.9rem' },
+  { left: '26%', size: 13, duration: 21, delay: 2.1, drift: '-1.2rem' },
   { left: '30%', size: 13, duration: 20, delay: 1.6, drift: '-1.1rem' },
+  { left: '36%', size: 7, duration: 16.5, delay: 10, drift: '0.7rem' },
   { left: '41%', size: 7, duration: 14, delay: 9.5, drift: '1.6rem' },
+  { left: '47%', size: 15, duration: 24, delay: 4.8, drift: '-1.6rem' },
   { left: '52%', size: 18, duration: 26, delay: 5, drift: '-1.4rem' },
+  { left: '58%', size: 8, duration: 15, delay: 12.5, drift: '1.1rem' },
   { left: '63%', size: 9, duration: 16, delay: 11.5, drift: '1rem' },
+  { left: '68%', size: 12, duration: 19.5, delay: 0.8, drift: '-0.9rem' },
   { left: '72%', size: 14, duration: 21, delay: 2.6, drift: '-0.8rem' },
+  { left: '78%', size: 6, duration: 13.5, delay: 6, drift: '0.6rem' },
   { left: '83%', size: 8, duration: 15.5, delay: 6.5, drift: '1.5rem' },
+  { left: '88%', size: 11, duration: 18.5, delay: 9, drift: '-1rem' },
   { left: '93%', size: 12, duration: 19, delay: 4.2, drift: '-1.3rem' },
+  { left: '97%', size: 7, duration: 14.5, delay: 7.8, drift: '0.8rem' },
 ]
 
 export default function BackgroundFX() {
@@ -66,6 +76,28 @@ export default function BackgroundFX() {
           insetInlineStart: '28%',
           animationDelay: '-8s',
           background: 'radial-gradient(circle at 50% 50%, rgba(251,191,36,0.35), rgba(251,191,36,0.08) 55%, transparent 72%)',
+        }}
+      />
+      <div
+        className="bgfx-blob animate-floatSlower"
+        style={{
+          width: '24rem',
+          height: '24rem',
+          bottom: '4%',
+          insetInlineEnd: '18%',
+          animationDelay: '-4s',
+          background: 'radial-gradient(circle at 45% 45%, rgba(139,92,246,0.4), rgba(139,92,246,0.08) 55%, transparent 72%)',
+        }}
+      />
+      <div
+        className="bgfx-blob animate-floatSlow"
+        style={{
+          width: '20rem',
+          height: '20rem',
+          top: '48%',
+          insetInlineStart: '-6rem',
+          animationDelay: '-11s',
+          background: 'radial-gradient(circle at 55% 40%, rgba(20,184,166,0.32), rgba(20,184,166,0.06) 55%, transparent 72%)',
         }}
       />
 

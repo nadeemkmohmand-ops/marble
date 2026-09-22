@@ -37,6 +37,21 @@ export default {
           400: '#a8a29e', 500: '#78716c', 600: '#57534e', 700: '#44403c',
           800: '#292524', 900: '#1c1917',
         },
+        /* ── Violet (secondary / export actions) ── */
+        violet: {
+          50: '#f5f3ff', 100: '#ede9fe', 200: '#ddd6fe', 300: '#c4b5fd',
+          400: '#a78bfa', 500: '#8b5cf6', 600: '#7c3aed', 700: '#6d28d9',
+        },
+        /* ── Teal (success / info alt / icon buttons) ── */
+        teal: {
+          50: '#f0fdfa', 100: '#ccfbf1', 200: '#99f6e4', 300: '#5eead4',
+          400: '#2dd4bf', 500: '#14b8a6', 600: '#0d9488', 700: '#0f766e',
+        },
+        /* ── Magenta/pink (accents, badges) ── */
+        magenta: {
+          50: '#fdf2f8', 100: '#fce7f3', 200: '#fbcfe8', 300: '#f9a8d4',
+          400: '#f472b6', 500: '#ec4899', 600: '#db2777', 700: '#be185d',
+        },
         success: '#10b981',
         warning: '#f59e0b',
         danger: '#ef4444',
@@ -98,6 +113,10 @@ export default {
           '0%': { opacity: '0', transform: 'translateY(10px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
         },
+        pulseGlow: {
+          '0%, 100%': { boxShadow: '0 0 0 0 rgba(249,115,22,0.45)' },
+          '50%': { boxShadow: '0 0 0 8px rgba(249,115,22,0)' },
+        },
       },
       animation: {
         floatSlow: 'floatSlow 16s ease-in-out infinite',
@@ -105,6 +124,7 @@ export default {
         spinSlow: 'spinSlow 28s linear infinite',
         popIn: 'popIn 0.22s cubic-bezier(0.2, 0.9, 0.3, 1.2) both',
         slideUpFade: 'slideUpFade 0.28s ease both',
+        pulseGlow: 'pulseGlow 2.4s ease-in-out infinite',
       },
     },
   },

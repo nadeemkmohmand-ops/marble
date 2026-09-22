@@ -9,36 +9,57 @@
    ═══════════════════════════════════════════════════════════════ */
 @layer base {
   :root {
-    --bg: #f6f1e6;
-    --bg-2: #efe7d5;
-    --card: #fffdf8;
-    --text: #2b2622;
-    --muted: #7d7462;
-    --border: #e8e0cd;
+    --bg: #f1e9fb;
+    --bg-2: #dce9fb;
+    --card: #f6f0ff;
+    --text: #241b3a;
+    --muted: #6d6288;
+    --border: #ddd0f5;
     --accent: #f97316;
     --accent-deep: #ea580c;
-    --accent-soft: rgba(249, 115, 22, 0.12);
+    --accent-soft: rgba(249, 115, 22, 0.14);
     --blue: #2563eb;
     --blue-bright: #3b82f6;
-    --blue-soft: rgba(37, 99, 235, 0.10);
-    --ring: rgba(249, 115, 22, 0.28);
-    --shadow-color: 60 54 43;
+    --blue-soft: rgba(37, 99, 235, 0.12);
+    --violet: #7c3aed;
+    --violet-bright: #8b5cf6;
+    --teal: #0d9488;
+    --teal-bright: #14b8a6;
+    --magenta: #db2777;
+    --magenta-bright: #ec4899;
+    --ring: rgba(249, 115, 22, 0.32);
+    --shadow-color: 60 30 90;
+    /* App-wide animated gradient backdrop (never flat white) */
+    --app-gradient: radial-gradient(1200px 800px at 8% -10%, rgba(249, 115, 22, 0.16), transparent 55%),
+      radial-gradient(1000px 700px at 100% 0%, rgba(37, 99, 235, 0.16), transparent 55%),
+      radial-gradient(900px 900px at 50% 120%, rgba(139, 92, 246, 0.14), transparent 60%),
+      linear-gradient(160deg, #f1e9fb 0%, #eaf0fb 45%, #fdeee0 100%);
   }
   .dark {
-    --bg: #171310;
-    --bg-2: #1f1a14;
-    --card: #221d16;
-    --text: #f0e9dc;
-    --muted: #a89e8c;
-    --border: #393124;
+    --bg: #140f22;
+    --bg-2: #1b1430;
+    --card: #1e1733;
+    --text: #f1ecff;
+    --muted: #ab9fcf;
+    --border: #362a55;
     --accent: #fb923c;
     --accent-deep: #f97316;
-    --accent-soft: rgba(251, 146, 60, 0.14);
+    --accent-soft: rgba(251, 146, 60, 0.16);
     --blue: #3b82f6;
     --blue-bright: #60a5fa;
-    --blue-soft: rgba(96, 165, 250, 0.14);
-    --ring: rgba(251, 146, 60, 0.3);
+    --blue-soft: rgba(96, 165, 250, 0.16);
+    --violet: #a78bfa;
+    --violet-bright: #c4b5fd;
+    --teal: #2dd4bf;
+    --teal-bright: #5eead4;
+    --magenta: #f472b6;
+    --magenta-bright: #f9a8d4;
+    --ring: rgba(251, 146, 60, 0.35);
     --shadow-color: 0 0 0;
+    --app-gradient: radial-gradient(1200px 800px at 8% -10%, rgba(251, 146, 60, 0.16), transparent 55%),
+      radial-gradient(1000px 700px at 100% 0%, rgba(96, 165, 250, 0.14), transparent 55%),
+      radial-gradient(900px 900px at 50% 120%, rgba(167, 139, 250, 0.16), transparent 60%),
+      linear-gradient(160deg, #140f22 0%, #171029 45%, #1c1120 100%);
   }
 
   html {
@@ -48,7 +69,8 @@
 
   body {
     margin: 0;
-    background: var(--bg);
+    background: var(--app-gradient), var(--bg);
+    background-attachment: fixed;
     color: var(--text);
     font-family: 'Inter', system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
@@ -208,17 +230,20 @@
 @layer components {
   /* ── Surfaces ─────────────────────────────────────────────── */
   .card {
-    background: var(--card);
+    background:
+      linear-gradient(155deg, color-mix(in srgb, var(--accent) 5%, var(--card)), var(--card) 40%, color-mix(in srgb, var(--blue) 5%, var(--card)));
     border: 1px solid var(--border);
     border-radius: 1rem;
     box-shadow:
-      0 1px 2px rgba(60, 54, 43, 0.04),
-      0 6px 18px -8px rgba(60, 54, 43, 0.08);
+      0 1px 2px rgba(60, 30, 90, 0.06),
+      0 6px 18px -8px rgba(60, 30, 90, 0.14),
+      inset 0 1px 0 rgba(255, 255, 255, 0.5);
   }
   .dark .card {
     box-shadow:
-      0 1px 2px rgba(0, 0, 0, 0.25),
-      0 8px 22px -10px rgba(0, 0, 0, 0.5);
+      0 1px 2px rgba(0, 0, 0, 0.3),
+      0 8px 22px -10px rgba(0, 0, 0, 0.55),
+      inset 0 1px 0 rgba(255, 255, 255, 0.04);
   }
   /* Interactive cards get a gentle lift + warm border glow */
   .card-hover {
@@ -283,6 +308,9 @@
     cursor: pointer;
     user-select: none;
     white-space: nowrap;
+    /* 3D depth: solid "floor" shadow beneath every button so it reads
+       as a raised, pressable object rather than a flat tinted rectangle. */
+    box-shadow: 0 3px 0 0 rgba(0, 0, 0, 0.14);
     transition:
       transform 0.18s cubic-bezier(0.2, 0.8, 0.3, 1.2),
       box-shadow 0.22s ease,
@@ -303,6 +331,7 @@
     background-size: 250% 100%, 100% 100%;
     background-position: 130% 0, 0 0;
     box-shadow:
+      0 3px 0 0 rgba(29, 78, 216, 0.55),
       0 1px 2px rgba(29, 78, 216, 0.35),
       0 6px 18px -6px rgba(37, 99, 235, 0.55);
     text-shadow: 0 1px 1px rgba(23, 37, 84, 0.18);
@@ -311,135 +340,209 @@
     background-position: -60% 0, 0 0; /* light sweep */
     transform: translateY(-2px);
     box-shadow:
+      0 5px 0 0 rgba(29, 78, 216, 0.55),
       0 2px 4px rgba(29, 78, 216, 0.4),
-      0 12px 28px -8px rgba(37, 99, 235, 0.65);
+      0 14px 30px -8px rgba(37, 99, 235, 0.65);
     filter: saturate(1.08);
   }
 
-  /* ACTIVE STATE — every pressed/selected button turns signature orange */
+  /* ACTIVE STATE — every pressed/selected button turns signature orange
+     and "presses down" — the floor shadow collapses to sell the depth. */
   .btn:active {
-    transform: translateY(0) scale(0.965);
+    transform: translateY(2px) scale(0.965);
     background-image: linear-gradient(135deg, #fb923c 0%, #f97316 50%, #ea580c 100%);
     border-color: rgba(255, 255, 255, 0.35);
     color: #fff;
     box-shadow:
+      0 1px 0 0 rgba(194, 65, 12, 0.5),
       0 1px 2px rgba(194, 65, 12, 0.4),
-      0 8px 22px -6px rgba(249, 115, 22, 0.6);
+      0 6px 16px -6px rgba(249, 115, 22, 0.6);
   }
 
-  /* SECONDARY — cream surface, thin warm border, blue on hover */
+  /* SECONDARY — violet→magenta gradient (never plain/near-white),
+     bright teal glow on hover, real 3D floor shadow at rest. */
   .btn-secondary {
-    background: var(--card);
-    color: var(--text);
-    border: 1.5px solid var(--border);
-    box-shadow: 0 1px 2px rgba(60, 54, 43, 0.05);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    background-image:
+      linear-gradient(105deg, transparent 42%, rgba(255, 255, 255, 0.3) 50%, transparent 58%),
+      linear-gradient(135deg, #a78bfa 0%, #8b5cf6 45%, #7c3aed 100%);
+    background-size: 250% 100%, 100% 100%;
+    background-position: 130% 0, 0 0;
+    box-shadow:
+      0 3px 0 0 rgba(109, 40, 217, 0.55),
+      0 1px 2px rgba(109, 40, 217, 0.3),
+      0 6px 18px -6px rgba(124, 58, 237, 0.5);
+    text-shadow: 0 1px 1px rgba(76, 29, 149, 0.2);
   }
   .btn-secondary:hover {
-    border-color: color-mix(in srgb, var(--blue) 55%, var(--border));
-    color: var(--blue);
-    background: var(--blue-soft);
-    transform: translateY(-1px);
-    box-shadow: 0 6px 16px -6px rgba(37, 99, 235, 0.35);
-  }
-  .btn-secondary:active {
-    color: #fff;
+    background-position: -60% 0, 0 0;
+    transform: translateY(-2px);
+    box-shadow:
+      0 5px 0 0 rgba(109, 40, 217, 0.55),
+      0 2px 4px rgba(109, 40, 217, 0.35),
+      0 14px 30px -8px rgba(124, 58, 237, 0.6);
+    filter: saturate(1.1);
   }
 
-  /* GHOST — quiet until hovered, orange on press */
+  /* GHOST — quiet at rest (transparent, still legible), turns into a
+     teal gradient chip on hover, orange gradient on press. */
   .btn-ghost {
     background: transparent;
     color: var(--text);
-    border: 1px solid transparent;
+    border: 1px solid var(--border);
+    box-shadow: none;
   }
   .btn-ghost:hover {
-    background: color-mix(in srgb, var(--accent) 9%, transparent);
-    border-color: color-mix(in srgb, var(--accent) 22%, transparent);
-    color: var(--accent-deep);
-  }
-  .dark .btn-ghost:hover {
-    color: var(--accent);
+    background-image: linear-gradient(135deg, #5eead4 0%, #14b8a6 55%, #0d9488 100%);
+    border-color: transparent;
+    color: #fff;
+    transform: translateY(-1px);
+    box-shadow:
+      0 3px 0 0 rgba(15, 118, 110, 0.45),
+      0 8px 20px -8px rgba(13, 148, 136, 0.55);
   }
   .btn-ghost:active {
     color: #fff;
   }
 
-  /* DANGER / SUCCESS keep their identity at rest, orange on press */
+  /* DANGER / SUCCESS / WHATSAPP keep their identity at rest, orange on
+     press, all with a matching 3D floor shadow. */
   .btn-danger {
     color: #fff;
     border: 1px solid rgba(255, 255, 255, 0.28);
     background-image: linear-gradient(135deg, #f87171 0%, #ef4444 55%, #dc2626 100%);
-    box-shadow: 0 6px 18px -6px rgba(239, 68, 68, 0.55);
+    box-shadow:
+      0 3px 0 0 rgba(153, 27, 27, 0.55),
+      0 6px 18px -6px rgba(239, 68, 68, 0.55);
   }
   .btn-danger:hover {
     transform: translateY(-2px);
-    box-shadow: 0 12px 28px -8px rgba(239, 68, 68, 0.65);
+    box-shadow:
+      0 5px 0 0 rgba(153, 27, 27, 0.55),
+      0 14px 30px -8px rgba(239, 68, 68, 0.65);
     filter: saturate(1.08);
   }
   .btn-success {
     color: #fff;
     border: 1px solid rgba(255, 255, 255, 0.28);
     background-image: linear-gradient(135deg, #34d399 0%, #10b981 55%, #059669 100%);
-    box-shadow: 0 6px 18px -6px rgba(16, 185, 129, 0.5);
+    box-shadow:
+      0 3px 0 0 rgba(4, 120, 87, 0.55),
+      0 6px 18px -6px rgba(16, 185, 129, 0.5);
   }
   .btn-success:hover {
     transform: translateY(-2px);
-    box-shadow: 0 12px 28px -8px rgba(16, 185, 129, 0.6);
+    box-shadow:
+      0 5px 0 0 rgba(4, 120, 87, 0.55),
+      0 14px 30px -8px rgba(16, 185, 129, 0.6);
     filter: saturate(1.08);
   }
   .btn-whatsapp {
     color: #fff;
     border: 1px solid rgba(255, 255, 255, 0.28);
     background-image: linear-gradient(135deg, #4ade80 0%, #25d366 55%, #16a34a 100%);
-    box-shadow: 0 6px 18px -6px rgba(37, 211, 102, 0.5);
+    box-shadow:
+      0 3px 0 0 rgba(21, 128, 61, 0.5),
+      0 6px 18px -6px rgba(37, 211, 102, 0.5);
   }
   .btn-whatsapp:hover {
     transform: translateY(-2px);
-    box-shadow: 0 12px 28px -8px rgba(37, 211, 102, 0.55);
+    box-shadow:
+      0 5px 0 0 rgba(21, 128, 61, 0.5),
+      0 14px 30px -8px rgba(37, 211, 102, 0.55);
+  }
+
+  /* INFO — cyan/blue gradient, for a lighter "neutral action" tone
+     than primary. New variant: use variant="info" on <Button>. */
+  .btn-info {
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    background-image: linear-gradient(135deg, #22d3ee 0%, #06b6d4 50%, #0891b2 100%);
+    box-shadow:
+      0 3px 0 0 rgba(14, 116, 144, 0.55),
+      0 6px 18px -6px rgba(6, 182, 212, 0.5);
+  }
+  .btn-info:hover {
+    transform: translateY(-2px);
+    box-shadow:
+      0 5px 0 0 rgba(14, 116, 144, 0.55),
+      0 14px 30px -8px rgba(6, 182, 212, 0.6);
+    filter: saturate(1.08);
+  }
+
+  /* TEAL — dedicated teal gradient variant for export/utility actions.
+     New variant: use variant="teal" on <Button>. */
+  .btn-teal {
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    background-image: linear-gradient(135deg, #5eead4 0%, #14b8a6 50%, #0d9488 100%);
+    box-shadow:
+      0 3px 0 0 rgba(15, 118, 110, 0.55),
+      0 6px 18px -6px rgba(20, 184, 166, 0.5);
+  }
+  .btn-teal:hover {
+    transform: translateY(-2px);
+    box-shadow:
+      0 5px 0 0 rgba(15, 118, 110, 0.55),
+      0 14px 30px -8px rgba(20, 184, 166, 0.6);
+    filter: saturate(1.08);
   }
 
   /* PERSISTENT ACTIVE STATE — selected tabs / current pager page etc.
-     stay orange (same family as the pressed state). */
+     stay orange (same family as the pressed state), with depth. */
   .btn-active-orange {
     background-image: linear-gradient(135deg, #fb923c 0%, #f97316 50%, #ea580c 100%);
     color: #fff;
     text-shadow: 0 1px 1px rgba(194, 65, 12, 0.2);
+    box-shadow:
+      0 3px 0 0 rgba(194, 65, 12, 0.5),
+      0 6px 16px -6px rgba(249, 115, 22, 0.55);
   }
 
-  /* Round quiet icon button used across toolbars */
+  /* Round icon button used across toolbars — soft violet→blue gradient
+     at rest (never flat white), teal on hover, orange 3D press. */
   .icon-btn {
     display: inline-grid;
     place-items: center;
     height: 2.5rem;
     width: 2.5rem;
     border-radius: 0.75rem;
-    border: 1px solid var(--border);
-    background: var(--card);
-    color: var(--muted);
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    background-image: linear-gradient(135deg, color-mix(in srgb, var(--violet) 70%, var(--blue)) 0%, var(--blue) 100%);
+    color: #fff;
+    box-shadow:
+      0 2px 0 0 rgba(29, 78, 216, 0.45),
+      0 4px 10px -4px rgba(37, 99, 235, 0.45);
     transition: all 0.2s ease;
     cursor: pointer;
   }
   .icon-btn:hover {
-    color: var(--blue);
-    border-color: color-mix(in srgb, var(--blue) 45%, var(--border));
-    background: var(--blue-soft);
+    background-image: linear-gradient(135deg, #5eead4 0%, #0d9488 100%);
+    border-color: transparent;
     transform: translateY(-1px);
+    box-shadow:
+      0 3px 0 0 rgba(15, 118, 110, 0.5),
+      0 8px 18px -6px rgba(20, 184, 166, 0.5);
   }
   .icon-btn:active {
     color: #fff;
-    background: linear-gradient(135deg, #fb923c, #ea580c);
+    background-image: linear-gradient(135deg, #fb923c, #ea580c);
     border-color: transparent;
-    transform: scale(0.94);
+    transform: translateY(1px) scale(0.94);
+    box-shadow: 0 1px 0 0 rgba(194, 65, 12, 0.5);
   }
 
-  /* ── Inputs — orange focus ring on cream ─────────────────── */
+  /* ── Inputs — tinted surface (not flat white) + orange focus ring ── */
   .input {
     width: 100%;
-    background: var(--card);
+    background: linear-gradient(155deg, color-mix(in srgb, var(--violet) 4%, var(--card)), var(--card));
     border: 1.5px solid var(--border);
     border-radius: 0.75rem;
     padding: 0.55rem 0.9rem;
     color: var(--text);
     outline: none;
+    box-shadow: inset 0 1px 3px rgba(36, 27, 58, 0.06);
     transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
   }
   .input:hover {
@@ -447,8 +550,8 @@
   }
   .input:focus {
     border-color: var(--accent);
-    box-shadow: 0 0 0 4px var(--ring);
-    background: color-mix(in srgb, var(--accent) 3%, var(--card));
+    box-shadow: 0 0 0 4px var(--ring), inset 0 1px 3px rgba(36, 27, 58, 0.06);
+    background: color-mix(in srgb, var(--accent) 4%, var(--card));
   }
 
   /* ── Badges — soft translucent tints ─────────────────────── */
@@ -581,12 +684,12 @@
     color: var(--muted);
     white-space: nowrap;
     background:
-      linear-gradient(90deg, var(--accent), var(--blue-bright)) left bottom / 100% 2px no-repeat,
+      linear-gradient(90deg, var(--accent), var(--violet), var(--blue-bright)) left bottom / 100% 3px no-repeat,
       linear-gradient(
         120deg,
-        color-mix(in srgb, var(--accent) 9%, var(--card)),
-        color-mix(in srgb, var(--blue) 7%, var(--card)) 55%,
-        color-mix(in srgb, var(--accent) 5%, var(--card))
+        color-mix(in srgb, var(--accent) 16%, var(--card)),
+        color-mix(in srgb, var(--violet) 12%, var(--card)) 50%,
+        color-mix(in srgb, var(--blue) 14%, var(--card)) 100%
       );
     border-block: 1px solid var(--border);
   }
@@ -799,12 +902,76 @@
     color: transparent;
   }
 
+  /* ── Floating action bubble — round 3D gradient button that hovers
+     above the content with a gentle bob (use on FAB-style buttons) ── */
+  .fab-3d {
+    display: inline-grid;
+    place-items: center;
+    border-radius: 9999px;
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    background-image:
+      radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.55), transparent 45%),
+      linear-gradient(135deg, #fb923c 0%, #f97316 45%, #ea580c 100%);
+    box-shadow:
+      0 5px 0 0 rgba(194, 65, 12, 0.55),
+      0 14px 30px -8px rgba(249, 115, 22, 0.6),
+      inset 0 1px 0 rgba(255, 255, 255, 0.4);
+    animation: floatSlow 6s ease-in-out infinite;
+    transition: transform 0.18s cubic-bezier(0.2, 0.8, 0.3, 1.2), box-shadow 0.2s ease;
+    cursor: pointer;
+  }
+  .fab-3d:hover {
+    filter: saturate(1.1);
+  }
+  .fab-3d:active {
+    transform: translateY(3px) scale(0.95);
+    box-shadow:
+      0 2px 0 0 rgba(194, 65, 12, 0.55),
+      0 6px 16px -6px rgba(249, 115, 22, 0.55);
+  }
+
+  /* ── Export menu — colorful dropdown, each row its own hue ── */
+  .export-menu {
+    background:
+      linear-gradient(155deg, color-mix(in srgb, var(--violet) 8%, var(--card)), var(--card) 55%, color-mix(in srgb, var(--blue) 6%, var(--card)));
+    border: 1px solid var(--border);
+  }
+  .export-item {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    width: 100%;
+    border-radius: 0.65rem;
+    padding: 0.55rem 0.65rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    transition: transform 0.16s cubic-bezier(0.2, 0.8, 0.3, 1.2), box-shadow 0.2s ease, filter 0.2s ease;
+    box-shadow: 0 2px 0 0 rgba(0, 0, 0, 0.12);
+  }
+  .export-item:hover {
+    transform: translateY(-1px);
+    filter: saturate(1.1) brightness(1.03);
+  }
+  .export-item:active {
+    transform: translateY(1px) scale(0.98);
+  }
+  .export-item-xlsx { background-image: linear-gradient(135deg, #34d399, #059669); }
+  .export-item-pdf { background-image: linear-gradient(135deg, #f87171, #dc2626); }
+  .export-item-doc { background-image: linear-gradient(135deg, #60a5fa, #2563eb); }
+  .export-item-csv { background-image: linear-gradient(135deg, #fbbf24, #d97706); }
+  .export-item-whatsapp { background-image: linear-gradient(135deg, #4ade80, #16a34a); }
+  .export-item-share { background-image: linear-gradient(135deg, #c4b5fd, #7c3aed); }
+
   /* Reduced motion — switch off decorative animation */
   @media (prefers-reduced-motion: reduce) {
     .bgfx-blob,
     .bgfx-bubble,
     .cube3d,
     .float3d,
+    .fab-3d,
     .shape3d-sphere,
     .shape3d-ring,
     .shape3d-gem {
@@ -814,11 +981,14 @@
       display: none;
     }
     .btn,
+    .btn:active,
     .btn-primary:hover,
+    .btn-secondary:hover,
     .card-hover:hover {
       transform: none;
     }
-    .btn-primary {
+    .btn-primary,
+    .btn-secondary {
       background-position: 0 0, 0 0;
     }
     * {

@@ -27,41 +27,43 @@ export default function ExportMenu({ title, columns, rows, meta, size = 'md', la
   }, [])
 
   const items = [
-    { icon: FileSpreadsheet, label: 'Excel (.xlsx)', run: ex.xlsx },
-    { icon: FileText, label: t('common.pdf'), run: ex.pdf },
-    { icon: FileIcon, label: 'Word (.doc)', run: ex.doc },
-    { icon: Download, label: 'CSV', run: ex.csv },
-    { icon: MessageCircle, label: 'WhatsApp', run: () => ex.whatsapp(meta?.phone), tone: 'text-[#25D366]' },
-    { icon: Share2, label: t('common.share'), run: () => ex.share().then((m) => m === 'cancelled' && null) },
+    { icon: FileSpreadsheet, label: 'Excel (.xlsx)', run: ex.xlsx, tone: 'export-item-xlsx' },
+    { icon: FileText, label: t('common.pdf'), run: ex.pdf, tone: 'export-item-pdf' },
+    { icon: FileIcon, label: 'Word (.doc)', run: ex.doc, tone: 'export-item-doc' },
+    { icon: Download, label: 'CSV', run: ex.csv, tone: 'export-item-csv' },
+    { icon: MessageCircle, label: 'WhatsApp', run: () => ex.whatsapp(meta?.phone), tone: 'export-item-whatsapp' },
+    { icon: Share2, label: t('common.share'), run: () => ex.share().then((m) => m === 'cancelled' && null), tone: 'export-item-share' },
   ]
 
   return (
     <div className="relative no-print" ref={ref}>
-      <button className={cn('btn btn-secondary', size === 'sm' ? 'min-h-8 px-3 text-xs' : 'min-h-10 px-4 text-sm')} onClick={() => setOpen((o) => !o)}>
+      <button className={cn('btn btn-teal', size === 'sm' ? 'min-h-8 px-3 text-xs' : 'min-h-10 px-4 text-sm')} onClick={() => setOpen((o) => !o)}>
         <Download size={15} />
         {label ?? t('common.export')}
         <ChevronDown size={13} className={cn('transition', open && 'rotate-180')} />
       </button>
       {open && (
-        <div className="absolute end-0 top-full mt-1 z-50 card p-1.5 w-56 shadow-xl fade-in">
+        <div className="export-menu absolute end-0 top-full mt-1 z-50 rounded-xl p-1.5 w-56 shadow-xl fade-in">
           <div className="px-2.5 py-1 text-[10px] uppercase tracking-wide text-[var(--muted)]">{title}</div>
-          {items.map(({ icon: Icon, label: l, run, tone }) => (
-            <button
-              key={l}
-              className="w-full btn btn-ghost justify-start gap-2.5 min-h-9 px-2.5 text-sm rounded-lg"
-              onClick={() => {
-                setOpen(false)
-                try {
-                  run()
-                } catch (e) {
-                  toast.error(e?.message || 'Export failed')
-                }
-              }}
-            >
-              <Icon size={15} className={tone} />
-              <span className={cn('leading-urdu no-clip', tone)}>{l}</span>
-            </button>
-          ))}
+          <div className="flex flex-col gap-1">
+            {items.map(({ icon: Icon, label: l, run, tone }) => (
+              <button
+                key={l}
+                className={cn('export-item', tone)}
+                onClick={() => {
+                  setOpen(false)
+                  try {
+                    run()
+                  } catch (e) {
+                    toast.error(e?.message || 'Export failed')
+                  }
+                }}
+              >
+                <Icon size={15} />
+                <span className="leading-urdu no-clip">{l}</span>
+              </button>
+            ))}
+          </div>
         </div>
       )}
     </div>

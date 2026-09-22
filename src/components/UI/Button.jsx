@@ -11,6 +11,8 @@ const VARIANTS = {
   danger: 'btn-danger',
   success: 'btn-success',
   whatsapp: 'btn-whatsapp',
+  info: 'btn-info',
+  teal: 'btn-teal',
 }
 
 const SIZES = {
