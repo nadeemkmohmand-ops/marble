@@ -5,15 +5,65 @@ import OrderItemsEditor from '../components/OrderItemsEditor'
 import { orderTotals } from '../utils/calculations'
 import { QUOTE_STATUS } from '../constants/enums'
 import { fmtCurrency, fmtDate, todayISO, fmtNumber } from '../utils/formatters'
-import { FileText } from 'lucide-react'
+import { FileText, AlertTriangle } from 'lucide-react'
 import Badge from '../components/UI/Badge'
 import { useAppUI } from '../context/AppUIContext'
 import { useLang } from '../context/LanguageContext'
 import { useToast } from '../context/ToastContext'
 import { db } from '../services/db'
 import { uid } from '../utils/id'
+import { storage } from '../utils/storage'
+import { STORAGE_KEYS } from '../constants/storageKeys'
 
 const opts = (list) => list.map((v) => ({ value: v }))
+
+/**
+ * MarginAlert — warns INSIDE the quotation builder when a line's rate
+ * falls below the margin floor: either the matching price-list floor
+ * (per size/finish/grade/customer type) or, when no price list covers
+ * the item, the average slab cost × (1 + default margin %).
+ */
+function MarginAlert({ form }) {
+  const { lang } = useLang()
+  const ur = lang === 'ur'
+  const settings = storage.get(STORAGE_KEYS.SETTINGS, {}) || {}
+  const priceLists = db.list('priceLists').filter((p) => p.active !== false)
+  const slabs = db.list('slabs').filter((s) => s.costPerSqftSlab)
+  const marginPct = Number(settings.defaultMarginPct) || 20
+
+  const issues = []
+  ;(form?.items || []).forEach((it, idx) => {
+    const sizeText = `${it.lengthFt}×${it.widthFt}`
+    const list = priceLists.find((p) => (p.sizeText || '').replace(/\s/g, '') === sizeText.replace(/\s/g, ''))
+    const floor = list
+      ? (list.minRatePerSqft || 0)
+      : (() => {
+        if (!slabs.length) return 0
+        const avgCost = slabs.reduce((a, s) => a + s.costPerSqftSlab, 0) / slabs.length
+        return Math.round(avgCost * (1 + marginPct / 100))
+      })()
+    if (floor > 0 && (it.rate || 0) < floor) {
+      issues.push({ idx: idx + 1, desc: it.description || `#${idx + 1}`, rate: it.rate, floor, source: list ? 'price list' : 'cost' })
+    }
+  })
+
+  if (!issues.length) return null
+  return (
+    <div className="sm:col-span-2 rounded-xl border border-amber-500/50 bg-amber-500/10 p-3 flex gap-2.5">
+      <AlertTriangle size={18} className="text-amber-500 shrink-0 mt-0.5" />
+      <div className="text-xs leading-urdu no-clip">
+        <div className="font-bold text-amber-600 mb-0.5">{ur ? 'منافع الرٹ' : 'Margin alert'}</div>
+        {issues.map((i) => (
+          <div key={i.idx} className="num">
+            {ur
+              ? `${i.desc}: ریٹ ${fmtCurrency(i.rate)} فرش ${fmtCurrency(i.floor)} سے نیچے ہے`
+              : `${i.desc}: rate ${fmtCurrency(i.rate)} is below the ${fmtCurrency(i.floor)} floor (${i.source})`}
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
 
 export default function Quotations() {
   const { t } = useLang()
@@ -48,6 +98,7 @@ export default function Quotations() {
           { key: 'validUntil', type: 'date' },
           { key: 'status', type: 'select', options: opts(QUOTE_STATUS) },
           { key: 'items', type: 'custom', component: OrderItemsEditor, span: 'full' },
+          { key: '_marginAlert', type: 'custom', component: MarginAlert, span: 'full' },
           { key: 'edgeCharges', type: 'number', min: 0 },
           { key: 'installationCharges', type: 'number', min: 0 },
           { key: 'transportCharges', type: 'number', min: 0 },

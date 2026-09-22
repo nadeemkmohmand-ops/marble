@@ -55,10 +55,14 @@ function normalize(row) {
   return out
 }
 
-/** camelCase record (app) → snake_case row (Postgres) — generic, all keys. */
+/** camelCase record (app) → snake_case row (Postgres) — generic, all keys.
+ *  Keys starting with "_" are page-level display helpers (e.g. _balance)
+ *  and are stripped — they are not columns and would poison the upsert. */
 function denormalize(rec) {
   const out = {}
   Object.entries(rec || {}).forEach(([k, v]) => {
+    if (k.startsWith('_')) return
+    if (v === undefined) return
     out[toSnake(k)] = v
   })
   return out

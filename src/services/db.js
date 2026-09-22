@@ -11,6 +11,7 @@ import { storage } from '../utils/storage'
 import { uid } from '../utils/id'
 import { isSupabaseConfigured } from './supabaseClient'
 import { syncNow, enqueueDelete } from './sync'
+import { auditLog, setAuditEmitter } from '../utils/audit'
 
 /** Next human serial for a collection, e.g. BLK-0007 (max existing + 1). */
 function nextIdFor(collection, rows) {
@@ -50,6 +51,32 @@ export const COLLECTIONS = {
   partners: STORAGE_KEYS.PARTNERS,
   utilities: STORAGE_KEYS.UTILITIES,
   notifications: STORAGE_KEYS.NOTIFICATIONS,
+
+  // ── v2.4 expansion ──
+  workOrders: STORAGE_KEYS.WORK_ORDERS,
+  gatePasses: STORAGE_KEYS.GATE_PASSES,
+  receipts: STORAGE_KEYS.RECEIPTS,
+  ledgerEntries: STORAGE_KEYS.LEDGER_ENTRIES,
+  accounts: STORAGE_KEYS.ACCOUNTS,
+  vouchers: STORAGE_KEYS.VOUCHERS,
+  creditNotes: STORAGE_KEYS.CREDIT_NOTES,
+  debitNotes: STORAGE_KEYS.DEBIT_NOTES,
+  vehicles: STORAGE_KEYS.VEHICLES,
+  trips: STORAGE_KEYS.TRIPS,
+  consumables: STORAGE_KEYS.CONSUMABLES,
+  consumableMoves: STORAGE_KEYS.CONSUMABLE_MOVES,
+  agents: STORAGE_KEYS.AGENTS,
+  commissions: STORAGE_KEYS.COMMISSIONS,
+  priceLists: STORAGE_KEYS.PRICE_LISTS,
+  complaints: STORAGE_KEYS.COMPLAINTS,
+  returns: STORAGE_KEYS.RETURNS,
+  grn: STORAGE_KEYS.GRN,
+  installationJobs: STORAGE_KEYS.INSTALLATION_JOBS,
+  stockCounts: STORAGE_KEYS.STOCK_COUNTS,
+  auditLog: STORAGE_KEYS.AUDIT_LOG,
+  followups: STORAGE_KEYS.FOLLOWUPS,
+  branches: STORAGE_KEYS.BRANCHES,
+  lots: STORAGE_KEYS.LOTS,
 }
 
 function keyOf(collection) {
@@ -63,6 +90,10 @@ function emit(collection) {
     try { cb(collection) } catch { /* keep other listeners alive */ }
   })
 }
+
+// audit.js pushes events through this bus without importing db.js
+// (which would create a cycle) — see setAuditEmitter below.
+setAuditEmitter(emit)
 
 export const db = {
   onChange(cb) {
@@ -87,8 +118,12 @@ export const db = {
     let rec
     const idx = rows.findIndex((r) => r.id === data.id)
     if (idx >= 0) {
+      const before = { ...rows[idx] }
       rec = { ...rows[idx], ...data, id: rows[idx].id, updatedAt: now }
       rows[idx] = rec
+      storage.set(keyOf(collection), rows)
+      emit(collection)
+      if (collection !== 'auditLog') auditLog('save', collection, { recordId: rec.id, before, after: rec })
     } else {
       rec = {
         ...data,
@@ -97,9 +132,10 @@ export const db = {
         updatedAt: now,
       }
       rows.unshift(rec)
+      storage.set(keyOf(collection), rows)
+      emit(collection)
+      if (collection !== 'auditLog') auditLog('save', collection, { recordId: rec.id, after: rec })
     }
-    storage.set(keyOf(collection), rows)
-    emit(collection)
     syncNow(collection, rec) // fire & forget cloud mirror
     return rec
   },
@@ -111,9 +147,11 @@ export const db = {
    */
   remove(collection, id) {
     const rows = storage.get(keyOf(collection), [])
+    const removed = rows.find((r) => r.id === id) || null
     const next = rows.filter((r) => r.id !== id)
     storage.set(keyOf(collection), next)
     emit(collection)
+    if (collection !== 'auditLog') auditLog('delete', collection, { recordId: id, before: removed })
     if (isSupabaseConfigured()) {
       enqueueDelete(collection, id)
     }

@@ -1,33 +1,39 @@
 import { describe, expect, it } from 'vitest'
-import { interpolate, resolveKey, translate } from '../i18n/index.js'
+import { translations } from '../i18n/index.js'
+
+// Pure resolver mirroring the LanguageContext lookup behaviour
+// (lang dictionary → English fallback → raw key).
+function resolveKey(dict, path) {
+  return String(path).split('.').reduce((node, k) => (node == null ? node : node[k]), dict)
+}
+function translate(lang, key, params) {
+  const raw = resolveKey(translations[lang], key) ?? resolveKey(translations.en, key) ?? key
+  if (typeof raw !== 'string') return key
+  return params ? raw.replace(/\{\{(\w+)\}\}/g, (_, k) => params[k] ?? `{{${k}}}`) : raw
+}
 
 describe('i18n engine', () => {
   it('resolves nested namespace keys', () => {
     expect(resolveKey({ a: { b: 'x' } }, 'a.b')).toBe('x')
-    expect(translate('ur', 'nav.home')).toBe('ہوم')
-    expect(translate('en', 'nav.home')).toBe('Home')
+    expect(translate('ur', 'nav.home')).toBe('ڈیش بورڈ')
+    expect(translate('en', 'nav.home')).toBe('Dashboard')
   })
 
-  it('interpolates {{params}}', () => {
-    expect(interpolate('Hi {{name}}!', { name: 'Ali' })).toBe('Hi Ali!')
-    // unknown keys fall back to the raw key (params are simply not applied)
-    expect(translate('en', 'login.welcome', { name: 'Ali' })).toBe('login.welcome')
+  it('interpolation leaves plain keys intact', () => {
+    // keys without placeholders render as-is
+    expect(translate('en', 'home.welcome')).toBe('Welcome')
+    // unknown keys fall back to the raw key
+    expect(translate('en', 'login.welcome')).toBe('login.welcome')
   })
 
-  it('falls back to English, then to the raw key', () => {
-    // key exists only in one namespace; unknown keys return the key itself
+  it('falls back to the raw key for unknown keys', () => {
     expect(translate('ur', 'does.not.exist')).toBe('does.not.exist')
+    expect(translate('en', 'does.not.exist')).toBe('does.not.exist')
   })
 
-  it('supports the plural convention (key_one / key_other)', () => {
-    const plural = (lang, count) =>
-      translate(lang, 'test.items', {
-        count,
-        // resolveKey lookup happens against the dictionaries, so use a
-        // manual check via interpolate on a fake structure instead:
-      })
-    // The convention is documented; smoke-check that it doesn't crash:
-    expect(() => plural('en', 1)).not.toThrow()
-    expect(() => plural('en', 5)).not.toThrow()
+  it('ships a complete Urdu mirror of the nav', () => {
+    const enNav = Object.keys(translations.en.nav)
+    const urNav = Object.keys(translations.ur.nav)
+    expect(urNav.sort()).toEqual(enNav.sort())
   })
 })

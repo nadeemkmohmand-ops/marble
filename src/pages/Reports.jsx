@@ -43,6 +43,9 @@ export default function Reports() {
   const { items: slabs } = useCollection('slabs')
   const { items: machines } = useCollection('machines')
   const { items: maintenance } = useCollection('maintenance')
+  const { items: consumables } = useCollection('consumables')
+  const { items: agents } = useCollection('agents')
+  const { items: commissions } = useCollection('commissions')
 
   const monthPrefix = new Date().toISOString().slice(0, 7)
 
@@ -159,9 +162,74 @@ export default function Reports() {
     [machines, maintenance],
   )
 
+  // Seasonal demand — 12-month sales trend (block-buying timing aid)
+  const seasonal = useMemo(() => {
+    const map = new Map()
+    for (let i = 11; i >= 0; i -= 1) {
+      const d = new Date()
+      d.setMonth(d.getMonth() - i)
+      const key = d.toISOString().slice(0, 7)
+      map.set(key, { month: key.slice(2), sales: 0, orders: 0 })
+    }
+    orders.filter((o) => o.status !== 'cancelled').forEach((o) => {
+      const k = (o.date || '').slice(0, 7)
+      if (map.has(k)) {
+        map.get(k).sales += orderTotals(o).total
+        map.get(k).orders += 1
+      }
+    })
+    return [...map.values()]
+  }, [orders])
+
+  // Reorder suggestions — consumables at/below their reorder point
+  const reorder = useMemo(
+    () =>
+      consumables
+        .filter((c) => c.minQty > 0 && (c.stockQty || 0) <= c.minQty)
+        .map((c) => ({ name: c.name, type: c.type, stockQty: c.stockQty || 0, minQty: c.minQty, unit: c.unit || 'pcs' })),
+    [consumables],
+  )
+
+  // Dead stock detail — available slabs older than 90 days
+  const deadStock = useMemo(
+    () =>
+      slabs
+        .filter((s) => s.status === 'available' && agingDays(s.createdAt) > 90)
+        .map((s) => ({ id: s.id, grade: s.grade, areaSqft: s.areaSqft, price: s.price, days: agingDays(s.createdAt) }))
+        .sort((a, b) => b.days - a.days),
+    [slabs],
+  )
+
+  // Agent commissions summary
+  const agentSummary = useMemo(() => {
+    const map = new Map()
+    commissions.forEach((c) => {
+      const ag = agents.find((a) => a.id === c.agentId)
+      const key = c.agentId || '—'
+      const row = map.get(key) || { name: ag?.name || c.agentId, earned: 0, paid: 0, count: 0 }
+      row.earned += c.commissionAmount || 0
+      row.paid += c.paidAmount || 0
+      row.count += 1
+      map.set(key, row)
+    })
+    return [...map.values()].map((r) => ({ ...r, pending: r.earned - r.paid })).sort((a, b) => b.earned - a.earned)
+  }, [commissions, agents])
+
+  // Tax summary — GST & WHT collected/paid
+  const taxSummary = useMemo(() => {
+    let gst = 0
+    let wht = 0
+    orders.filter((o) => o.status !== 'cancelled').forEach((o) => {
+      const tot = orderTotals(o)
+      gst += tot.tax || 0
+      wht += o.whtAmount || 0
+    })
+    return { gst, wht, total: gst + wht }
+  }, [orders])
+
   const money = (v) => fmtCurrency(v, { lang })
 
-  const TABS = [t('reports.pnl'), t('reports.profitOrders'), t('reports.profitCustomers'), t('reports.receivables'), t('reports.payables'), t('reports.valuation'), t('reports.labourProductivity'), t('reports.downtime')]
+  const TABS = [t('reports.pnl'), t('reports.profitOrders'), t('reports.profitCustomers'), t('reports.receivables'), t('reports.payables'), t('reports.valuation'), t('reports.labourProductivity'), t('reports.downtime'), lang === 'ur' ? 'موسمی طلب اور اسٹاک' : 'Seasonal & stock', lang === 'ur' ? 'کمیژن اور ٹیکس' : 'Commissions & tax']
   const visibleTabs = TABS.map((label, i) => ({ label, i })).filter(({ i }) => (i >= 3 ? canSee(['owner', 'accountant', 'manager']) : true))
 
   return (
@@ -199,6 +267,73 @@ export default function Reports() {
             return <SimpleReport columns={productivityColumns(t, money, fmtNum)} rows={productivity} title={t('reports.labourProductivity')} t={t} />
           case 7:
             return <SimpleReport columns={downtimeColumns(t, money, fmtNum)} rows={downtime} title={t('reports.downtime')} t={t} />
+          case 8:
+            return (
+              <div className="space-y-4">
+                <Card>
+                  <h3 className="font-semibold text-sm mb-4">{lang === 'ur' ? 'موسمی طلب — 12 ماہہ فروخت' : 'Seasonal demand — 12-month sales'}</h3>
+                  <div className="h-64" dir="ltr">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={seasonal} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                        <XAxis dataKey="month" tick={{ fontSize: 11 }} stroke="var(--muted)" />
+                        <YAxis tick={{ fontSize: 11 }} stroke="var(--muted)" width={54} />
+                        <Tooltip contentStyle={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 12, fontSize: 12 }} />
+                        <Bar dataKey="sales" fill="#3b82f6" radius={[6, 6, 0, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                  <p className="text-[11px] text-[var(--muted)] mt-2">{lang === 'ur' ? 'کم مانگ والے مہینوں میں بلاک خریداری سستا پڑتی ہے۔' : 'Time block purchases with the low-demand months.'}</p>
+                </Card>
+                <Card>
+                  <h3 className="font-semibold text-sm mb-3">{lang === 'ur' ? 'مردہ اسٹاک (90+ دن)' : 'Dead stock (90+ days)'}</h3>
+                  <SimpleReport columns={[
+                    { key: 'id', label: 'Slab', render: (r) => <span className="num font-semibold">{r.id}</span> },
+                    { key: 'grade', label: 'Grade' },
+                    { key: 'areaSqft', label: 'Sq ft', format: (v) => fmtNumber(v) },
+                    { key: 'price', label: 'Price', format: (v) => money(v) },
+                    { key: 'days', label: 'Days old', render: (r) => <span className={`num font-bold ${r.days > 180 ? 'text-red-500' : 'text-amber-500'}`}>{r.days}</span>, format: (v) => fmtNumber(v) },
+                  ]} rows={deadStock} title="Dead stock" t={t} />
+                </Card>
+                <Card>
+                  <h3 className="font-semibold text-sm mb-3">{lang === 'ur' ? 'ری آرڈر تجاویز' : 'Reorder suggestions'}</h3>
+                  {reorder.length === 0 ? (
+                    <EmptyState title={t('common.noData')} />
+                  ) : (
+                    <SimpleReport columns={[
+                      { key: 'name', label: 'Item', render: (r) => <span className="font-semibold">{r.name}</span> },
+                      { key: 'type', label: 'Type' },
+                      { key: 'stockQty', label: 'In stock', render: (r) => <span className="num">{r.stockQty} {r.unit}</span> },
+                      { key: 'minQty', label: 'Reorder at', render: (r) => <span className="num">{r.minQty}</span> },
+                    ]} rows={reorder} title="Reorder" t={t} />
+                  )}
+                </Card>
+              </div>
+            )
+          case 9:
+            return (
+              <div className="space-y-4">
+                <div className="grid grid-cols-3 gap-3">
+                  <StatCard label={lang === 'ur' ? 'جی ایس ٹی جمع' : 'GST collected'} value={money(taxSummary.gst)} icon={Wallet} tone="warning" />
+                  <StatCard label={lang === 'ur' ? 'WHT' : 'WHT withheld'} value={money(taxSummary.wht)} icon={Wallet} tone="info" />
+                  <StatCard label={lang === 'ur' ? 'کل ٹیکس' : 'Total tax'} value={money(taxSummary.total)} icon={Wallet} tone="danger" />
+                </div>
+                <Card>
+                  <h3 className="font-semibold text-sm mb-3">{lang === 'ur' ? 'ایجنٹ کمیژن خلاصہ' : 'Agent commissions summary'}</h3>
+                  {agentSummary.length === 0 ? (
+                    <EmptyState title={t('common.noData')} />
+                  ) : (
+                    <SimpleReport columns={[
+                      { key: 'name', label: 'Agent', render: (r) => <span className="font-semibold">{r.name}</span> },
+                      { key: 'count', label: 'Entries', render: (r) => <span className="num">{r.count}</span> },
+                      { key: 'earned', label: 'Earned', format: (v) => money(v) },
+                      { key: 'paid', label: 'Paid', format: (v) => money(v) },
+                      { key: 'pending', label: 'Pending', render: (r) => <span className={`num font-semibold ${r.pending > 0 ? 'text-red-500' : 'text-emerald-500'}`}>{money(r.pending)}</span>, format: (v) => fmtNumber(v) },
+                    ]} rows={agentSummary} title="Agent commissions" t={t} />
+                  )}
+                </Card>
+              </div>
+            )
           default:
             return null
         }

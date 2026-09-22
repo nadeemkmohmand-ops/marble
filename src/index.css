@@ -1037,3 +1037,240 @@ body.modal-open .bottom-nav {
     margin: 12mm;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   LOGIN v2 — animated aurora, floating 3D marble objects,
+   glassmorphism card, gradient buttons. GPU transforms only.
+   ═══════════════════════════════════════════════════════════════ */
+.login-page {
+  min-height: 100dvh;
+  position: relative;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+/* Layered aurora — four drifting radial gradients on one layer */
+.login-aurora {
+  position: absolute;
+  inset: -20%;
+  filter: blur(60px) saturate(1.25);
+  background:
+    radial-gradient(38% 44% at 18% 22%, rgba(249, 115, 22, 0.5), transparent 68%),
+    radial-gradient(34% 40% at 82% 18%, rgba(59, 130, 246, 0.44), transparent 70%),
+    radial-gradient(30% 44% at 78% 80%, rgba(139, 92, 246, 0.4), transparent 70%),
+    radial-gradient(36% 40% at 22% 82%, rgba(20, 184, 166, 0.34), transparent 72%),
+    radial-gradient(24% 30% at 52% 50%, rgba(251, 191, 36, 0.28), transparent 74%);
+  animation: auroraDrift 26s ease-in-out infinite alternate;
+  will-change: transform;
+}
+.dark .login-aurora {
+  background:
+    radial-gradient(38% 44% at 18% 22%, rgba(234, 88, 12, 0.42), transparent 68%),
+    radial-gradient(34% 40% at 82% 18%, rgba(37, 99, 235, 0.4), transparent 70%),
+    radial-gradient(30% 44% at 78% 80%, rgba(109, 40, 217, 0.38), transparent 70%),
+    radial-gradient(36% 40% at 22% 82%, rgba(13, 148, 136, 0.3), transparent 72%),
+    radial-gradient(24% 30% at 52% 50%, rgba(180, 83, 9, 0.26), transparent 74%);
+}
+@keyframes auroraDrift {
+  0% { transform: translate3d(-2%, -1%, 0) scale(1); }
+  50% { transform: translate3d(2%, 2%, 0) scale(1.06); }
+  100% { transform: translate3d(-1%, 1%, 0) scale(1.02); }
+}
+
+/* Faint dot grid + horizon line for depth */
+.login-dots {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(color-mix(in srgb, var(--accent) 22%, transparent) 1px, transparent 1px);
+  background-size: 26px 26px;
+  mask-image: linear-gradient(180deg, rgba(0,0,0,0.5), transparent 55%);
+  pointer-events: none;
+}
+
+/* Parallax wrapper driven by --px / --py CSS vars (pointer move) */
+.parallax { transform: translate3d(calc(var(--px, 0) * var(--depth, 8px)), calc(var(--py, 0) * var(--depth, 8px)), 0); transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.3, 1); }
+
+/* ── 3D marble slab — six real faces, slow showcase spin ── */
+.slab3d {
+  position: absolute;
+  pointer-events: none;
+  transform-style: preserve-3d;
+  animation: slabSpin 16s linear infinite;
+  will-change: transform;
+}
+.slab3d span {
+  position: absolute;
+  inset: 0;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+.slab3d span:nth-child(1) { transform: translateZ(calc(var(--d) / 2)); background: linear-gradient(118deg, #fff7ed, #ffedd5 35%, #fde8d0 60%, #f8d9bd); }
+.slab3d span:nth-child(2) { transform: rotateY(180deg) translateZ(calc(var(--d) / 2)); background: linear-gradient(118deg, #ffedd5, #fcd9b8 55%, #f8cba6); }
+.slab3d span:nth-child(3) { transform: rotateY(90deg) translateZ(calc(var(--w) / 2)); width: var(--d); background: linear-gradient(180deg, #fff, #ffe8d1 60%, #fbd7b0); }
+.slab3d span:nth-child(4) { transform: rotateY(-90deg) translateZ(calc(var(--w) / 2)); width: var(--d); background: linear-gradient(180deg, #fff4e6, #fad2ab); }
+.slab3d span:nth-child(5) { transform: rotateX(90deg) translateZ(calc(var(--h) / 2)); height: var(--d); background: linear-gradient(90deg, #fff, #ffe3c4); }
+.slab3d span:nth-child(6) { transform: rotateX(-90deg) translateZ(calc(var(--h) / 2)); height: var(--d); background: linear-gradient(90deg, #f9c99f, #f0b586); }
+/* veining strokes painted on the front face */
+.slab3d span:nth-child(1)::after {
+  content: '';
+  position: absolute; inset: 0; border-radius: 3px; opacity: 0.5;
+  background:
+    linear-gradient(64deg, transparent 42%, rgba(148, 116, 82, 0.5) 43%, transparent 45%),
+    linear-gradient(112deg, transparent 60%, rgba(148, 116, 82, 0.35) 61%, transparent 63%),
+    linear-gradient(30deg, transparent 74%, rgba(148, 116, 82, 0.3) 75%, transparent 77%);
+}
+.dark .slab3d span { border-color: rgba(255, 255, 255, 0.28); }
+@keyframes slabSpin {
+  from { transform: rotateX(-16deg) rotateY(0deg); }
+  to { transform: rotateX(-16deg) rotateY(360deg); }
+}
+
+/* Larger hero cube reusing cube3d pattern */
+.cube3d-lg { width: 54px; height: 54px; animation-duration: 12s; }
+.cube3d-lg span { border-radius: 9px; }
+.cube3d-lg span:nth-child(1) { transform: translateZ(27px); }
+.cube3d-lg span:nth-child(2) { transform: rotateY(90deg) translateZ(27px); }
+.cube3d-lg span:nth-child(3) { transform: rotateY(180deg) translateZ(27px); }
+.cube3d-lg span:nth-child(4) { transform: rotateY(-90deg) translateZ(27px); }
+.cube3d-lg span:nth-child(5) { transform: rotateX(90deg) translateZ(27px); }
+.cube3d-lg span:nth-child(6) { transform: rotateX(-90deg) translateZ(27px); }
+
+/* Glowing gradient orbs (small satellite spheres) */
+.orb {
+  position: absolute;
+  border-radius: 9999px;
+  pointer-events: none;
+  filter: blur(0.4px);
+  background:
+    radial-gradient(circle at 30% 28%, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.1) 46%),
+    var(--orb-bg, linear-gradient(135deg, #fb923c, #ea580c));
+  box-shadow: 0 12px 26px -10px var(--orb-shadow, rgba(234, 88, 12, 0.6)), inset -3px -4px 8px rgba(0, 0, 0, 0.16);
+  will-change: transform;
+}
+
+/* ── Glassmorphism login card with gradient hairline ── */
+.login-card {
+  border-radius: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  background: linear-gradient(155deg, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.6));
+  backdrop-filter: blur(22px) saturate(1.4);
+  -webkit-backdrop-filter: blur(22px) saturate(1.4);
+  box-shadow:
+    0 24px 60px -18px rgba(15, 23, 42, 0.28),
+    0 4px 14px -6px rgba(15, 23, 42, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+.dark .login-card {
+  border-color: rgba(255, 255, 255, 0.14);
+  background: linear-gradient(155deg, rgba(30, 24, 48, 0.86), rgba(20, 16, 36, 0.78));
+  box-shadow:
+    0 24px 60px -18px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+/* ── Gradient CTA with animated shine sweep ── */
+.btn-shine {
+  position: relative;
+  overflow: hidden;
+  color: #fff;
+  font-weight: 700;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  background-image:
+    radial-gradient(circle at 28% 22%, rgba(255, 255, 255, 0.5), transparent 42%),
+    linear-gradient(120deg, #f97316 0%, #ea580c 30%, #8b5cf6 72%, #3b82f6 100%);
+  background-size: 160% 160%, 160% 160%;
+  background-position: 0% 0%, 0% 0%;
+  box-shadow:
+    0 4px 0 0 rgba(154, 52, 18, 0.5),
+    0 16px 34px -10px rgba(249, 115, 22, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  transition: transform 0.16s cubic-bezier(0.2, 0.8, 0.3, 1.2), box-shadow 0.2s ease, background-position 0.5s ease;
+}
+.btn-shine::after {
+  content: '';
+  position: absolute;
+  top: 0; bottom: 0;
+  width: 42%;
+  left: -60%;
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.55), transparent);
+  transform: skewX(-18deg);
+  animation: shineSweep 3.2s ease-in-out infinite;
+}
+.btn-shine:hover { background-position: 0% 0%, 90% 50%; transform: translateY(-1px); }
+.btn-shine:active { transform: translateY(2px) scale(0.99); box-shadow: 0 2px 0 0 rgba(154, 52, 18, 0.5), 0 8px 18px -8px rgba(249, 115, 22, 0.5); }
+@keyframes shineSweep {
+  0%, 55% { left: -60%; }
+  85%, 100% { left: 130%; }
+}
+
+/* Secondary colorful outline button (fingerprint fallback etc.) */
+.btn-spectrum {
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background-image: linear-gradient(120deg, #3b82f6, #6366f1 55%, #8b5cf6);
+  box-shadow: 0 3px 0 0 rgba(49, 46, 129, 0.45), 0 12px 26px -10px rgba(99, 102, 241, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  transition: transform 0.16s cubic-bezier(0.2, 0.8, 0.3, 1.2);
+}
+.btn-spectrum:hover { filter: brightness(1.06); transform: translateY(-1px); }
+.btn-spectrum:active { transform: translateY(1px) scale(0.98); }
+
+/* Fingerprint button with radiating pulse rings */
+.fp-btn {
+  position: relative;
+  display: grid;
+  place-items: center;
+  border-radius: 1.25rem;
+  color: #fff;
+  background:
+    radial-gradient(circle at 30% 26%, rgba(255, 255, 255, 0.4), transparent 45%),
+    linear-gradient(135deg, #0ea5e9, #6366f1 55%, #8b5cf6);
+  box-shadow: 0 4px 0 0 rgba(49, 46, 129, 0.5), 0 14px 30px -8px rgba(99, 102, 241, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  transition: transform 0.15s ease;
+}
+.fp-btn:active { transform: translateY(2px) scale(0.96); }
+.fp-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: 2px solid rgba(99, 102, 241, 0.55);
+  animation: fpPulse 2.2s ease-out infinite;
+  pointer-events: none;
+}
+.fp-ring:nth-child(2) { animation-delay: 1.1s; }
+@keyframes fpPulse {
+  0% { transform: scale(1); opacity: 0.7; }
+  100% { transform: scale(1.55); opacity: 0; }
+}
+
+/* Rotating conic halo behind the logo tile */
+.logo-halo {
+  position: absolute;
+  inset: -7px;
+  border-radius: 1.4rem;
+  background: conic-gradient(from 0deg, #f97316, #fbbf24, #8b5cf6, #3b82f6, #f97316);
+  filter: blur(10px);
+  opacity: 0.55;
+  animation: haloSpin 6s linear infinite;
+}
+@keyframes haloSpin { to { transform: rotate(360deg); } }
+
+/* Input icon prefix on login */
+.login-field { position: relative; }
+.login-field > svg { position: absolute; top: 50%; inset-inline-start: 0.8rem; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
+.login-field .input { padding-inline-start: 2.5rem; }
+
+@media (prefers-reduced-motion: reduce) {
+  .login-aurora, .slab3d, .orb, .btn-shine::after, .fp-ring, .logo-halo, .parallax, .cube3d-lg { animation: none !important; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   BIG-BUTTON MODE — yard workers / tablets. Bigger type, taller
+   touch targets, denser contrast. Toggled from Settings → Appearance.
+   ═══════════════════════════════════════════════════════════════ */
+html.big-mode {
+  font-size: 17.5px;
+}
+html.big-mode .btn { min-height: 3.25rem; }
+html.big-mode .input { min-height: 3.25rem; font-size: 1rem; }
+html.big-mode table { font-size: 0.95rem; }
+html.big-mode .bottom-nav { height: 4.75rem; }

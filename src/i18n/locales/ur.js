@@ -20,6 +20,10 @@ export const ur = {
     optional: 'اختیاری', none: 'کوئی نہیں', select: 'منتخب کریں…', grandTotal: 'گرینڈ ٹوٹل',
     outstanding: 'واجب الادا', overdue: 'تاخیری', loading: 'لوڈ ہو رہا ہے…',
     previous: 'پچھلا', next: 'اگلا',
+
+    select: 'منتخب کریں', selected: 'منتخب شدہ', clear: 'صفائی',
+
+    bulkEdit: 'بلک ایڈٹ', signatureHint: 'انگلی سے یہاں دستخط کریں',
   },
 
   appName: 'ماربل منیجر',
@@ -41,6 +45,11 @@ export const ur = {
     payroll: 'تنخواہ', expenses: 'اخراجات', utilities: 'بجلی و سولر', reports: 'رپورٹس',
     notifications: 'اطلاعات', settings: 'ترتیبات', about: 'تعارف',
     login: 'لاگ ان',
+    workOrders: 'ورک آرڈرز', gatePasses: 'گیٹ پاس', receipts: 'رسیدز',
+    ledgers: 'کھاتے', accounting: 'اکاؤنٹنگ', vehicles: 'گاڑیاں',
+    consumables: 'کنزیومبلز', agents: 'ایجنٹس', priceLists: 'پرائس لسٹس',
+    installation: 'تنصیب', complaints: 'شکایات و واپسی',
+    stockCount: 'اسٹاک کاؤنٹ', auditLog: 'آڈٹ لاگ', reportBuilder: 'رپورٹ بلڈر', lots: 'لاٹس و بنڈلز',
     groups: {
       main: 'بنیادی', inventory: 'انوینٹری', production: 'پروڈکشن',
       purchases: 'خریداری', sales: 'سیلز', hr: 'مزدور و تنخواہ',
@@ -305,7 +314,7 @@ export const ur = {
     savedOk: 'ترتیبات محفوظ ہو گئیں',
   },
   login: {
-    title: 'سائن اِن', subtitle: 'صارف منتخب کریں اور پِن درج کریں',
+    title: 'سائن اِن', subtitle: 'اجازت شدہ ای میل + PIN سے سائن اِن کریں — یا فنگر پرنٹ',
     user: 'صارف', pin: 'پِن', signIn: 'سائن اِن', continueGuest: 'بغیر سائن اِن جاری رکھیں',
     wrongPin: 'پِن غلط ہے', userNotFound: 'صارف نہیں ملا', remember: 'مجھے یاد رکھیں',
   },
@@ -371,5 +380,35 @@ export const ur = {
     unitsAuto: 'خودکار: موجودہ ریڈنگ − پچھلی ریڈنگ',
     unitPrice: 'ایک یونٹ کی قیمت — موجودہ ریٹ ہاتھ سے لکھیں',
     amountAuto: 'خودکار: یونٹس × ریٹ — بل کے مطابق لکھ سکتے ہیں',
+
+    lotRef: 'ایک جیسی وین والے سلیبز ایک بیچ میں رکھیں',
   },
+
+  /* ── v2.4 توسیع ── */
+  workOrders: { title: 'ورک آرڈرز', subtitle: 'سپروائزر کے لیے کٹنگ ہدایات — کون کیا کاٹے گا، کس بلاک سے، کب تک' },
+  gatePasses: { title: 'گیٹ پاس', subtitle: 'بغیر گیٹ پاس کچھ فیکٹری سے باہر نہیں جائے گا' },
+  receipts: { title: 'رسیدز', subtitle: 'ہر روپیہ نمبر، طریقہ اور حوالہ کے ساتھ' },
+  ledgers: { title: 'کھاتے', subtitle: 'گاہک، سپلائر اور مزدوروں کی لین دین کی مکمل فہرست' },
+  accounting: { title: 'اکاؤنٹنگ', subtitle: 'کھاتوں کی فہرست، واؤچر، کیش بک اور ٹرائل بیلنس' },
+  accounts: { title: 'اکاؤنٹس کی فہرست', subtitle: 'فیکٹری کا اکاؤنٹنگ ڈھانچہ' },
+  vouchers: { title: 'واؤچرز', subtitle: 'جرنل، ادائیگی اور وصولی انٹریز' },
+  creditNotes: { title: 'کریڈٹ نوٹس', subtitle: 'گاہکوں کو واپس شدہ رقوم' },
+  debitNotes: { title: 'ڈیبٹ نوٹس', subtitle: 'سپلائرز سے طلب شدہ رقوم' },
+  vehicles: { title: 'گاڑیاں', subtitle: 'فلیٹ رجسٹر — ڈرائیور اور کرایہ' },
+  trips: { title: 'ٹرپ لاگ', subtitle: 'ہر ٹرپ کا کرایہ، تیل اور ڈرائیور سیٹلمنٹ' },
+  consumables: { title: 'کنزیومبلز و اسپیئرز', subtitle: 'بلیڈ، بیلٹ، بیرنگ اور کیمیکل — ری آرڈر پوائنٹ کے ساتھ' },
+  consumableMoves: { title: 'اسٹاک ان/آؤٹ', subtitle: 'مشینوں اور کٹنگ جابز سے جُڑا استعمال' },
+  agents: { title: 'ایجنٹس و بروکرز', subtitle: 'سیلزمین، بروکر اور ٹھیکیدار' },
+  commissions: { title: 'کمیژن', subtitle: 'ہر آرڈر پر کمیژن، منظوری اور ادائیگی' },
+  priceLists: { title: 'پرائس لسٹس', subtitle: 'سائز، فنش، گریڈ اور گاہک کی قسم کے ریٹ کارڈ' },
+  complaints: { title: 'شکایات و وارنٹی', subtitle: 'تصاویر کے ساتھ کوالٹی مسائل، حل اور معاوضہ' },
+  returns: { title: 'واپسی', subtitle: 'دوبارہ فروخت یا اسکریپ کا فیصلہ مع کریڈٹ نوٹ' },
+  installationJobs: { title: 'تنصیب جابز', subtitle: 'سائٹ ناپنا، ٹیم اور گاہک کی دستخط' },
+  grn: { title: 'گوڈز ریسیوڈ نوٹ', subtitle: 'ہر خریداری کا باقاعدہ وصولی دستاویز' },
+  lots: { title: 'لاٹس و بنڈلز', subtitle: 'شیڈ بیچ اور ٹرانسپورٹ بنڈل' },
+  cuttingPlans: { title: 'کٹنگ پلانز', subtitle: 'بلاک کے حساب سے منصوبہ بندی اور اصل' },
+  jobCards: { title: 'جاب کارڈز', subtitle: 'کٹنگ، پالش، کنارہ اور چیمفر جابز — مشین، آپریٹر، بلیڈ اور ڈاؤن ٹائم' },
+  auditLog: { title: 'آڈٹ لاگ', subtitle: 'کس نے کیا بدلا، کب — پہلے اور بعد کی ویلیو' },
+  stockCount: { title: 'اسٹاک کاؤنٹ', subtitle: 'جسمانی جانچ اور فرق کی رپورٹ' },
+  reportBuilder: { title: 'رپورٹ بلڈر', subtitle: 'کسی بھی ماڈیول سے اپنی رپورٹ بنائیں' },
 }

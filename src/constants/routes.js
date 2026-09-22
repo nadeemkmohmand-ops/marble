@@ -26,6 +26,22 @@ export const ROUTES = {
   ABOUT: '/about',
   SETTINGS: '/settings',
   LOGIN: '/login',
+  // ── v2.4 expansion ──
+  WORK_ORDERS: '/work-orders',
+  GATE_PASSES: '/gate-passes',
+  RECEIPTS: '/receipts',
+  LEDGERS: '/ledgers',
+  ACCOUNTING: '/accounting',
+  VEHICLES: '/vehicles',
+  CONSUMABLES: '/consumables',
+  AGENTS: '/agents',
+  PRICE_LISTS: '/price-lists',
+  COMPLAINTS: '/complaints',
+  INSTALLATION: '/installation',
+  STOCK_COUNT: '/stock-count',
+  AUDIT_LOG: '/audit-log',
+  REPORT_BUILDER: '/report-builder',
+  LOTS: '/lots',
 }
 
 export default ROUTES

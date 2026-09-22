@@ -8,7 +8,8 @@ import EmptyState from '../components/States/EmptyState'
 import { useLang } from '../context/LanguageContext'
 import { useToast } from '../context/ToastContext'
 import { consumePrintRequest } from '../context/AppUIContext'
-import { invoiceHTML, challanHTML, quotationHTML, payslipHTML, purchaseOrderHTML, labelHTML, stockReportHTML, wrapStyled } from '../utils/printTemplates'
+import { db } from '../services/db'
+import { invoiceHTML, challanHTML, quotationHTML, payslipHTML, purchaseOrderHTML, labelHTML, stockReportHTML, wrapStyled, workOrderHTML, gatePassHTML, receiptHTML, statementHTML, grnHTML, batchInvoicesHTML } from '../utils/printTemplates'
 import { makeQR } from '../utils/qr'
 import { downloadPDF } from '../utils/exporters'
 import ROUTES from '../constants/routes'
@@ -41,6 +42,15 @@ export default function PrintPreview() {
       else if (template === 'quotation') body = quotationHTML({ quote: data.quote, customer: data.customer, company: data.company, lang: effectiveLang })
       else if (template === 'payslip') body = payslipHTML({ worker: data.worker, slip: data.slip, company: data.company, lang: effectiveLang })
       else if (template === 'purchaseOrder') body = purchaseOrderHTML({ purchase: data.purchase, supplier: data.supplier, company: data.company, lang: effectiveLang })
+      else if (template === 'workOrder') body = workOrderHTML({ workOrder: data.workOrder, customer: data.customer, company: data.company, lang: effectiveLang })
+      else if (template === 'gatePass') body = gatePassHTML({ pass: data.pass, company: data.company, lang: effectiveLang })
+      else if (template === 'receipt') body = receiptHTML({ receipt: data.receipt, party: data.party, company: data.company, lang: effectiveLang })
+      else if (template === 'statement') body = statementHTML({ party: data.party, type: data.type, rows: data.rows, opening: data.opening, closing: data.closing, company: data.company, lang: effectiveLang })
+      else if (template === 'grn') body = grnHTML({ grn: data.grn, supplier: data.supplier, company: data.company, lang: effectiveLang })
+      else if (template === 'batchInvoices') {
+        const companyWithMap = { ...data.company, customerById: Object.fromEntries(db.list('customers').map((c) => [c.id, c])) }
+        body = batchInvoicesHTML({ orders: data.orders, company: companyWithMap, lang: effectiveLang })
+      }
       else if (template === 'label') {
         const qr = await makeQR(data.record?.id, { size: 440 })
         body = labelHTML({ record: data.record, qrDataUrl: qr, kind: data.kind, company: data.company })

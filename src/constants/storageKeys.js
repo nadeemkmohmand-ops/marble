@@ -41,6 +41,32 @@ export const STORAGE_KEYS = {
   PARTNERS: k('partners'),
   UTILITIES: k('utilities'),
   NOTIFICATIONS: k('notifications'),
+
+  // ── v2.4 expansion — documents, accounting, operations, security ──
+  WORK_ORDERS: k('workOrders'),
+  GATE_PASSES: k('gatePasses'),
+  RECEIPTS: k('receipts'),
+  LEDGER_ENTRIES: k('ledgerEntries'),
+  ACCOUNTS: k('accounts'),
+  VOUCHERS: k('vouchers'),
+  CREDIT_NOTES: k('creditNotes'),
+  DEBIT_NOTES: k('debitNotes'),
+  VEHICLES: k('vehicles'),
+  TRIPS: k('trips'),
+  CONSUMABLES: k('consumables'),
+  CONSUMABLE_MOVES: k('consumableMoves'),
+  AGENTS: k('agents'),
+  COMMISSIONS: k('commissions'),
+  PRICE_LISTS: k('priceLists'),
+  COMPLAINTS: k('complaints'),
+  RETURNS: k('returns'),
+  GRN: k('grn'),
+  INSTALLATION_JOBS: k('installationJobs'),
+  STOCK_COUNTS: k('stockCounts'),
+  AUDIT_LOG: k('auditLog'),
+  FOLLOWUPS: k('followups'),
+  BRANCHES: k('branches'),
+  LOTS: k('lots'),
 }
 
 export default STORAGE_KEYS

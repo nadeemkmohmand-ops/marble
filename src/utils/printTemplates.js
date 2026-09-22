@@ -126,8 +126,13 @@ export function invoiceHTML({ order, customer, company, lang = 'en' }) {
       <td>${cur(it.rate)}</td><td>${cur((it.sqft || it.lengthFt * it.widthFt * it.qty) * it.rate)}</td></tr>`,
     )
     .join('')
+  const taxIds = (company?.ntn || company?.strn)
+    ? `<div class="muted">${company?.ntn ? `NTN: ${esc(company.ntn)}  ` : ''}${company?.strn ? `STRN: ${esc(company.strn)}` : ''}</div>`
+    : ''
+  const wht = Number(order.whtAmount) || 0
   const body = `
-    ${companyHeader(company, lang === 'ur' ? 'بل' : 'INVOICE', order.id, order.date, lang)}
+    ${companyHeader(company, lang === 'ur' ? 'بل' : 'TAX INVOICE', order.id, order.date, lang)}
+    ${taxIds}
     ${partyBlock(lang === 'ur' ? 'گاہک' : 'Customer', customer)}
     <table><thead><tr><th>#</th><th>${rtl ? 'تفصیل' : 'Description'}</th><th>${rtl ? 'لمبائی × چوڑائی (فٹ)' : 'L × W (ft)'}</th>
     <th>${rtl ? 'تعداد' : 'Qty'}</th><th>${rtl ? 'سکوئر فٹ' : 'Sq ft'}</th><th>${rtl ? 'ریٹ' : 'Rate'}</th><th>${rtl ? 'رقم' : 'Amount'}</th></tr></thead>
@@ -137,9 +142,10 @@ export function invoiceHTML({ order, customer, company, lang = 'en' }) {
       <tr><td></td><td>${rtl ? 'کنارہ/تنصیب/ٹرانسپورٹ' : 'Edge / Installation / Transport'}</td><td>${cur(t.extras)}</td></tr>
       <tr><td></td><td>${rtl ? 'رعایت' : 'Discount'}</td><td>- ${cur(t.discount)}</td></tr>
       <tr><td></td><td>${rtl ? 'ٹیکس' : 'Tax'}</td><td>${cur(t.tax)}</td></tr>
-      <tr><td></td><td class="grand">${rtl ? 'کل' : 'Grand total'}</td><td class="grand">${cur(t.total)}</td></tr>
+      ${wht ? `<tr><td></td><td>${rtl ? 'وائیچ ایچ ٹی (WHT)' : 'WHT withheld'}</td><td>${cur(wht)}</td></tr>` : ''}
+      <tr><td></td><td class="grand">${rtl ? 'کل' : 'Grand total'}</td><td class="grand">${cur(t.total + wht)}</td></tr>
       <tr><td></td><td>${rtl ? 'ادائیگی موصول' : 'Paid'}</td><td>${cur(order.paidAmount || 0)}</td></tr>
-      <tr><td></td><td class="grand">${rtl ? 'بقایا' : 'Balance'}</td><td class="grand">${cur(t.total - (order.paidAmount || 0))}</td></tr>
+      <tr><td></td><td class="grand">${rtl ? 'بقایا' : 'Balance'}</td><td class="grand">${cur(t.total + wht - (order.paidAmount || 0))}</td></tr>
     </tbody></table>
     <div class="stamp"><div class="box">${rtl ? 'دستخط فروش' : 'Seller signature'}</div><div class="box">${rtl ? 'دستخط گاہک' : 'Customer signature'}</div></div>`
   return docShell(lang === 'ur' ? 'بل' : 'Invoice', body, rtl)
@@ -265,4 +271,134 @@ export function wrapStyled(html, { title, lang = 'en' }) {
   const rtl = lang === 'ur'
   const head = companyHeader(null, title, '', new Date(), lang)
   return `<style>${baseCss(rtl)}</style>${docShell(title, head + html, rtl)}`
+}
+
+/* ═════════════ v2.4 documents — work order · gate pass · receipt ·
+   statement of account · GRN · batch invoices ═════════════ */
+
+export function workOrderHTML({ workOrder, customer, company, lang = 'en' }) {
+  const rtl = lang === 'ur'
+  const row = (label, val) => `<tr><td style="width:35%"><b>${esc(label)}</b></td><td>${esc(val ?? '—')}</td></tr>`
+  const body = `
+    ${companyHeader(company, rtl ? 'ورک آرڈر' : 'WORK ORDER', workOrder.id, workOrder.date, lang)}
+    ${partyBlock(rtl ? 'گاہک' : 'Customer', customer)}
+    <table><tbody>
+      ${row(rtl ? 'بلاک' : 'Block', workOrder.blockId)}
+      ${row(rtl ? 'سائز' : 'Slab size', workOrder.slabSize)}
+      ${row(rtl ? 'موشتائی (mm)' : 'Thickness (mm)', workOrder.thicknessMm)}
+      ${row(rtl ? 'فنش' : 'Finish', workOrder.finish)}
+      ${row(rtl ? 'تعداد (سلابز)' : 'Slabs to cut', workOrder.slabsQty)}
+      ${row(rtl ? 'پلانڈ sq ft' : 'Planned sq ft', workOrder.plannedSqft)}
+      ${row(rtl ? 'سپروائزر' : 'Supervisor', workOrder.supervisor)}
+      ${row(rtl ? 'مشین' : 'Machine', workOrder.machineName)}
+      ${row(rtl ? 'ترجیح' : 'Priority', workOrder.priority)}
+      ${row(rtl ? 'آخری تاریخ' : 'Due date', fmtDate(workOrder.dueDate))}
+    </tbody></table>
+    ${workOrder.instructions ? `<div style="margin-top:10px"><b>${rtl ? 'ہدایات' : 'Instructions'}:</b><div class="muted">${esc(workOrder.instructions)}</div></div>` : ''}
+    <div class="stamp"><div class="box">${rtl ? 'سپروائزر دستخط' : 'Supervisor'}</div><div class="box">${rtl ? 'فیکٹری مینیجر' : 'Factory manager'}</div></div>`
+  return docShell(rtl ? 'ورک آرڈر' : 'Work Order', body, rtl)
+}
+
+export function gatePassHTML({ pass, company, lang = 'en' }) {
+  const rtl = lang === 'ur'
+  const row = (label, val) => `<tr><td style="width:35%"><b>${esc(label)}</b></td><td>${esc(val ?? '—')}</td></tr>`
+  const body = `
+    ${companyHeader(company, rtl ? 'گیٹ پاس' : 'GATE PASS', pass.id, pass.date, lang)}
+    <table><tbody>
+      ${row(rtl ? 'قسم' : 'Type', pass.type)}
+      ${row(rtl ? 'آرڈر' : 'Order ref', pass.orderRef)}
+      ${row(rtl ? 'گاہک' : 'Customer', pass.customerName)}
+      ${row(rtl ? 'سامان' : 'Goods', pass.goodsDesc)}
+      ${row(rtl ? 'تعداد' : 'Qty', `${pass.qty ?? '—'} ${pass.unit || ''}`)}
+      ${row(rtl ? 'سکوئر فٹ' : 'Sq ft', pass.sqft)}
+      ${row(rtl ? 'گاڑی نمبر' : 'Vehicle no.', pass.vehicleNo)}
+      ${row(rtl ? 'ڈرائیور' : 'Driver', pass.driver ? `${pass.driver} — ${pass.driverPhone || ''}` : '—')}
+      ${row(rtl ? 'منزل' : 'Destination', pass.destination)}
+      ${row(rtl ? 'وصول کنندہ' : 'Receiver', pass.receiverName ? `${pass.receiverName} — ${pass.receiverPhone || ''}` : '—')}
+      ${row(rtl ? 'جاری کرنے والا' : 'Issued by', pass.issuedBy)}
+    </tbody></table>
+    ${pass.receiverSign ? `<div style="margin-top:14px"><b>${rtl ? 'دستخط' : 'Receiver signature'}:</b><br/><img src="${escAttr(pass.receiverSign)}" style="height:70px" /></div>` : ''}
+    <div class="stamp"><div class="box">${rtl ? 'گیٹ کیپر' : 'Gate keeper'}</div><div class="box">${rtl ? 'وارنٹ' : 'Stamp'}</div></div>`
+  return docShell(rtl ? 'گیٹ پاس' : 'Gate Pass', body, rtl)
+}
+
+export function receiptHTML({ receipt, party, company, lang = 'en' }) {
+  const rtl = lang === 'ur'
+  const cur = (v) => fmtCurrency(v, { currency: company?.currency || 'PKR', lang })
+  const body = `
+    ${companyHeader(company, rtl ? 'رسید' : 'RECEIPT', receipt.id, receipt.date, lang)}
+    ${partyBlock(rtl ? 'فریق' : 'Party', party || { name: receipt.partyName })}
+    <table><tbody>
+      <tr><td><b>${rtl ? 'قسم' : 'Direction'}</b></td><td>${receipt.direction === 'in' ? (rtl ? 'وصول شدہ' : 'Received FROM party') : (rtl ? 'ادا شدہ' : 'Paid TO party')}</td></tr>
+      <tr><td><b>${rtl ? 'رقم' : 'Amount'}</b></td><td class="grand">${cur(receipt.amount)}</td></tr>
+      <tr><td><b>${rtl ? 'طریقہ' : 'Method'}</b></td><td>${esc(receipt.method)}${receipt.referenceNo ? ` — ${esc(receipt.referenceNo)}` : ''}</td></tr>
+      ${receipt.bankName ? `<tr><td><b>${rtl ? 'بینک' : 'Bank'}</b></td><td>${esc(receipt.bankName)}</td></tr>` : ''}
+      ${receipt.orderRef ? `<tr><td><b>${rtl ? 'آرڈر' : 'Against order'}</b></td><td>${esc(receipt.orderRef)}</td></tr>` : ''}
+      ${receipt.receivedBy ? `<tr><td><b>${rtl ? 'وصول کنندہ' : 'Received by'}</b></td><td>${esc(receipt.receivedBy)}</td></tr>` : ''}
+      ${receipt.notes ? `<tr><td><b>${rtl ? 'نوٹس' : 'Notes'}</b></td><td>${esc(receipt.notes)}</td></tr>` : ''}
+    </tbody></table>
+    <div class="stamp"><div class="box">${rtl ? 'دستخط' : 'Signature'}</div><div class="box">${rtl ? 'مہر' : 'Company stamp'}</div></div>`
+  return docShell(rtl ? 'رسید' : 'Receipt', body, rtl)
+}
+
+export function statementHTML({ party, type, rows, opening, closing, company, lang = 'en' }) {
+  const rtl = lang === 'ur'
+  const cur = (v) => fmtCurrency(v, { currency: company?.currency || 'PKR', lang })
+  const title = rtl
+    ? `اکاؤنٹ اسٹیٹمنٹ — ${type === 'customer' ? 'گاہک' : type === 'supplier' ? 'سپلائر' : 'مزدور'}`
+    : `Statement of account — ${type}`
+  const bodyRows = (rows || []).map((r) =>
+    `<tr><td>${ltrDate(fmtDate(r.date))}</td><td>${esc(r.type)}</td><td>${esc(r.ref || '')}</td>
+     <td>${r.debit ? cur(r.debit) : ''}</td><td>${r.credit ? cur(r.credit) : ''}</td><td><b>${cur(r.balance)}</b></td></tr>`).join('')
+  const body = `
+    ${companyHeader(company, title, party?.id || '', new Date(), lang)}
+    ${partyBlock(rtl ? 'فریق' : 'Party', party)}
+    <table><thead><tr>
+      <th>${rtl ? 'تاریخ' : 'Date'}</th><th>${rtl ? 'تفصیل' : 'Description'}</th><th>${rtl ? 'ہوالا' : 'Ref'}</th>
+      <th>${rtl ? 'اس پر' : 'Debit'}</th><th>${rtl ? 'اس کو' : 'Credit'}</th><th>${rtl ? 'بیلنس' : 'Balance'}</th>
+    </tr></thead><tbody>
+      <tr><td></td><td><b>${rtl ? 'ابتدائی بیلنس' : 'Opening balance'}</b></td><td></td><td></td><td></td><td><b>${cur(opening)}</b></td></tr>
+      ${bodyRows}
+    </tbody></table>
+    <table class="totals"><tbody>
+      <tr><td></td><td style="width:40%" class="grand">${rtl ? 'اختتامی بیلنس' : 'Closing balance'}</td><td style="width:20%" class="grand">${cur(closing)}</td></tr>
+    </tbody></table>
+    <div class="stamp"><div class="box">${rtl ? 'مہر' : 'Company stamp'}</div><div class="box">${rtl ? 'دستخط' : 'Authorised signature'}</div></div>`
+  return docShell(title, body, rtl)
+}
+
+export function grnHTML({ grn, supplier, company, lang = 'en' }) {
+  const rtl = lang === 'ur'
+  const row = (label, val) => `<tr><td style="width:35%"><b>${esc(label)}</b></td><td>${esc(val ?? '—')}</td></tr>`
+  const body = `
+    ${companyHeader(company, rtl ? 'گوڈز ریسیوڈ نوٹ' : 'GOODS RECEIVED NOTE', grn.id, grn.date, lang)}
+    ${partyBlock(rtl ? 'سپلائر' : 'Supplier', supplier)}
+    <table><tbody>
+      ${row(rtl ? 'خریداری آرڈر' : 'Against PO', grn.purchaseRef)}
+      ${row(rtl ? 'لاٹ' : 'Lot', grn.lotNo)}
+      ${row(rtl ? 'بلاکس وصول' : 'Blocks received', grn.qtyBlocks)}
+      ${row(rtl ? 'سلابز وصول' : 'Slabs received', grn.qtySlabs)}
+      ${row(rtl ? 'حالت' : 'Condition', grn.condition)}
+      ${row(rtl ? 'وصول کنندہ' : 'Received by', grn.receivedBy)}
+      ${row(rtl ? 'تصدیق' : 'Verified by', grn.verifiedBy)}
+      ${row(rtl ? 'فرق' : 'Discrepancies', grn.discrepancies)}
+    </tbody></table>
+    <div class="stamp"><div class="box">${rtl ? 'یارڈ سپروائزر' : 'Yard supervisor'}</div><div class="box">${rtl ? 'ڈرائیور' : 'Driver'}</div></div>`
+  return docShell(rtl ? 'GRN' : 'GRN', body, rtl)
+}
+
+/** Batch invoices — many orders, one combined PDF. */
+export function batchInvoicesHTML({ orders = [], company, lang = 'en' }) {
+  const rtl = lang === 'ur'
+  const parts = orders.map((o, i) => {
+    const inner = invoiceHTML({
+      order: o,
+      customer: company?.customerById?.[o.customerName] || { name: o.customerName },
+      company,
+      lang,
+    })
+    const sep = i < orders.length - 1 ? '<div style="page-break-after:always"></div>' : ''
+    return inner + sep
+  })
+  return `<div dir="${rtl ? 'rtl' : 'ltr'}">${parts.join('')}</div>`
 }

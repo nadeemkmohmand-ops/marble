@@ -1,8 +1,9 @@
-import React, { useMemo } from 'react'
+import React, { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   Wallet, HandCoins, Banknote, TrendingUp, Package, Layers, Scissors,
   HardHat, Cog, Plus, Calculator, FileText, CalendarCheck, BarChart3,
+  LayoutDashboard, ArrowUp, ArrowDown, Eye, EyeOff, Package2,
 } from 'lucide-react'
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, PieChart, Pie, Cell, Legend,
@@ -17,15 +18,36 @@ import EmptyState from '../components/States/EmptyState'
 import { useCollection } from '../hooks/useCollection'
 import { useLang } from '../context/LanguageContext'
 import { useAuth } from '../context/AuthContext'
+import { useToast } from '../context/ToastContext'
 import { orderTotals } from '../utils/calculations'
 import { fmtCurrency, fmtNumber, fmtDate } from '../utils/formatters'
+import { storage } from '../utils/storage'
 import ROUTES from '../constants/routes'
 
 const PIE_COLORS = ['#3b82f6', '#f97316', '#fbbf24', '#10b981', '#34d399']
 
+// Customizable dashboard widgets (drag-free: show/hide + reorder).
+const WIDGET_DEFS = [
+  { id: 'kpi', label: 'KPI cards' },
+  { id: 'quick', label: 'Quick actions' },
+  { id: 'sales', label: 'Sales & expenses chart' },
+  { id: 'grade', label: 'Slabs by grade' },
+  { id: 'movements', label: 'Recent movements' },
+]
+const WIDGETS_KEY = 'marble.dashboardWidgets'
+
+function loadWidgetConfig() {
+  const saved = storage.get(WIDGETS_KEY, null)
+  if (!saved || !Array.isArray(saved.order)) return { order: WIDGET_DEFS.map((w) => w.id), hidden: [] }
+  const known = saved.order.filter((id) => WIDGET_DEFS.some((w) => w.id === id))
+  WIDGET_DEFS.forEach((w) => { if (!known.includes(w.id)) known.push(w.id) })
+  return { order: known, hidden: Array.isArray(saved.hidden) ? saved.hidden : [] }
+}
+
 export default function Home() {
   const { t, lang, fmtNum } = useLang()
   const { user } = useAuth()
+  const toast = useToast()
   const { items: blocks } = useCollection('blocks')
   const { items: slabs } = useCollection('slabs')
   const { items: offcuts } = useCollection('offcuts')
@@ -94,45 +116,62 @@ export default function Home() {
     { to: ROUTES.REPORTS, icon: BarChart3, label: t('nav.reports') },
   ]
 
-  return (
-    <div className="fade-in space-y-5">
-      <div>
-        <h1 className="text-xl font-bold leading-urdu-lg no-clip">
-          {t('home.welcome')}{user ? ` — ${user.name}` : ''}
-        </h1>
-        <p className="text-xs text-[var(--muted)] leading-urdu no-clip">{t(`home.role${role.charAt(0).toUpperCase()}${role.slice(1)}`)}</p>
-      </div>
+  /* ── dashboard widget customization (show/hide + reorder) ── */
+  const [widgets, setWidgets] = useState(loadWidgetConfig)
+  const [customizing, setCustomizing] = useState(false)
+  const saveWidgets = (next) => {
+    setWidgets(next)
+    storage.set(WIDGETS_KEY, next)
+  }
+  const toggleWidget = (id) => {
+    const hidden = widgets.hidden.includes(id) ? widgets.hidden.filter((h) => h !== id) : [...widgets.hidden, id]
+    saveWidgets({ ...widgets, hidden })
+  }
+  const moveWidget = (id, dir) => {
+    const order = [...widgets.order]
+    const i = order.indexOf(id)
+    const j = i + dir
+    if (i < 0 || j < 0 || j >= order.length) return
+    ;[order[i], order[j]] = [order[j], order[i]]
+    saveWidgets({ ...widgets, order })
+  }
+  const widgetLabel = (id) => WIDGET_DEFS.find((w) => w.id === id)?.label || id
+  const show = (id) => !widgets.hidden.includes(id)
 
-      {/* KPI row */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        {isFinance ? (
-          <>
-            <StatCard label={t('home.stockValue')} value={fmtCurrency(stats.stockValue, { lang })} icon={Wallet} tone="brand" />
-            <StatCard label={t('home.receivables')} value={fmtCurrency(stats.receivables, { lang })} icon={HandCoins} tone="danger" />
-            <StatCard label={t('home.payables')} value={fmtCurrency(stats.payables, { lang })} icon={Banknote} tone="warning" />
-            <StatCard label={t('home.monthProfit')} value={fmtCurrency(stats.monthProfit, { lang })} icon={TrendingUp} tone="success" />
-          </>
-        ) : (
-          <>
-            <StatCard label={t('home.blocksAvailable')} value={blocks.filter((b) => b.status === 'available').length} icon={Package} tone="info" />
-            <StatCard label={t('home.slabsAvailable')} value={slabs.filter((s) => s.status === 'available').length} icon={Layers} tone="success" />
-            <StatCard label={t('home.workersToday')} value={stats.presentToday} icon={HardHat} tone="brand" />
-            <StatCard label={t('home.machinesRunning')} value={machines.filter((m) => m.status === 'running').length} icon={Cog} tone="warning" />
-          </>
-        )}
-      </div>
-
-      {/* Second row for non-finance roles keeps finance visible to owner only */}
-      {isFinance && (
+  const widgets_ = {
+    kpi: (
+      <>
+        {/* KPI row */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          <StatCard label={t('home.blocksAvailable')} value={blocks.filter((b) => b.status === 'available').length} icon={Package} tone="info" />
-          <StatCard label={t('home.slabsAvailable')} value={fmtNum(slabs.filter((s) => s.status === 'available').reduce((a, s) => a + (s.areaSqft || 0), 0), 0)} sub="sq ft" icon={Layers} tone="success" />
-          <StatCard label={t('home.workersToday')} value={stats.presentToday} icon={HardHat} tone="brand" />
-          <StatCard label={t('home.monthExpenses')} value={fmtCurrency(stats.monthExpenses, { lang })} icon={Wallet} tone="danger" />
+          {isFinance ? (
+            <>
+              <StatCard label={t('home.stockValue')} value={fmtCurrency(stats.stockValue, { lang })} icon={Wallet} tone="brand" />
+              <StatCard label={t('home.receivables')} value={fmtCurrency(stats.receivables, { lang })} icon={HandCoins} tone="danger" />
+              <StatCard label={t('home.payables')} value={fmtCurrency(stats.payables, { lang })} icon={Banknote} tone="warning" />
+              <StatCard label={t('home.monthProfit')} value={fmtCurrency(stats.monthProfit, { lang })} icon={TrendingUp} tone="success" />
+            </>
+          ) : (
+            <>
+              <StatCard label={t('home.blocksAvailable')} value={blocks.filter((b) => b.status === 'available').length} icon={Package} tone="info" />
+              <StatCard label={t('home.slabsAvailable')} value={slabs.filter((s) => s.status === 'available').length} icon={Layers} tone="success" />
+              <StatCard label={t('home.workersToday')} value={stats.presentToday} icon={HardHat} tone="brand" />
+              <StatCard label={t('home.machinesRunning')} value={machines.filter((m) => m.status === 'running').length} icon={Cog} tone="warning" />
+            </>
+          )}
         </div>
-      )}
 
-      {/* Quick actions */}
+        {/* Second row for non-finance roles keeps finance visible to owner only */}
+        {isFinance && (
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            <StatCard label={t('home.blocksAvailable')} value={blocks.filter((b) => b.status === 'available').length} icon={Package} tone="info" />
+            <StatCard label={t('home.slabsAvailable')} value={fmtNum(slabs.filter((s) => s.status === 'available').reduce((a, s) => a + (s.areaSqft || 0), 0), 0)} sub="sq ft" icon={Layers} tone="success" />
+            <StatCard label={t('home.workersToday')} value={stats.presentToday} icon={HardHat} tone="brand" />
+            <StatCard label={t('home.monthExpenses')} value={fmtCurrency(stats.monthExpenses, { lang })} icon={Wallet} tone="danger" />
+          </div>
+        )}
+      </>
+    ),
+    quick: (
       <Card>
         <h3 className="font-semibold text-sm mb-3 leading-urdu no-clip">{t('home.quickActions')}</h3>
         <div className="flex flex-wrap gap-2">
@@ -145,65 +184,63 @@ export default function Home() {
           ))}
         </div>
       </Card>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {/* Sales chart */}
-        <Card className="lg:col-span-2">
-          <h3 className="font-semibold text-sm mb-4 leading-urdu no-clip">{t('home.salesTrend')}</h3>
+    ),
+    sales: (
+      <Card className="lg:col-span-2">
+        <h3 className="font-semibold text-sm mb-4 leading-urdu no-clip">{t('home.salesTrend')}</h3>
+        <div className="h-64" dir="ltr">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={monthly} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
+              <defs>
+                <linearGradient id="barSales" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#60a5fa" />
+                  <stop offset="100%" stopColor="#2563eb" />
+                </linearGradient>
+                <linearGradient id="barExpenses" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#fb923c" />
+                  <stop offset="100%" stopColor="#ea580c" />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+              <XAxis dataKey="month" tick={{ fontSize: 11 }} stroke="var(--muted)" />
+              <YAxis tick={{ fontSize: 11 }} stroke="var(--muted)" width={54} />
+              <Tooltip
+                cursor={{ fill: 'rgba(249,115,22,0.06)' }}
+                contentStyle={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 12, fontSize: 12 }}
+              />
+              <Legend wrapperStyle={{ fontSize: 11 }} />
+              <Bar dataKey="sales" name={t('reports.revenue')} fill="url(#barSales)" radius={[6, 6, 0, 0]} />
+              <Bar dataKey="expenses" name={t('nav.expenses')} fill="url(#barExpenses)" radius={[6, 6, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </Card>
+    ),
+    grade: (
+      <Card>
+        <h3 className="font-semibold text-sm mb-4 leading-urdu no-clip">{t('home.byGrade')}</h3>
+        {gradeData.length === 0 ? (
+          <EmptyState title={t('common.noData')} />
+        ) : (
           <div className="h-64" dir="ltr">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={monthly} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="barSales" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#60a5fa" />
-                    <stop offset="100%" stopColor="#2563eb" />
-                  </linearGradient>
-                  <linearGradient id="barExpenses" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#fb923c" />
-                    <stop offset="100%" stopColor="#ea580c" />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                <XAxis dataKey="month" tick={{ fontSize: 11 }} stroke="var(--muted)" />
-                <YAxis tick={{ fontSize: 11 }} stroke="var(--muted)" width={54} />
+              <PieChart>
+                <Pie data={gradeData} dataKey="value" nameKey="name" innerRadius={45} outerRadius={80} paddingAngle={3}>
+                  {gradeData.map((_, i) => (
+                    <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
+                  ))}
+                </Pie>
                 <Tooltip
-                  cursor={{ fill: 'rgba(249,115,22,0.06)' }}
                   contentStyle={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 12, fontSize: 12 }}
                 />
                 <Legend wrapperStyle={{ fontSize: 11 }} />
-                <Bar dataKey="sales" name={t('reports.revenue')} fill="url(#barSales)" radius={[6, 6, 0, 0]} />
-                <Bar dataKey="expenses" name={t('nav.expenses')} fill="url(#barExpenses)" radius={[6, 6, 0, 0]} />
-              </BarChart>
+              </PieChart>
             </ResponsiveContainer>
           </div>
-        </Card>
-
-        {/* Grade pie */}
-        <Card>
-          <h3 className="font-semibold text-sm mb-4 leading-urdu no-clip">{t('home.byGrade')}</h3>
-          {gradeData.length === 0 ? (
-            <EmptyState title={t('common.noData')} />
-          ) : (
-            <div className="h-64" dir="ltr">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie data={gradeData} dataKey="value" nameKey="name" innerRadius={45} outerRadius={80} paddingAngle={3}>
-                    {gradeData.map((_, i) => (
-                      <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    contentStyle={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 12, fontSize: 12 }}
-                  />
-                  <Legend wrapperStyle={{ fontSize: 11 }} />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-          )}
-        </Card>
-      </div>
-
-      {/* Recent movements */}
+        )}
+      </Card>
+    ),
+    movements: (
       <Card>
         <div className="flex items-center justify-between mb-3">
           <h3 className="font-semibold text-sm leading-urdu no-clip">{t('home.recentMovements')}</h3>
@@ -225,6 +262,50 @@ export default function Home() {
           />
         )}
       </Card>
+    ),
+  }
+
+  return (
+    <div className="fade-in space-y-5">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h1 className="text-xl font-bold leading-urdu-lg no-clip">
+            {t('home.welcome')}{user ? ` — ${user.name}` : ''}
+          </h1>
+          <p className="text-xs text-[var(--muted)] leading-urdu no-clip">{t(`home.role${role.charAt(0).toUpperCase()}${role.slice(1)}`)}</p>
+        </div>
+        <button
+          type="button"
+          className={`btn btn-ghost h-9 px-3 text-xs inline-flex items-center gap-1.5 ${customizing ? 'text-[var(--accent)] bg-[var(--accent-soft)]' : 'text-[var(--muted)]'}`}
+          onClick={() => setCustomizing((v) => !v)}
+        >
+          <LayoutDashboard size={14} />
+          {lang === 'ur' ? 'ڈیش بورڈ ترتیب' : 'Customize'}
+        </button>
+      </div>
+
+      {customizing && (
+        <Card className="border-dashed">
+          <h3 className="font-semibold text-sm mb-2">{lang === 'ur' ? 'ویجٹس دکھائیں / ترتیب دیں' : 'Show / hide & reorder widgets'}</h3>
+          <div className="flex flex-wrap gap-2">
+            {widgets.order.map((id) => {
+              const hidden = widgets.hidden.includes(id)
+              return (
+                <div key={id} className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs ${hidden ? 'border-[var(--border)] text-[var(--muted)]' : 'border-[var(--accent)]/40 bg-[var(--accent-soft)] text-[var(--accent)]'}`}>
+                  <button type="button" onClick={() => moveWidget(id, -1)} className="p-0.5" aria-label="Move up"><ArrowUp size={12} /></button>
+                  <button type="button" onClick={() => moveWidget(id, 1)} className="p-0.5" aria-label="Move down"><ArrowDown size={12} /></button>
+                  <span className="font-medium">{widgetLabel(id)}</span>
+                  <button type="button" onClick={() => toggleWidget(id)} className="p-0.5" aria-label={hidden ? 'Show' : 'Hide'}>
+                    {hidden ? <EyeOff size={12} /> : <Eye size={12} />}
+                  </button>
+                </div>
+              )
+            })}
+          </div>
+        </Card>
+      )}
+
+      {widgets.order.map((id) => (show(id) ? <React.Fragment key={id}>{widgets_[id]}</React.Fragment> : null))}
     </div>
   )
 }

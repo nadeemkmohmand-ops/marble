@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from 'react'
-import { Plus, Search as SearchIcon, Pencil, Trash2, Eye, QrCode, ScanLine, MessageCircle } from 'lucide-react'
+import { Plus, Search as SearchIcon, Pencil, Trash2, Eye, QrCode, ScanLine, MessageCircle, CheckSquare, ListChecks, X } from 'lucide-react'
 
 import Toolbar from './UI/Toolbar'
 import Button from './UI/Button'
@@ -24,8 +24,13 @@ import { useDebounce } from '../hooks/useDebounce'
 import { useLang } from '../context/LanguageContext'
 import { useAppUI } from '../context/AppUIContext'
 import { useToast } from '../context/ToastContext'
+import { useAuth } from '../context/AuthContext'
 import { cn } from '../utils/cn'
 import { recordToText, whatsappText } from '../utils/exporters'
+import { db } from '../services/db'
+import { can as canDo } from '../utils/permissions'
+import { storage } from '../utils/storage'
+import { STORAGE_KEYS } from '../constants/storageKeys'
 
 /**
  * CrudPage — generic resource manager powering Blocks, Slabs, Offcuts,
@@ -48,10 +53,19 @@ export default function CrudPage({ config }) {
   const { items } = useCollection(config.collection)
   const crud = useCrud(config.collection, { onSaved: config.onSaved })
   const { confirm, requestScan } = useAppUI()
+  const { user } = useAuth()
   const [query, setQuery] = useState('')
   const [filters, setFilters] = useState({})
   const [detail, setDetail] = useState(null)
   const debounced = useDebounce(query)
+
+  // ── granular permissions + bulk edit/delete state ──
+  const settings = storage.get(STORAGE_KEYS.SETTINGS, {}) || {}
+  const moduleKey = config.permissionModule || config.i18nPrefix || config.collection
+  const allowed = (action) => canDo(user, settings, moduleKey, action)
+  const [selecting, setSelecting] = useState(false)
+  const [selected, setSelected] = useState(new Set())
+  const [bulkEditOpen, setBulkEditOpen] = useState(false)
 
   const label = (prefix, key, fallback) => {
     const v = t(`${prefix}.${key}`)
@@ -91,38 +105,64 @@ export default function CrudPage({ config }) {
       label: resolveColumnLabel(c),
       render: c.render || (c.enumKey ? (row) => (row[c.key] ? t(`${c.enumKey}.${row[c.key]}`) : '—') : undefined),
     }))
-    cols.push({
-      key: '_actions',
-      label: t('common.actions'),
-      render: (row) => (
-        <div className="flex items-center gap-0.5 sm:gap-1 justify-end no-print">
-          {config.qrField && (
-            <button className="btn btn-ghost h-10 w-10 sm:h-8 sm:w-8 justify-center" title="QR" onClick={(e) => { e.stopPropagation(); setDetail(row) }}>
-              <QrCode size={15} />
-            </button>
-          )}
-          <button className="btn btn-ghost h-10 w-10 sm:h-8 sm:w-8 justify-center" title={t('common.view')} onClick={(e) => { e.stopPropagation(); setDetail(row) }}>
-            <Eye size={15} />
-          </button>
-          <button className="btn btn-ghost h-10 w-10 sm:h-8 sm:w-8 justify-center" title={t('common.edit')} onClick={(e) => { e.stopPropagation(); crud.openEdit(row) }}>
-            <Pencil size={15} />
-          </button>
-          <button
-            className="btn btn-ghost h-10 w-10 sm:h-8 sm:w-8 justify-center text-red-500"
-            title={t('common.delete')}
-            onClick={async (e) => {
-              e.stopPropagation()
-              const ok = await confirm({ message: t('common.confirmDelete') })
-              if (ok) crud.destroy(row)
+    if (selecting) {
+      cols.unshift({
+        key: '_select',
+        label: '',
+        render: (row) => (
+          <input
+            type="checkbox"
+            className="h-4 w-4 accent-[var(--accent)]"
+            checked={selected.has(row.id)}
+            onChange={(e) => {
+              const next = new Set(selected)
+              if (e.target.checked) next.add(row.id)
+              else next.delete(row.id)
+              setSelected(next)
             }}
-          >
-            <Trash2 size={15} />
-          </button>
-        </div>
-      ),
-    })
+            aria-label={`Select ${row.id}`}
+          />
+        ),
+      })
+    }
+    if (allowed('view')) {
+      cols.push({
+        key: '_actions',
+        label: t('common.actions'),
+        render: (row) => (
+          <div className="flex items-center gap-0.5 sm:gap-1 justify-end no-print">
+            {config.qrField && (
+              <button className="btn btn-ghost h-10 w-10 sm:h-8 sm:w-8 justify-center" title="QR" onClick={(e) => { e.stopPropagation(); setDetail(row) }}>
+                <QrCode size={15} />
+              </button>
+            )}
+            <button className="btn btn-ghost h-10 w-10 sm:h-8 sm:w-8 justify-center" title={t('common.view')} onClick={(e) => { e.stopPropagation(); setDetail(row) }}>
+              <Eye size={15} />
+            </button>
+            {allowed('edit') && (
+              <button className="btn btn-ghost h-10 w-10 sm:h-8 sm:w-8 justify-center" title={t('common.edit')} onClick={(e) => { e.stopPropagation(); crud.openEdit(row) }}>
+                <Pencil size={15} />
+              </button>
+            )}
+            {allowed('delete') && (
+              <button
+                className="btn btn-ghost h-10 w-10 sm:h-8 sm:w-8 justify-center text-red-500"
+                title={t('common.delete')}
+                onClick={async (e) => {
+                  e.stopPropagation()
+                  const ok = await confirm({ message: t('common.confirmDelete') })
+                  if (ok) crud.destroy(row)
+                }}
+              >
+                <Trash2 size={15} />
+              </button>
+            )}
+          </div>
+        ),
+      })
+    }
     return cols
-  }, [config, crud, confirm, t, label])
+  }, [config, crud, confirm, t, label, selecting, selected, allowed])
 
   const exportColumns = useMemo(
     () =>
@@ -165,6 +205,13 @@ export default function CrudPage({ config }) {
       return
     }
     const computed = config.compute?.(crud.form) || {}
+    const candidate = { ...crud.form, ...computed }
+    // amount-based approval gate (discount %, big receipts)
+    const gate = config.beforeSave?.(candidate)
+    if (gate && gate.ok === false) {
+      toast.error(gate.reason || t('common.error'))
+      return
+    }
     await crud.save(computed)
   }
 
@@ -193,21 +240,33 @@ export default function CrudPage({ config }) {
         description={t(`${config.i18nPrefix}.subtitle`)}
         actions={
           <>
+            {allowed('delete') && (
+              <Button
+                variant={selecting ? 'primary' : 'secondary'}
+                icon={selecting ? X : CheckSquare}
+                onClick={() => { setSelecting((v) => !v); setSelected(new Set()) }}
+                size="md"
+              >
+                <span className="hidden sm:inline">{t('common.select')}</span>
+              </Button>
+            )}
             {config.scan && (
               <Button variant="secondary" icon={ScanLine} onClick={scan} size="md">
                 <span className="hidden sm:inline">{t('common.scan')}</span>
               </Button>
             )}
-            <ExportMenu
-              title={t(`${config.i18nPrefix}.title`)}
-              columns={exportColumns}
-              rows={filtered}
-              meta={{ phone: null, company: null }}
-            />
-            <ImportButton config={config} />
-            <Button icon={Plus} onClick={() => crud.openAdd(config.defaults?.())}>
+            {allowed('export') && (
+              <ExportMenu
+                title={t(`${config.i18nPrefix}.title`)}
+                columns={exportColumns}
+                rows={filtered}
+                meta={{ phone: null, company: null }}
+              />
+            )}
+            {allowed('add') && <ImportButton config={config} />}
+            {allowed('add') && <Button icon={Plus} onClick={() => crud.openAdd(config.defaults?.())}>
               <span className="hidden sm:inline">{t('common.add')}</span>
-            </Button>
+            </Button>}
           </>
         }
         filters={
@@ -239,6 +298,28 @@ export default function CrudPage({ config }) {
         }
       />
 
+      {selecting && selected.size > 0 && (
+        <div className="card mb-4 p-3 flex flex-wrap items-center gap-2 border-[var(--accent)]/50">
+          <span className="text-sm font-semibold num">{selected.size} {t('common.selected')}</span>
+          <Button size="sm" variant="secondary" icon={ListChecks} onClick={() => setBulkEditOpen(true)}>{t('common.bulkEdit')}</Button>
+          <Button
+            size="sm"
+            variant="danger"
+            icon={Trash2}
+            onClick={async () => {
+              const ok = await confirm({ message: `${t('common.confirmDelete')} (${selected.size})` })
+              if (!ok) return
+              selected.forEach((id) => db.remove(config.collection, id))
+              toast.success(t('common.deleted'))
+              setSelected(new Set())
+            }}
+          >
+            {t('common.delete')}
+          </Button>
+          <Button size="sm" variant="secondary" icon={X} onClick={() => setSelected(new Set())}>{t('common.clear')}</Button>
+        </div>
+      )}
+
       {stats && (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
           {stats.map((s, i) => (
@@ -251,10 +332,26 @@ export default function CrudPage({ config }) {
         <Table
           columns={columns}
           rows={filtered}
-          onRowClick={(row) => setDetail(row)}
+          onRowClick={(row) => (selecting ? (() => {
+            const next = new Set(selected)
+            if (next.has(row.id)) next.delete(row.id)
+            else next.add(row.id)
+            setSelected(next)
+          })() : setDetail(row))}
           empty={<EmptyState title={t('common.noData')} hint={t('common.addFirst')} />}
         />
       </div>
+
+      {/* ── Bulk edit modal ── */}
+      <BulkEditModal
+        open={bulkEditOpen}
+        onClose={() => setBulkEditOpen(false)}
+        config={config}
+        ids={[...selected]}
+        t={t}
+        lang={lang}
+        done={() => { setBulkEditOpen(false); setSelected(new Set()); setSelecting(false); toast.success(t('common.saved')) }}
+      />
 
       {/* ── Add / Edit modal ── */}
       <Modal
@@ -454,5 +551,66 @@ function RefField({ f, value, onChange, label, className }) {
       placeholder={f.placeholder ?? ''}
       options={items.map((r) => ({ value: r.id, label: r[f.refLabel || 'name'] || r.id }))}
     />
+  )
+}
+
+/* ───────────────────────── Bulk edit ───────────────────────── */
+function BulkEditModal({ open, onClose, config, ids, t, lang, done }) {
+  const [fieldKey, setFieldKey] = useState('')
+  const [value, setValue] = useState('')
+  const editable = (config.fields || []).filter(
+    (f) => !f.type || ['text', 'number', 'select', 'textarea', 'date', 'tel'].includes(f.type),
+  )
+  const field = editable.find((f) => f.key === fieldKey)
+
+  const apply = () => {
+    if (!fieldKey) return
+    const parsed = field?.type === 'number' ? parseFloat(value) || 0 : value
+    ids.forEach((id) => {
+      const rec = db.get(config.collection, id)
+      if (rec) db.save(config.collection, { ...rec, [fieldKey]: parsed })
+    })
+    done()
+    setFieldKey('')
+    setValue('')
+  }
+
+  return (
+    <Modal
+      open={open}
+      onClose={onClose}
+      title={`${lang === 'ur' ? 'بلک ایڈٹ' : 'Bulk edit'} (${ids.length})`}
+      footer={
+        <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+          <Button variant="secondary" onClick={onClose} className="w-full sm:w-auto">{t('common.cancel')}</Button>
+          <Button onClick={apply} disabled={!fieldKey} className="w-full sm:w-auto">{t('common.save')}</Button>
+        </div>
+      }
+    >
+      <div className="space-y-3">
+        <Select
+          label={lang === 'ur' ? 'فیلڈ چنیں' : 'Field to change'}
+          value={fieldKey}
+          onChange={(e) => { setFieldKey(e.target.value); setValue('') }}
+          options={editable.map((f) => ({ value: f.key, label: f.label || f.key }))}
+        />
+        {field?.type === 'select' ? (
+          <Select
+            label={lang === 'ur' ? 'نئی ویلیو' : 'New value'}
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            options={(field.options || []).map((o) => ({ value: o.value ?? o, label: o.label || String(o.value ?? o) }))}
+          />
+        ) : (
+          <Input
+            label={lang === 'ur' ? 'نئی ویلیو' : 'New value'}
+            type={field?.type === 'number' ? 'number' : field?.type === 'date' ? 'date' : 'text'}
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+          />
+        )}
+        <p className="text-xs text-[var(--muted)]">{lang === 'ur' ? 'یہ ویلیو منتخب تمام ریکارڈز پر لگ جائے گی۔' : 'This value will be applied to all selected records.'}</p>
+      </div>
+    </Modal>
   )
 }
