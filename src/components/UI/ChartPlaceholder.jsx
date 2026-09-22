@@ -35,7 +35,7 @@ export default function ChartPlaceholder({
             role="img"
             aria-label="donut chart"
           />
-          <div className="absolute inset-[22%] grid place-items-center rounded-full bg-white dark:bg-gray-800">
+          <div className="absolute inset-[22%] grid place-items-center rounded-full bg-[var(--card)] shadow-sm">
             <div className="text-center">
               <p className="font-english text-xl font-bold text-main">{centerValue ?? total}</p>
               <p className="urdu-text text-[10px] text-muted">{centerLabel}</p>

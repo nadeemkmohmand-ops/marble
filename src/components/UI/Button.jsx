@@ -2,13 +2,15 @@ import React from 'react'
 import { cn } from '../../utils/cn'
 import { Loader2 } from 'lucide-react'
 
+/* All variants rest in their own hue and share the orange pressed
+   state defined on `.btn:active` in index.css. */
 const VARIANTS = {
-  primary: 'btn-primary shadow-sm hover:brightness-110',
-  secondary: 'border border-[var(--border)] bg-[var(--card)] hover:bg-[color-mix(in_srgb,var(--border)_35%,transparent)]',
+  primary: 'btn-primary',
+  secondary: 'btn-secondary',
   ghost: 'btn-ghost',
-  danger: 'bg-danger text-white hover:brightness-110',
-  success: 'bg-success text-white hover:brightness-110',
-  whatsapp: 'bg-[#25D366] text-white hover:brightness-105',
+  danger: 'btn-danger',
+  success: 'btn-success',
+  whatsapp: 'btn-whatsapp',
 }
 
 const SIZES = {

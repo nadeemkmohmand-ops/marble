@@ -2,24 +2,29 @@ import React from 'react'
 import { cn } from '../../utils/cn'
 import { useLang } from '../../context/LanguageContext'
 
-/** KPI card with optional trend / icon. */
+/** KPI card with optional trend / icon. Hover = gentle 3D lift. */
 export default function StatCard({ label, value, sub, icon: Icon, tone = 'info', onClick, className }) {
   const { fmtNum } = useLang()
   const tones = {
-    info: 'bg-sky-500/12 text-sky-600 dark:text-sky-400',
+    info: 'bg-azure-500/12 text-azure-600 dark:text-azure-400',
     success: 'bg-emerald-500/12 text-emerald-600 dark:text-emerald-400',
     warning: 'bg-amber-500/12 text-amber-600 dark:text-amber-400',
     danger: 'bg-red-500/12 text-red-600 dark:text-red-400',
-    brand: 'bg-violet-500/12 text-violet-600 dark:text-violet-400',
+    brand: 'bg-flame-500/14 text-flame-600 dark:text-flame-400',
   }
   return (
     <button
       type="button"
       onClick={onClick}
-      className={cn('card p-4 text-start flex items-center gap-3 w-full hover:brightness-105 transition', !onClick && 'cursor-default', className)}
+      className={cn('card card-hover p-4 text-start flex items-center gap-3 w-full', !onClick && 'cursor-default', className)}
     >
       {Icon && (
-        <div className={cn('h-11 w-11 shrink-0 rounded-xl grid place-items-center', tones[tone])}>
+        <div
+          className={cn(
+            'h-11 w-11 shrink-0 rounded-xl grid place-items-center transition-transform duration-300 group-hover:scale-105',
+            tones[tone],
+          )}
+        >
           <Icon size={20} />
         </div>
       )}

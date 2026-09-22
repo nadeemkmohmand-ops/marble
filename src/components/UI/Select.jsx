@@ -141,7 +141,7 @@ export default function Select({
             role="listbox"
             dir={lang === 'ur' ? 'rtl' : 'ltr'}
             tabIndex={-1}
-            className="absolute z-50 mt-1 w-full max-h-64 overflow-y-auto card p-1 shadow-xl fade-in"
+            className="absolute z-50 mt-1 w-full max-h-64 overflow-y-auto card p-1 shadow-xl animate-popIn"
           >
             {allOptions.length === 0 && (
               <li className="px-3 py-2 text-xs text-[var(--muted)] leading-urdu no-clip">—</li>

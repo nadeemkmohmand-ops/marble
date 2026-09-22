@@ -38,7 +38,7 @@ export default function Accordion({
               <span className="text-sm font-bold text-main">{item.title}</span>
               <ChevronDown
                 size={18}
-                className={cn('shrink-0 text-text-light transition-transform duration-300', open && 'rotate-180')}
+                className={cn('shrink-0 text-muted transition-transform duration-300', open && 'rotate-180')}
                 aria-hidden="true"
               />
             </button>

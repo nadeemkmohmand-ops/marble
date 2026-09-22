@@ -4,6 +4,7 @@ import Card from '../components/UI/Card'
 import Input from '../components/UI/Input'
 import Select from '../components/UI/Select'
 import Button from '../components/UI/Button'
+import BackgroundFX from '../components/Layout/BackgroundFX'
 import { useLang } from '../context/LanguageContext'
 import { useAuth } from '../context/AuthContext'
 import { useNavigate, useLocation } from 'react-router-dom'
@@ -29,11 +30,22 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen grid place-items-center p-4">
-      <Card className="w-full max-w-sm">
+    <div className="relative min-h-screen grid place-items-center p-4">
+      <BackgroundFX />
+      <Card className="float3d w-full max-w-sm top-hairline shadow-lift">
         <div className="text-center mb-6">
-          <div className="mx-auto h-14 w-14 rounded-2xl bg-[var(--accent)] grid place-items-center text-white text-2xl font-bold">M</div>
-          <h1 className="mt-3 font-bold text-lg leading-urdu no-clip">{lang === 'ur' ? APP_INFO.nameUr : APP_INFO.name}</h1>
+          <div className="relative mx-auto h-16 w-16">
+            <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-flame-400 via-flame-500 to-flame-600 shadow-[0_10px_28px_-8px_rgba(249,115,22,0.65)] grid place-items-center text-white text-2xl font-bold">
+              M
+            </div>
+            {/* Tiny decorative 3D cube — floating beside the logo */}
+            <div className="absolute -end-2 -top-2 cube3d" aria-hidden="true">
+              <span /><span /><span /><span /><span /><span />
+            </div>
+          </div>
+          <h1 className="mt-3 font-bold text-lg leading-urdu no-clip">
+            <span className="text-gradient-flame">{lang === 'ur' ? APP_INFO.nameUr : APP_INFO.name}</span>
+          </h1>
           <p className="text-xs text-[var(--muted)] leading-urdu no-clip">{t('login.subtitle')}</p>
         </div>
         <form onSubmit={submit} className="space-y-3">

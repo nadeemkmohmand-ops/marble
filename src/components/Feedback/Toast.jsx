@@ -5,7 +5,7 @@ import { cn } from '../../utils/cn'
 const ICONS = {
   success: { icon: CheckCircle2, cls: 'text-emerald-500' },
   error: { icon: AlertTriangle, cls: 'text-red-500' },
-  info: { icon: Info, cls: 'text-sky-500' },
+  info: { icon: Info, cls: 'text-azure-500' },
 }
 
 export default function Toast({ toast, onDismiss }) {

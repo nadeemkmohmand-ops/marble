@@ -61,7 +61,7 @@ export default function Inventory() {
             {to === ROUTES.BLOCKS && <Package size={20} className="text-[var(--accent)]" />}
             {to === ROUTES.SLABS && <Layers size={20} className="text-emerald-500" />}
             {to === ROUTES.OFFCUTS && <Scissors size={20} className="text-amber-500" />}
-            {to === ROUTES.MOVEMENTS && <ArrowLeftRight size={20} className="text-violet-500" />}
+            {to === ROUTES.MOVEMENTS && <ArrowLeftRight size={20} className="text-azure-500" />}
             <span className="font-medium text-sm leading-urdu no-clip">{t(`nav.${to.slice(1)}`)}</span>
           </Link>
         ))}

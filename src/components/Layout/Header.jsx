@@ -15,7 +15,7 @@ export default function Header() {
   const online = useOnlineStatus()
 
   return (
-    <header className="app-header sticky top-0 z-40 h-16 flex items-center gap-2 px-3 sm:px-5 bg-[var(--card)]/90 backdrop-blur border-b border-[var(--border)] no-print">
+    <header className="app-header sticky top-0 z-40 h-16 flex items-center gap-2 px-3 sm:px-5 bg-[var(--card)]/85 backdrop-blur-xl border-b border-[var(--border)] shadow-[0_1px_12px_-6px_rgba(60,54,43,0.18)] no-print">
       <button className="btn btn-ghost h-10 w-10 justify-center" onClick={toggleSidebar} aria-label="Menu">
         <Menu size={20} />
       </button>

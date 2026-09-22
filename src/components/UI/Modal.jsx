@@ -24,7 +24,7 @@ export default function Modal({ open, onClose, title, children, footer, size = '
         className={cn(
           // dvh (dynamic viewport height) shrinks with the on-screen keyboard,
           // unlike vh — this is what keeps the Save button reachable on mobile.
-          'relative card w-full max-h-[92vh] max-h-[92dvh] flex flex-col rounded-b-none sm:rounded-2xl animate-[fadeIn_.2s_ease]',
+          'relative card top-hairline w-full max-h-[92vh] max-h-[92dvh] flex flex-col rounded-b-none sm:rounded-2xl animate-popIn shadow-lift',
           widths[size],
         )}
         role="dialog"

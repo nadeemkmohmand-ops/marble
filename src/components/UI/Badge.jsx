@@ -4,12 +4,12 @@ import { useLang } from '../../context/LanguageContext'
 import { statusTone } from '../../constants/enums'
 
 const TONES = {
-  success: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400',
-  warning: 'bg-amber-500/15 text-amber-600 dark:text-amber-400',
-  danger: 'bg-red-500/15 text-red-600 dark:text-red-400',
-  info: 'bg-sky-500/15 text-sky-600 dark:text-sky-400',
-  brand: 'bg-violet-500/15 text-violet-600 dark:text-violet-400',
-  muted: 'bg-slate-500/15 text-slate-500 dark:text-slate-400',
+  success: 'bg-emerald-500/12 text-emerald-700 dark:text-emerald-400 border-emerald-500/25',
+  warning: 'bg-amber-500/12 text-amber-700 dark:text-amber-400 border-amber-500/25',
+  danger: 'bg-red-500/12 text-red-700 dark:text-red-400 border-red-500/25',
+  info: 'bg-azure-500/12 text-azure-700 dark:text-azure-400 border-azure-500/25',
+  brand: 'bg-flame-500/14 text-flame-700 dark:text-flame-400 border-flame-500/30',
+  muted: 'bg-marble-500/10 text-marble-600 dark:text-marble-300 border-marble-500/25',
 }
 
 /** Status badge — i18n label via enums.*, color via STATUS_TONE. */

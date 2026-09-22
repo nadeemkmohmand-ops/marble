@@ -3,24 +3,42 @@
 @tailwind utilities;
 
 /* ═══════════════════════════════════════════════════════════════
-   ROOT / THEME TOKENS
+   ROOT / THEME TOKENS — Cream Editorial Modern
+   Warm cream surfaces, signature orange accents, bright blue
+   primary buttons. Dark mode is warm charcoal (never navy).
    ═══════════════════════════════════════════════════════════════ */
 @layer base {
   :root {
-    --bg: #f1f5f9;
-    --card: #ffffff;
-    --text: #0f172a;
-    --muted: #64748b;
-    --border: #e2e8f0;
-    --accent: #0ea5e9;
+    --bg: #f6f1e6;
+    --bg-2: #efe7d5;
+    --card: #fffdf8;
+    --text: #2b2622;
+    --muted: #7d7462;
+    --border: #e8e0cd;
+    --accent: #f97316;
+    --accent-deep: #ea580c;
+    --accent-soft: rgba(249, 115, 22, 0.12);
+    --blue: #2563eb;
+    --blue-bright: #3b82f6;
+    --blue-soft: rgba(37, 99, 235, 0.10);
+    --ring: rgba(249, 115, 22, 0.28);
+    --shadow-color: 60 54 43;
   }
   .dark {
-    --bg: #0b1120;
-    --card: #111a2e;
-    --text: #e2e8f0;
-    --muted: #94a3b8;
-    --border: #1e293b;
-    --accent: #38bdf8;
+    --bg: #171310;
+    --bg-2: #1f1a14;
+    --card: #221d16;
+    --text: #f0e9dc;
+    --muted: #a89e8c;
+    --border: #393124;
+    --accent: #fb923c;
+    --accent-deep: #f97316;
+    --accent-soft: rgba(251, 146, 60, 0.14);
+    --blue: #3b82f6;
+    --blue-bright: #60a5fa;
+    --blue-soft: rgba(96, 165, 250, 0.14);
+    --ring: rgba(251, 146, 60, 0.3);
+    --shadow-color: 0 0 0;
   }
 
   html {
@@ -35,6 +53,20 @@
     font-family: 'Inter', system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     overscroll-behavior-y: none;
+    transition: background-color 0.35s ease, color 0.35s ease;
+  }
+
+  /* Warm editorial selection */
+  ::selection {
+    background: color-mix(in srgb, var(--accent) 26%, transparent);
+    color: var(--text);
+  }
+
+  /* Accessible focus everywhere */
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: 0.5rem;
   }
 
   /* ───────────────────────────────────────────────────────────────
@@ -155,17 +187,17 @@
     text-align: start;
   }
 
-  /* Thin scrollbars */
+  /* Thin, warm scrollbars */
   * {
     scrollbar-width: thin;
-    scrollbar-color: var(--border) transparent;
+    scrollbar-color: color-mix(in srgb, var(--accent) 35%, var(--border)) transparent;
   }
   *::-webkit-scrollbar {
     width: 6px;
     height: 6px;
   }
   *::-webkit-scrollbar-thumb {
-    background: var(--border);
+    background: color-mix(in srgb, var(--accent) 30%, var(--border));
     border-radius: 999px;
   }
 }
@@ -174,51 +206,252 @@
    REUSABLE COMPONENT CLASSES
    ═══════════════════════════════════════════════════════════════ */
 @layer components {
+  /* ── Surfaces ─────────────────────────────────────────────── */
   .card {
     background: var(--card);
     border: 1px solid var(--border);
     border-radius: 1rem;
+    box-shadow:
+      0 1px 2px rgba(60, 54, 43, 0.04),
+      0 6px 18px -8px rgba(60, 54, 43, 0.08);
   }
+  .dark .card {
+    box-shadow:
+      0 1px 2px rgba(0, 0, 0, 0.25),
+      0 8px 22px -10px rgba(0, 0, 0, 0.5);
+  }
+  /* Interactive cards get a gentle lift + warm border glow */
+  .card-hover {
+    transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.3, 1.1), box-shadow 0.22s ease, border-color 0.22s ease;
+    will-change: transform;
+  }
+  .card-hover:hover {
+    transform: translateY(-3px);
+    border-color: color-mix(in srgb, var(--accent) 38%, var(--border));
+    box-shadow:
+      0 4px 10px rgba(60, 54, 43, 0.07),
+      0 16px 34px -12px rgba(60, 54, 43, 0.22),
+      0 0 0 1px color-mix(in srgb, var(--accent) 14%, transparent);
+  }
+  .card-hover:active {
+    transform: translateY(-1px) scale(0.99);
+  }
+  .dark .card-hover:hover {
+    box-shadow:
+      0 4px 12px rgba(0, 0, 0, 0.4),
+      0 18px 38px -12px rgba(0, 0, 0, 0.6),
+      0 0 0 1px color-mix(in srgb, var(--accent) 20%, transparent);
+  }
+
+  .surface {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 0.9rem;
+    box-shadow: 0 10px 30px -12px rgba(60, 54, 43, 0.25);
+  }
+
+  /* Editorial gradient hairline for hero cards / modal tops */
+  .top-hairline {
+    position: relative;
+  }
+  .top-hairline::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 1.1rem;
+    right: 1.1rem;
+    height: 3px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--accent), var(--blue-bright) 60%, transparent);
+    opacity: 0.85;
+  }
+
+  /* ── BUTTON SYSTEM ──────────────────────────────────────────
+     Resting: bright blue gradient + thin luminous border.
+     Hover: lift + glow + diagonal light sweep.
+     Active (pressed / current): signature orange gradient.
+     ──────────────────────────────────────────────────────────── */
   .btn {
+    position: relative;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
     border-radius: 0.75rem;
-    font-weight: 500;
-    transition: all 0.15s ease;
+    font-weight: 600;
+    letter-spacing: 0.01em;
     cursor: pointer;
     user-select: none;
     white-space: nowrap;
+    transition:
+      transform 0.18s cubic-bezier(0.2, 0.8, 0.3, 1.2),
+      box-shadow 0.22s ease,
+      filter 0.22s ease,
+      background-color 0.2s ease,
+      border-color 0.2s ease,
+      color 0.2s ease;
+    will-change: transform;
   }
-  .btn:active {
-    transform: scale(0.97);
-  }
+
+  /* PRIMARY — bright blue gradient, thin light border */
   .btn-primary {
-    background: var(--accent);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.32);
+    background-image:
+      linear-gradient(105deg, transparent 42%, rgba(255, 255, 255, 0.34) 50%, transparent 58%),
+      linear-gradient(135deg, #60a5fa 0%, #3b82f6 45%, #2563eb 100%);
+    background-size: 250% 100%, 100% 100%;
+    background-position: 130% 0, 0 0;
+    box-shadow:
+      0 1px 2px rgba(29, 78, 216, 0.35),
+      0 6px 18px -6px rgba(37, 99, 235, 0.55);
+    text-shadow: 0 1px 1px rgba(23, 37, 84, 0.18);
+  }
+  .btn-primary:hover {
+    background-position: -60% 0, 0 0; /* light sweep */
+    transform: translateY(-2px);
+    box-shadow:
+      0 2px 4px rgba(29, 78, 216, 0.4),
+      0 12px 28px -8px rgba(37, 99, 235, 0.65);
+    filter: saturate(1.08);
+  }
+
+  /* ACTIVE STATE — every pressed/selected button turns signature orange */
+  .btn:active {
+    transform: translateY(0) scale(0.965);
+    background-image: linear-gradient(135deg, #fb923c 0%, #f97316 50%, #ea580c 100%);
+    border-color: rgba(255, 255, 255, 0.35);
+    color: #fff;
+    box-shadow:
+      0 1px 2px rgba(194, 65, 12, 0.4),
+      0 8px 22px -6px rgba(249, 115, 22, 0.6);
+  }
+
+  /* SECONDARY — cream surface, thin warm border, blue on hover */
+  .btn-secondary {
+    background: var(--card);
+    color: var(--text);
+    border: 1.5px solid var(--border);
+    box-shadow: 0 1px 2px rgba(60, 54, 43, 0.05);
+  }
+  .btn-secondary:hover {
+    border-color: color-mix(in srgb, var(--blue) 55%, var(--border));
+    color: var(--blue);
+    background: var(--blue-soft);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px -6px rgba(37, 99, 235, 0.35);
+  }
+  .btn-secondary:active {
     color: #fff;
   }
+
+  /* GHOST — quiet until hovered, orange on press */
   .btn-ghost {
     background: transparent;
     color: var(--text);
+    border: 1px solid transparent;
   }
   .btn-ghost:hover {
-    background: color-mix(in srgb, var(--border) 55%, transparent);
+    background: color-mix(in srgb, var(--accent) 9%, transparent);
+    border-color: color-mix(in srgb, var(--accent) 22%, transparent);
+    color: var(--accent-deep);
   }
+  .dark .btn-ghost:hover {
+    color: var(--accent);
+  }
+  .btn-ghost:active {
+    color: #fff;
+  }
+
+  /* DANGER / SUCCESS keep their identity at rest, orange on press */
+  .btn-danger {
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    background-image: linear-gradient(135deg, #f87171 0%, #ef4444 55%, #dc2626 100%);
+    box-shadow: 0 6px 18px -6px rgba(239, 68, 68, 0.55);
+  }
+  .btn-danger:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 28px -8px rgba(239, 68, 68, 0.65);
+    filter: saturate(1.08);
+  }
+  .btn-success {
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    background-image: linear-gradient(135deg, #34d399 0%, #10b981 55%, #059669 100%);
+    box-shadow: 0 6px 18px -6px rgba(16, 185, 129, 0.5);
+  }
+  .btn-success:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 28px -8px rgba(16, 185, 129, 0.6);
+    filter: saturate(1.08);
+  }
+  .btn-whatsapp {
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    background-image: linear-gradient(135deg, #4ade80 0%, #25d366 55%, #16a34a 100%);
+    box-shadow: 0 6px 18px -6px rgba(37, 211, 102, 0.5);
+  }
+  .btn-whatsapp:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 28px -8px rgba(37, 211, 102, 0.55);
+  }
+
+  /* PERSISTENT ACTIVE STATE — selected tabs / current pager page etc.
+     stay orange (same family as the pressed state). */
+  .btn-active-orange {
+    background-image: linear-gradient(135deg, #fb923c 0%, #f97316 50%, #ea580c 100%);
+    color: #fff;
+    text-shadow: 0 1px 1px rgba(194, 65, 12, 0.2);
+  }
+
+  /* Round quiet icon button used across toolbars */
+  .icon-btn {
+    display: inline-grid;
+    place-items: center;
+    height: 2.5rem;
+    width: 2.5rem;
+    border-radius: 0.75rem;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--muted);
+    transition: all 0.2s ease;
+    cursor: pointer;
+  }
+  .icon-btn:hover {
+    color: var(--blue);
+    border-color: color-mix(in srgb, var(--blue) 45%, var(--border));
+    background: var(--blue-soft);
+    transform: translateY(-1px);
+  }
+  .icon-btn:active {
+    color: #fff;
+    background: linear-gradient(135deg, #fb923c, #ea580c);
+    border-color: transparent;
+    transform: scale(0.94);
+  }
+
+  /* ── Inputs — orange focus ring on cream ─────────────────── */
   .input {
     width: 100%;
     background: var(--card);
-    border: 1px solid var(--border);
+    border: 1.5px solid var(--border);
     border-radius: 0.75rem;
     padding: 0.55rem 0.9rem;
     color: var(--text);
     outline: none;
-    transition: border 0.15s ease;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  }
+  .input:hover {
+    border-color: color-mix(in srgb, var(--accent) 30%, var(--border));
   }
   .input:focus {
     border-color: var(--accent);
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
+    box-shadow: 0 0 0 4px var(--ring);
+    background: color-mix(in srgb, var(--accent) 3%, var(--card));
   }
+
+  /* ── Badges — soft translucent tints ─────────────────────── */
   .badge {
     display: inline-flex;
     align-items: center;
@@ -228,9 +461,12 @@
     font-size: 0.72rem;
     font-weight: 600;
     line-height: 1.7;
+    border: 1px solid transparent;
   }
+
+  /* ── Skeleton shimmer ────────────────────────────────────── */
   .skeleton {
-    background: linear-gradient(90deg, var(--border) 25%, transparent 50%, var(--border) 75%);
+    background: linear-gradient(90deg, var(--border) 25%, color-mix(in srgb, var(--accent) 8%, var(--border)) 50%, var(--border) 75%);
     background-size: 200% 100%;
     animation: shimmer 1.4s infinite;
     border-radius: 0.75rem;
@@ -261,6 +497,143 @@
   .safe-bottom {
     padding-bottom: env(safe-area-inset-bottom, 0px);
   }
+
+  /* ── Animated background FX (blobs + bubbles + dot grid) ── */
+  .bgfx {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    overflow: hidden;
+    pointer-events: none;
+  }
+  .bgfx-blob {
+    position: absolute;
+    border-radius: 9999px;
+    filter: blur(70px);
+    opacity: 0.5;
+    will-change: transform;
+  }
+  .dark .bgfx-blob {
+    opacity: 0.2;
+  }
+  .bgfx-dots {
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(color-mix(in srgb, var(--accent) 26%, transparent) 1px, transparent 1px);
+    background-size: 26px 26px;
+    opacity: 0.16;
+    mask-image: radial-gradient(ellipse 90% 70% at 50% 0%, black 30%, transparent 75%);
+    -webkit-mask-image: radial-gradient(ellipse 90% 70% at 50% 0%, black 30%, transparent 75%);
+  }
+  .dark .bgfx-dots {
+    opacity: 0.08;
+  }
+  .bgfx-bubble {
+    position: absolute;
+    bottom: -2.5rem;
+    border-radius: 9999px;
+    background: radial-gradient(circle at 32% 30%, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.12) 46%, transparent 62%);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    box-shadow: inset -2px -3px 6px rgba(37, 99, 235, 0.14), inset 2px 3px 6px rgba(255, 255, 255, 0.5);
+    animation: bubbleRise linear infinite;
+    will-change: transform, opacity;
+    opacity: 0;
+  }
+  .dark .bgfx-bubble {
+    background: radial-gradient(circle at 32% 30%, rgba(251, 146, 60, 0.30), rgba(251, 146, 60, 0.06) 48%, transparent 64%);
+    border: 1px solid rgba(251, 146, 60, 0.22);
+    box-shadow: inset -2px -3px 6px rgba(0, 0, 0, 0.3);
+  }
+  @keyframes bubbleRise {
+    0% {
+      transform: translate3d(0, 0, 0) scale(0.6);
+      opacity: 0;
+    }
+    12% {
+      opacity: 0.55;
+    }
+    85% {
+      opacity: 0.3;
+    }
+    100% {
+      transform: translate3d(var(--drift, 1.5rem), -108vh, 0) scale(1.05);
+      opacity: 0;
+    }
+  }
+
+  /* Tiny decorative 3D cube (login / hero corners) */
+  .cube3d {
+    width: 34px;
+    height: 34px;
+    position: relative;
+    transform-style: preserve-3d;
+    animation: cubeSpin 9s linear infinite;
+  }
+  .cube3d span {
+    position: absolute;
+    inset: 0;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.45);
+  }
+  .cube3d span:nth-child(1) { transform: translateZ(17px); background: linear-gradient(135deg, #fb923c, #ea580c); }
+  .cube3d span:nth-child(2) { transform: rotateY(90deg) translateZ(17px); background: linear-gradient(135deg, #60a5fa, #2563eb); }
+  .cube3d span:nth-child(3) { transform: rotateY(180deg) translateZ(17px); background: linear-gradient(135deg, #fdba74, #f97316); }
+  .cube3d span:nth-child(4) { transform: rotateY(-90deg) translateZ(17px); background: linear-gradient(135deg, #93c5fd, #3b82f6); }
+  .cube3d span:nth-child(5) { transform: rotateX(90deg) translateZ(17px); background: linear-gradient(135deg, #ffedd5, #fed7aa); }
+  .cube3d span:nth-child(6) { transform: rotateX(-90deg) translateZ(17px); background: linear-gradient(135deg, #bfdbfe, #93c5fd); }
+  @keyframes cubeSpin {
+    from { transform: rotateX(-18deg) rotateY(0deg); }
+    to { transform: rotateX(-18deg) rotateY(360deg); }
+  }
+
+  /* Gentle 3D float for hero cards */
+  .float3d {
+    animation: float3d 7s ease-in-out infinite;
+    transform-style: preserve-3d;
+    will-change: transform;
+  }
+  @keyframes float3d {
+    0%, 100% { transform: perspective(900px) rotateX(0.6deg) rotateY(-0.8deg) translateY(0); }
+    50% { transform: perspective(900px) rotateX(-0.6deg) rotateY(0.8deg) translateY(-7px); }
+  }
+
+  /* Gradient headline text */
+  .text-gradient-flame {
+    background: linear-gradient(120deg, var(--accent-deep), var(--accent) 45%, #fbbf24);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .text-gradient-blue {
+    background: linear-gradient(120deg, #1d4ed8, #3b82f6 60%, #60a5fa);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* Reduced motion — switch off decorative animation */
+  @media (prefers-reduced-motion: reduce) {
+    .bgfx-blob,
+    .bgfx-bubble,
+    .cube3d,
+    .float3d {
+      animation: none !important;
+    }
+    .bgfx-bubble {
+      display: none;
+    }
+    .btn,
+    .btn-primary:hover,
+    .card-hover:hover {
+      transform: none;
+    }
+    .btn-primary {
+      background-position: 0 0, 0 0;
+    }
+    * {
+      scroll-behavior: auto;
+    }
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -275,7 +648,8 @@
   nav,
   aside,
   header.app-header,
-  .bottom-nav {
+  .bottom-nav,
+  .bgfx {
     display: none !important;
   }
   .print-area {

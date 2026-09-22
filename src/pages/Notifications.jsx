@@ -70,7 +70,7 @@ export default function Notifications() {
             <Card key={a.id} className="!p-4 flex items-start gap-3">
               <div
                 className={`h-9 w-9 shrink-0 rounded-xl grid place-items-center ${
-                  a.severity === 'danger' ? 'bg-red-500/15 text-red-500' : a.severity === 'warning' ? 'bg-amber-500/15 text-amber-500' : 'bg-sky-500/15 text-sky-500'
+                  a.severity === 'danger' ? 'bg-red-500/15 text-red-500' : a.severity === 'warning' ? 'bg-amber-500/15 text-amber-500' : 'bg-azure-500/15 text-azure-500'
                 }`}
               >
                 {a.kind === 'maintenanceDue' ? <Wrench size={16} /> : <AlertTriangle size={16} />}

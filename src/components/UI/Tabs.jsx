@@ -9,7 +9,7 @@ export default function Tabs({ tabs, active, onChange, className }) {
     onChange?.(i)
   }
   return (
-    <div className={cn('flex gap-1 overflow-x-auto pb-1 -mx-1 px-1', className)} role="tablist">
+    <div className={cn('flex gap-1.5 overflow-x-auto pb-1 -mx-1 px-1', className)} role="tablist">
       {tabs.map((tab, i) => (
         <button
           key={i}
@@ -19,8 +19,8 @@ export default function Tabs({ tabs, active, onChange, className }) {
           className={cn(
             'btn min-h-9 px-4 text-sm whitespace-nowrap rounded-xl border',
             current === i
-              ? 'bg-[var(--accent)] text-white border-transparent shadow-sm'
-              : 'bg-[var(--card)] border-[var(--border)] text-[var(--text)] hover:brightness-105',
+              ? 'btn-active-orange text-white border-transparent shadow-[0_4px_14px_-4px_rgba(249,115,22,0.55)]'
+              : 'btn-secondary',
           )}
         >
           {tab.icon ? <tab.icon size={15} /> : null}

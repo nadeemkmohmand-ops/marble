@@ -14,6 +14,7 @@ function pageWindow(page, pageCount, size = 5) {
 /**
  * Pagination — RTL-aware pager for tables/lists.
  * Controlled: page + pageCount + onChange. Renders nothing when pageCount ≤ 1.
+ * Current page uses the persistent orange active state.
  */
 export default function Pagination({ page = 1, pageCount = 1, onChange, className = '' }) {
   const { t, isRTL } = useLanguage()
@@ -40,10 +41,10 @@ export default function Pagination({ page = 1, pageCount = 1, onChange, classNam
           onClick={() => onChange?.(p)}
           aria-current={p === page ? 'page' : undefined}
           className={cn(
-            'grid h-9 w-9 place-items-center rounded-lg font-english text-sm font-bold transition-colors',
+            'btn grid h-9 w-9 place-items-center rounded-lg font-english text-sm font-bold',
             p === page
-              ? 'bg-primary text-white shadow-sm'
-              : 'text-text-light hover:bg-secondary dark:text-gray-400 dark:hover:bg-gray-700'
+              ? 'btn-active-orange border border-transparent shadow-[0_4px_14px_-4px_rgba(249,115,22,0.55)] !px-0'
+              : 'btn-ghost border border-[var(--border)] !px-0 hover:border-flame-300',
           )}
         >
           {p}

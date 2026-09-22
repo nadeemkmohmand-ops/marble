@@ -50,14 +50,14 @@ export default function UserMenu() {
         aria-haspopup="menu"
         aria-expanded={open}
         aria-label={t('header.account')}
-        className="grid h-10 w-10 place-items-center rounded-full bg-white/10 text-base font-bold ring-1 ring-white/20 transition-colors hover:bg-white/20"
+        className="grid h-10 w-10 place-items-center rounded-full bg-gradient-to-br from-flame-400 to-flame-600 text-white text-base font-bold ring-2 ring-white/60 dark:ring-white/15 shadow-[0_4px_12px_-4px_rgba(249,115,22,0.6)] transition-transform hover:scale-105 active:scale-95"
       >
         م
       </button>
 
       {/* dropdown — no overflow-hidden: Urdu text must not clip */}
       {open && (
-        <div role="menu" className="surface fade-up absolute end-0 top-12 z-50 w-52 p-1.5 shadow-xl">
+        <div role="menu" className="surface animate-popIn absolute end-0 top-12 z-50 w-52 p-1.5 shadow-xl">
           <div className="border-b border-border px-3 py-2.5 dark:border-gray-700">
             <p className="text-sm font-bold text-main">{t('set.userName')}</p>
             <p className="text-[11px] text-muted">{t('set.factoryManager')}</p>
@@ -69,7 +69,7 @@ export default function UserMenu() {
               role="menuitem"
               to={to}
               onClick={() => setOpen(false)}
-              className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-semibold text-main transition-colors hover:bg-secondary dark:hover:bg-gray-700"
+              className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-semibold text-main transition-colors hover:bg-secondary dark:hover:bg-white/5"
             >
               {Icon && <Icon size={16} aria-hidden="true" />}
               {label}
@@ -83,7 +83,7 @@ export default function UserMenu() {
               type="button"
               role="menuitem"
               onClick={handleAddToHome}
-              className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-semibold text-primary transition-colors hover:bg-secondary dark:text-primary-light dark:hover:bg-gray-700"
+              className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-semibold text-primary transition-colors hover:bg-secondary dark:text-primary-light dark:hover:bg-white/5"
             >
               <Smartphone size={16} aria-hidden="true" />
               {t('pwa.addToHome')}

@@ -21,7 +21,7 @@ import { orderTotals } from '../utils/calculations'
 import { fmtCurrency, fmtNumber, fmtDate } from '../utils/formatters'
 import ROUTES from '../constants/routes'
 
-const PIE_COLORS = ['#0ea5e9', '#8b5cf6', '#f59e0b', '#10b981', '#ef4444']
+const PIE_COLORS = ['#3b82f6', '#f97316', '#fbbf24', '#10b981', '#34d399']
 
 export default function Home() {
   const { t, lang, fmtNum } = useLang()
@@ -153,13 +153,26 @@ export default function Home() {
           <div className="h-64" dir="ltr">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={monthly} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="barSales" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#60a5fa" />
+                    <stop offset="100%" stopColor="#2563eb" />
+                  </linearGradient>
+                  <linearGradient id="barExpenses" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#fb923c" />
+                    <stop offset="100%" stopColor="#ea580c" />
+                  </linearGradient>
+                </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
                 <XAxis dataKey="month" tick={{ fontSize: 11 }} stroke="var(--muted)" />
                 <YAxis tick={{ fontSize: 11 }} stroke="var(--muted)" width={54} />
-                <Tooltip contentStyle={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 12, fontSize: 12 }} />
+                <Tooltip
+                  cursor={{ fill: 'rgba(249,115,22,0.06)' }}
+                  contentStyle={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 12, fontSize: 12 }}
+                />
                 <Legend wrapperStyle={{ fontSize: 11 }} />
-                <Bar dataKey="sales" name={t('reports.revenue')} fill="#0ea5e9" radius={[6, 6, 0, 0]} />
-                <Bar dataKey="expenses" name={t('nav.expenses')} fill="#f59e0b" radius={[6, 6, 0, 0]} />
+                <Bar dataKey="sales" name={t('reports.revenue')} fill="url(#barSales)" radius={[6, 6, 0, 0]} />
+                <Bar dataKey="expenses" name={t('nav.expenses')} fill="url(#barExpenses)" radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -179,7 +192,9 @@ export default function Home() {
                       <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
                     ))}
                   </Pie>
-                  <Tooltip contentStyle={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 12, fontSize: 12 }} />
+                  <Tooltip
+                    contentStyle={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 12, fontSize: 12 }}
+                  />
                   <Legend wrapperStyle={{ fontSize: 11 }} />
                 </PieChart>
               </ResponsiveContainer>

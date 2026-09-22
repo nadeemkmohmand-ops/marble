@@ -221,9 +221,9 @@ function PnlReport({ pnl, t, money }) {
               <YAxis tick={{ fontSize: 11 }} stroke="var(--muted)" width={58} />
               <Tooltip contentStyle={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 12, fontSize: 12 }} />
               <Legend wrapperStyle={{ fontSize: 11 }} />
-              <Line type="monotone" dataKey="revenue" name={t('reports.revenue')} stroke="#0ea5e9" strokeWidth={2.5} dot={{ r: 3 }} />
-              <Line type="monotone" dataKey="profit" name={t('reports.profit')} stroke="#10b981" strokeWidth={2.5} dot={{ r: 3 }} />
-              <Line type="monotone" dataKey="expenses" name={t('nav.expenses')} stroke="#f59e0b" strokeWidth={2} dot={{ r: 3 }} />
+              <Line type="monotone" dataKey="revenue" name={t('reports.revenue')} stroke="#2563eb" strokeWidth={2.5} dot={{ r: 3 }} activeDot={{ r: 5 }} />
+              <Line type="monotone" dataKey="profit" name={t('reports.profit')} stroke="#10b981" strokeWidth={2.5} dot={{ r: 3 }} activeDot={{ r: 5 }} />
+              <Line type="monotone" dataKey="expenses" name={t('nav.expenses')} stroke="#f97316" strokeWidth={2} dot={{ r: 3 }} activeDot={{ r: 4 }} />
             </LineChart>
           </ResponsiveContainer>
         </div>

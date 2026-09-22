@@ -4,6 +4,7 @@ import { useEffect } from 'react'
 import Sidebar from './Sidebar'
 import Header from './Header'
 import BottomNav from './BottomNav'
+import BackgroundFX from './BackgroundFX'
 
 export default function Layout() {
   const location = useLocation()
@@ -14,6 +15,7 @@ export default function Layout() {
 
   return (
     <div className="min-h-screen">
+      <BackgroundFX />
       <Sidebar />
       <div>
         <Header />
