@@ -2,20 +2,28 @@ import React from 'react'
 import { cn } from '../../utils/cn'
 
 /**
- * RTL-safe table. Rows use min-height & loose leading so Nastaliq
- * Urdu is never clipped. On small screens wrap in overflow-x-auto.
+ * RTL-safe table — Cream Editorial redesign.
+ *
+ * Visual system (see .data-table in index.css):
+ *  - Header: warm gradient band (orange → blue tint) with rounded ends
+ *    and a signature accent hairline on its bottom edge.
+ *  - Rows: soft rounded "card rows" on the cream surface; the first cell
+ *    carries a tiny vertical gradient tick that scales in on hover.
+ *  - Hover: warm orange tint + glowing borders (desktop); clickable rows
+ *    also get a gentle lift via the row transition.
+ *
+ * Urdu/Nastaliq safety rules are preserved: no fixed heights, generous
+ * leading (`leading-urdu`), `.no-clip` so glyph chains are never cut,
+ * and `unicode-bidi: plaintext` comes from the global th/td rules.
  */
 export function Table({ columns, rows, keyOf = (r) => r.id, empty, onRowClick, className }) {
   return (
     <div className={cn('overflow-x-auto -mx-1 px-1', className)}>
-      <table className="w-full text-sm border-separate" style={{ borderSpacing: '0 6px' }}>
+      <table className="data-table">
         <thead>
           <tr>
             {columns.map((col) => (
-              <th
-                key={col.key}
-                className="text-start text-[11px] font-semibold uppercase tracking-wide text-[var(--muted)] px-3 pb-1 leading-urdu no-clip whitespace-nowrap"
-              >
+              <th key={col.key} scope="col" className="leading-urdu no-clip">
                 {col.label}
               </th>
             ))}
@@ -26,13 +34,10 @@ export function Table({ columns, rows, keyOf = (r) => r.id, empty, onRowClick, c
             <tr
               key={keyOf(row)}
               onClick={onRowClick ? () => onRowClick(row) : undefined}
-              className={cn(
-                'bg-[var(--card)] [&>td]:border-y [&>td]:border-[var(--border)] [&>td:first-child]:border-s [&>td:first-child]:rounded-s-xl [&>td:last-child]:border-e [&>td:last-child]:rounded-e-xl',
-                onRowClick && 'cursor-pointer hover:brightness-105',
-              )}
+              className={cn('data-row', onRowClick && 'cursor-pointer')}
             >
               {columns.map((col) => (
-                <td key={col.key} className="px-3 py-2.5 align-middle min-h-[2.6rem] leading-urdu no-clip">
+                <td key={col.key} className="leading-urdu no-clip">
                   {col.render ? col.render(row) : (row[col.key] ?? '—')}
                 </td>
               ))}

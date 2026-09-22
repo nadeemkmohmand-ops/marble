@@ -16,7 +16,7 @@ export default function StatCard({ label, value, sub, icon: Icon, tone = 'info',
     <button
       type="button"
       onClick={onClick}
-      className={cn('card card-hover p-4 text-start flex items-center gap-3 w-full', !onClick && 'cursor-default', className)}
+      className={cn('card card-hover gradient-border p-4 text-start flex items-center gap-3 w-full', !onClick && 'cursor-default', className)}
     >
       {Icon && (
         <div

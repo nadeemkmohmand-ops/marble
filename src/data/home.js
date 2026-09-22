@@ -49,7 +49,7 @@ export const quickActions = [
     to: '/inventory',
     labelKey: 'home.viewInventory',
     icon: Boxes,
-    cls: 'border border-border bg-white text-primary hover:border-accent dark:border-gray-700 dark:bg-gray-800 dark:text-white',
+    cls: 'border border-[var(--border)] bg-[var(--card)] text-[var(--text)] hover:border-accent hover:text-accent dark:text-[var(--text)]',
   },
   {
     to: '/reports',

@@ -84,6 +84,28 @@ export default function BackgroundFX() {
           }}
         />
       ))}
+
+      {/* Ambient 3D jewellery — glass sphere, gyroscope ring, gradient gem.
+          Each shape floats via a wrapper (so float + spin animations
+          compose instead of overriding each other's transform). */}
+      <span
+        className="shape3d animate-floatSlower"
+        style={{ top: '16%', insetInlineStart: '6%' }}
+      >
+        <span className="shape3d-sphere" style={{ display: 'block', width: '3.4rem', height: '3.4rem' }} />
+      </span>
+      <span
+        className="shape3d animate-floatSlow"
+        style={{ top: '62%', insetInlineEnd: '7%' }}
+      >
+        <span className="shape3d-ring" style={{ display: 'block', width: '5.2rem', height: '5.2rem', animationDelay: '-6s' }} />
+      </span>
+      <span
+        className="shape3d animate-floatSlower"
+        style={{ top: '38%', insetInlineStart: '86%' }}
+      >
+        <span className="shape3d-gem" style={{ display: 'block', width: '2.6rem', height: '2.9rem', animationDelay: '-3s' }} />
+      </span>
     </div>
   )
 }
